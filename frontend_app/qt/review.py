@@ -1,4 +1,9 @@
-"""Post-match coach panel: win-rate graph with move markers, move list, take over."""
+"""赛后教练复盘面板 (Post-match Coach Panel)
+
+包含：
+1. 胜率走势折线图 (WinRateGraph)：显示随对局时间波动的胜率、关键阶段分界线 (双倍/加时/三倍) 及各手出牌评级标记 (!!, ★, ?!, ?? 等)。
+2. 复盘列表与控制面板 (ReviewPanel)：展示综合对局准确率 (Accuracy %)、各评级统计、详细落子损失分析，以及 "从此处接管 (Take Over from Here)" 分支对战功能。
+"""
 from __future__ import annotations
 
 from typing import Callable, List, Optional
@@ -11,19 +16,31 @@ from PySide6.QtWidgets import (
 
 from backend_engine.brain.coach_analyzer import MatchReview, MoveReview
 
+# 评级颜色映射 (与主流棋类复盘软件配色规范一致)
 LABEL_COLOR = {
-    "brilliant": QColor("#1bc7d6"), "best": QColor("#5ad15a"), "good": QColor("#9ccc65"),
-    "inaccuracy": QColor("#f2c94c"), "mistake": QColor("#f2994a"), "blunder": QColor("#eb5757"),
+    "brilliant": QColor("#1bc7d6"),  # 妙手/神来之笔：青色
+    "best": QColor("#5ad15a"),       # 最佳手：绿色
+    "good": QColor("#9ccc65"),       # 好棋：淡绿
+    "inaccuracy": QColor("#f2c94c"), # 不精准：黄色
+    "mistake": QColor("#f2994a"),    # 失误：橙色
+    "blunder": QColor("#eb5757"),    # 严重失误/漏着：红色
 }
 
 
 def mmss(ms: int) -> str:
+    """毫秒时间戳转换为 分:秒 格式字符串"""
     s = ms // 1000
     return f"{s // 60}:{s % 60:02d}"
 
 
 class WinRateGraph(QWidget):
-    moveClicked = Signal(int)   # index into review.moves
+    """胜率走势图控件 (Win-rate Graph)
+    
+    绘制一条 0% ~ 100% 的胜率平滑走势曲线。
+    横轴为比赛时间 (ms)，并在 2:00 (双倍圣水)、3:00 (加时赛)、4:00 (三倍圣水) 处标记虚线阶段指示。
+    每个玩家落子事件按评级绘制不同大小和颜色的圆点，并支持鼠标点击命中检测，触发 moveClicked 信号。
+    """
+    moveClicked = Signal(int)   # 点击某一手棋时发射该手在 review.moves 中的索引
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -34,22 +51,27 @@ class WinRateGraph(QWidget):
         self.setMouseTracking(True)
 
     def set_review(self, review: Optional[MatchReview], end_ms: int) -> None:
+        """设置复盘数据并刷新图表"""
         self.review, self.end_ms, self.selected = review, max(end_ms, 1000), None
         self.update()
 
     def _plot_rect(self) -> QRectF:
+        """图表主体绘制区域 (留出左侧百分比刻度与底部时间轴边距)"""
         return QRectF(34, 10, self.width() - 44, self.height() - 30)
 
     def _pt(self, t: int, v: float) -> QPointF:
+        """将 (时间 t ms, 胜率 v [0, 1]) 映射到图表像素坐标"""
         r = self._plot_rect()
         return QPointF(r.left() + r.width() * t / self.end_ms, r.top() + r.height() * (1 - v))
 
     def _curve_at(self, t: int) -> float:
+        """在离散采样曲线中查找距离时间 t 最近的点之胜率估值"""
         pts = self.review.curve
         best = min(pts, key=lambda p: abs(p[0] - t))
         return best[1]
 
     def paintEvent(self, e) -> None:
+        """胜率图绘制流程：阶段背景虚线、刻度、中线、填充多边形、走势折线、落子评级标记"""
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         p.fillRect(self.rect(), QColor("#1b1f24"))
@@ -57,7 +79,7 @@ class WinRateGraph(QWidget):
         f = QFont()
         f.setPixelSize(10)
         p.setFont(f)
-        # phase bands: x2 from 2:00, overtime from 3:00, x3 from 4:00
+        # 1. 绘制对局阶段分界线：2:00 进入双倍，3:00 进入加时，4:00 进入三倍
         for t0, label in ((120_000, "x2"), (180_000, "OT"), (240_000, "x3")):
             if t0 < self.end_ms:
                 x = self._pt(t0, 0).x()
@@ -65,11 +87,14 @@ class WinRateGraph(QWidget):
                 p.drawLine(QPointF(x, r.top()), QPointF(x, r.bottom()))
                 p.setPen(QColor(200, 150, 255))
                 p.drawText(QPointF(x + 3, r.top() + 10), label)
+        # 2. 纵轴百分比刻度 (0%, 50%, 100%)
         p.setPen(QColor(150, 150, 150))
         for v, txt in ((1.0, "100%"), (0.5, "50%"), (0.0, "0%")):
             p.drawText(QRectF(0, self._pt(0, v).y() - 6, 30, 12), Qt.AlignRight, txt)
+        # 50% 平衡基准虚线
         p.setPen(QPen(QColor(255, 255, 255, 70), 1, Qt.DashLine))
         p.drawLine(self._pt(0, 0.5), self._pt(self.end_ms, 0.5))
+        # 3. 横轴时间刻度 (每 30 秒标刻度)
         for t in range(0, self.end_ms + 1, 30_000):
             p.setPen(QColor(150, 150, 150))
             p.drawText(QRectF(self._pt(t, 0).x() - 20, r.bottom() + 3, 40, 14), Qt.AlignCenter, mmss(t))
@@ -78,6 +103,7 @@ class WinRateGraph(QWidget):
             p.drawText(r, Qt.AlignCenter, "Win-rate graph appears after match ends or clicking 'Analyze'")
             p.end()
             return
+        # 4. 填充胜率曲线与 50% 轴之间的半透明渐变面积
         pts = [self._pt(t, v) for t, v in self.review.curve]
         mid = self._pt(0, 0.5).y()
         area = QPainterPath(QPointF(pts[0].x(), mid))
@@ -87,12 +113,14 @@ class WinRateGraph(QWidget):
         p.setPen(Qt.NoPen)
         p.setBrush(QColor(47, 125, 225, 60))
         p.drawPath(area)
+        # 5. 绘制平滑胜率轮廓折线
         line = QPainterPath(pts[0])
         for q in pts[1:]:
             line.lineTo(q)
         p.setBrush(Qt.NoBrush)
         p.setPen(QPen(QColor("#7fb2ff"), 2))
         p.drawPath(line)
+        # 6. 在曲线上标出出牌位置的点与符号 (如 !!、?、?? 等)
         f.setBold(True)
         f.setPixelSize(11)
         p.setFont(f)
@@ -102,6 +130,7 @@ class WinRateGraph(QWidget):
             big = mv.label in ("brilliant", "inaccuracy", "mistake", "blunder")
             rad = 6 if big else 3.5
             if i == self.selected:
+                # 选中的落子绘制白色外发光环
                 p.setPen(QPen(QColor("white"), 2))
                 p.setBrush(Qt.NoBrush)
                 p.drawEllipse(c, rad + 4, rad + 4)
@@ -109,11 +138,13 @@ class WinRateGraph(QWidget):
             p.setBrush(col)
             p.drawEllipse(c, rad, rad)
             if mv.symbol and big:
+                # 绘制评级符号文本 (如 !! 或 ??)
                 p.setPen(col)
                 p.drawText(QRectF(c.x() - 15, c.y() - 22, 30, 14), Qt.AlignCenter, mv.symbol)
         p.end()
 
     def mousePressEvent(self, e) -> None:
+        """处理鼠标点击：若点击位置靠近某个落子圆点 (半径 14px 阈值)，选中该手并触发 moveClicked"""
         if not self.review:
             return
         pos = e.position()
@@ -128,7 +159,16 @@ class WinRateGraph(QWidget):
 
 
 class ReviewPanel(QWidget):
-    """Bottom panel. Callbacks into the main window keep this widget free of game logic."""
+    """赛后教练复盘底部面板 (Review Panel)
+    
+    左侧为胜率走势图 (WinRateGraph)，右侧包含：
+    - 统计大纲 (Accuracy %, 各评级计数)
+    - 详细出牌列表 (带有时间、卡牌名称、损失百分比)
+    - 详细文字解释 (比较实际落子与 AI 推荐落子)
+    - "Analyze (R)" 重新分析按钮与进度条
+    - "Take Over from Here" (从此处接管分支模拟)
+    通过回调函数解耦，保持界面控件无硬编码游戏模拟逻辑。
+    """
     moveSelected = Signal(int)
 
     def __init__(self, names: Callable[[str], str], on_analyze, on_take_over, parent=None):
@@ -169,6 +209,7 @@ class ReviewPanel(QWidget):
         lay.addWidget(sw, 2)
 
     def set_review(self, review: Optional[MatchReview], end_ms: int) -> None:
+        """加载复盘报告并填充列表项与总结数据"""
         self.review = review
         self.graph.set_review(review, end_ms)
         self.list.blockSignals(True)
@@ -191,6 +232,7 @@ class ReviewPanel(QWidget):
         self.list.blockSignals(False)
 
     def select(self, i: int, from_list: bool = False) -> None:
+        """选中某一步棋：高亮走势图上的点，选中列表中对应项，并展示详细文字评估"""
         if not self.review or not (0 <= i < len(self.review.moves)):
             return
         mv = self.review.moves[i]
@@ -206,6 +248,16 @@ class ReviewPanel(QWidget):
 
 
 def describe(mv: MoveReview, names: Callable[[str], str]) -> str:
+    """生成富文本详细教练点评 (Rich-text Coach Review Explanation)
+    
+    分析包含：
+    - 落子时间、卡牌与坐标
+    - 评级标签与胜率变化 (落子前胜率 → 实际胜率 · 最佳可能胜率)
+    - 若最佳手为等待 (Wait)，解释为何不应下牌 (避免亏费/破轮换)
+    - 推荐落子与红绿虚影提示 (Your placement in red, recommended in green)
+    - 是否即使单纯空过/等待收益也比该手更高
+    - MCTS 搜索候选分支数与推演深度
+    """
     a = mv.actual
     lines = [f"<b>{mmss(mv.t_ms)} Played {names(a.card_id)} @ ({a.x:.1f}, {a.y:.1f})</b> — "
              f"<span style='color:{LABEL_COLOR[mv.label].name()}'>{mv.label_text} {mv.symbol}</span>",

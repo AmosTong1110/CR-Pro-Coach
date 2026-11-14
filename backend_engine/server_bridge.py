@@ -1,7 +1,8 @@
 """
-WebSocket Server Bridge for CR-Pro-Coach.
-Provides bidirectional JSON-RPC communication between the Python backend engine
-and the Unity (C#) client interface.
+WebSocket 远程通信服务桥接器 (Server Bridge)
+
+提供 Python 后端引擎与外部客户端 (如 Unity C# 客户端、Web 可视化面板或远程教练服务)
+之间的双向异步 JSON-RPC 通信通道。
 """
 import asyncio
 import json
@@ -15,18 +16,22 @@ PORT = 8765
 
 
 class ServerBridge:
+    """基于 WebSocket 协议的异步远程状态分发与指令处理桥接器"""
     def __init__(self):
         self.clients = set()
 
     async def register(self, websocket):
+        """注册新接入的客户端连接"""
         self.clients.add(websocket)
         logger.info(f"Client connected: {websocket.remote_address}")
 
     async def unregister(self, websocket):
+        """移除断开连接的客户端"""
         self.clients.remove(websocket)
         logger.info(f"Client disconnected: {websocket.remote_address}")
 
     async def handler(self, websocket, path=None):
+        """单个连接的异步消息监听与响应循环"""
         await self.register(websocket)
         try:
             async for message in websocket:
@@ -39,6 +44,12 @@ class ServerBridge:
             await self.unregister(websocket)
 
     async def process_request(self, req: dict) -> dict:
+        """处理客户端请求动作：
+        
+        支持动作：
+        - ping: 心跳检测
+        - get_coach_state: 获取当前教练实时评估指标 (对手推测圣水、当前胜率、AI 推荐落子虚影等)
+        """
         cmd = req.get("action")
         if cmd == "ping":
             return {"status": "ok", "message": "pong"}
@@ -57,6 +68,7 @@ class ServerBridge:
 
 
 async def main():
+    """启动 WebSocket 服务主监听协程"""
     try:
         import websockets
         bridge = ServerBridge()

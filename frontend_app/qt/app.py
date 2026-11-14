@@ -1,11 +1,19 @@
 """
-CR Bot — 1v1 practice arena (PySide6).
+皇室战争 AI 陪练教练 — 1v1 实战对战竞技场 (PySide6 Qt 桌面客户端)
 
+启动方式：
     python -m frontend_app.qt.app
 
-Controls: 1-4 select a card, click the board to deploy, right-click / Esc to cancel,
-Space start/pause, N new match, E guess the AI's elixir (quiz mode),
-U / F rewind / forward 10 s, double-click a play-log line to take over from just before it.
+快捷键与操作说明：
+- 键盘 1-4：选择对应手牌槽位的卡牌
+- 鼠标左键点击棋盘：部署卡牌到指定位置
+- 鼠标右键 / Esc：取消选中当前卡牌
+- 空格键 (Space)：启动 / 暂停对局模拟
+- N 键：重置并开启新对局
+- E 键：圣水盲测问答 (Quiz 模式，猜对方此刻剩余圣水)
+- U / F 键：后退 / 快进 10 秒 (时间轴回溯)
+- R 键：开启赛后教练复盘与走势分析
+- 双击右侧出牌记录 (Play log)：从该手出牌前的时间点直接接管 (Take over) 对局
 """
 from __future__ import annotations
 
@@ -26,6 +34,7 @@ from frontend_app.qt.board import BoardWidget
 from frontend_app.qt.review import ReviewPanel, mmss as _mmss
 from frontend_app.qt.session import AI, HUMAN, PERSONAS, GameSession, LogEntry
 
+# 下牌违规原因映射字典 (保持英文用于测试匹配)
 REASONS = {
     "not_enough_elixir": "Not enough elixir",
     "enemy_half": "Can't deploy on enemy side",
@@ -35,21 +44,32 @@ REASONS = {
     "not_in_hand": "Card not in hand",
     "match_over": "Match is over",
 }
+# AI 反应延迟分类名称映射
 LATENCY_NAMES = {
     LatencyClass.SURPRISE: "Surprise", LatencyClass.ANTICIPATED: "Anticipated",
     LatencyClass.ROUTINE: "Routine", LatencyClass.HOVER_REFLEX: "Hover reflex",
 }
+# 模拟运行倍速列表
 SPEEDS = [("1x", 1), ("2x", 2), ("4x", 4), ("8x", 8)]
+# 时间跳转后的缓冲倒计时 (毫秒)
 COUNTDOWN_MS = 3000
 
 
 def mmss(ms: int) -> str:
+    """毫秒时间转换为分:秒格式"""
     s = ms // 1000
     return f"{s // 60}:{s % 60:02d}"
 
 
 # ---------------------------------------------------------------------------
 class ElixirBar(QWidget):
+    """圣水槽控件 (Elixir Bar)
+    
+    采用皇室战争官方风格的 10 格紫色彩条展示当前圣水存量：
+    - 整数格以亮粉紫色 (#d43cf0) 填满
+    - 充能中的小数部分以深紫色 (#8e3aa6) 平滑过渡填充
+    - 左侧显示当前圣水向下取整数值
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.value = 0.0
@@ -57,15 +77,18 @@ class ElixirBar(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
     def set_value(self, v: float) -> None:
+        """更新圣水值并重绘"""
         self.value = v
         self.update()
 
     def paintEvent(self, e) -> None:
+        """绘制 10 格独立圆角分段与圣水数值"""
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         w, h = self.width(), self.height()
         label_w = 34
         seg = (w - label_w - 4) / 10
+        # 逐格绘制 10 格圣水槽底色与充能填充
         for i in range(10):
             r = QRectF(label_w + i * seg + 1, 3, seg - 2, h - 6)
             p.setPen(Qt.NoPen)
@@ -75,6 +98,7 @@ class ElixirBar(QWidget):
             if fill > 0:
                 p.setBrush(QColor("#d43cf0") if fill >= 1 else QColor("#8e3aa6"))
                 p.drawRoundedRect(QRectF(r.x(), r.y(), r.width() * fill, r.height()), 3, 3)
+        # 绘制左侧当前整数圣水读数
         f = QFont()
         f.setPixelSize(17)
         f.setBold(True)
@@ -85,6 +109,13 @@ class ElixirBar(QWidget):
 
 
 class HandBar(QWidget):
+    """手牌栏与圣水槽组合控件 (Hand Bar)
+    
+    包含：
+    1. 左侧 "Next" 卡牌预览槽位
+    2. 4 个可选择手牌槽位 (支持键盘 1-4 快捷切换)，支持觉醒标识 (★Evo) 与费用判断变灰
+    3. 下方紧贴的 10 格圣水槽 (ElixirBar)
+    """
     def __init__(self, on_select, parent=None):
         super().__init__(parent)
         self.on_select = on_select
@@ -93,11 +124,13 @@ class HandBar(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 4, 0, 0)
         row = QHBoxLayout()
+        # 下一张进牌槽
         self.next_label = QLabel()
         self.next_label.setAlignment(Qt.AlignCenter)
         self.next_label.setFixedWidth(64)
         self.next_label.setStyleSheet("color:#aaa; font-size:11px;")
         row.addWidget(self.next_label)
+        # 4 个手牌按钮
         self.buttons: List[QPushButton] = []
         for i in range(4):
             b = QPushButton()
@@ -109,15 +142,18 @@ class HandBar(QWidget):
             self.buttons.append(b)
             row.addWidget(b)
         lay.addLayout(row)
+        # 下方圣水槽
         self.elixir = ElixirBar()
         lay.addWidget(self.elixir)
 
     def refresh(self, hand: List[str], next_card: str, names, costs, elixir: float,
                 selected: Optional[str], evo_ready: set) -> None:
+        """刷新手牌按钮状态、觉醒标识、圣水足够时的背景高亮色及选中框线"""
         for b, c in zip(self.buttons, hand):
             evo = " ★Evo" if c in evo_ready else ""
             b.setText(f"{names[c]}{evo}\n{costs[c]} Elixir")
             b.setChecked(c == selected)
+            # 圣水充足时为蓝底亮字，费用不足时为暗灰底灰字
             afford = costs[c] <= elixir + 1e-9
             b.setStyleSheet(
                 "QPushButton{font-size:13px; border-radius:6px; padding:4px;"
@@ -130,6 +166,13 @@ class HandBar(QWidget):
 
 # ---------------------------------------------------------------------------
 class DeckDialog(QDialog):
+    """卡组构建对话框 (Deck Builder Dialog)
+    
+    允许配置玩家与 AI 的 8 张手牌卡组及 1 张觉醒核心卡。
+    校验规则：
+    1. 每个卡组必须严格包含 8 张卡牌。
+    2. 若选择了觉醒卡牌，该卡牌必须在卡组的 8 张牌内。
+    """
     def __init__(self, session: GameSession, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Deck Builder")
@@ -137,11 +180,13 @@ class DeckDialog(QDialog):
         db = session.db
         lay = QHBoxLayout(self)
         self.lists, self.evos = [], []
+        # 双列布局：左侧玩家卡组，右侧 AI 卡组
         for side, title, deck, evo in ((HUMAN, "Your Deck", session.cfg.player_deck, session.cfg.player_evo),
                                        (AI, "AI Deck", session.cfg.ai_deck, session.cfg.ai_evo)):
             box = QGroupBox(title)
             v = QVBoxLayout(box)
             lw = QListWidget()
+            # 遍历卡牌数据库，按圣水费用排序填充复选框列表
             for cid, c in sorted(db.cards.items(), key=lambda kv: (kv[1]["elixir"], kv[0])):
                 it = QListWidgetItem(f"{c['name']}  ({c['elixir']})")
                 it.setData(Qt.UserRole, cid)
@@ -149,6 +194,7 @@ class DeckDialog(QDialog):
                 it.setCheckState(Qt.Checked if cid in deck else Qt.Unchecked)
                 lw.addItem(it)
             v.addWidget(lw)
+            # 觉醒卡下拉选择框
             evo_box = QComboBox()
             evo_box.addItem("No evolution", None)
             for cid, c in db.cards.items():
@@ -166,10 +212,12 @@ class DeckDialog(QDialog):
         lay.addWidget(bb)
 
     def _chosen(self, i: int):
+        """获取索引为 i 的卡组中被选中的卡牌 ID 元组"""
         lw = self.lists[i]
         return tuple(lw.item(j).data(Qt.UserRole) for j in range(lw.count()) if lw.item(j).checkState() == Qt.Checked)
 
     def _accept(self) -> None:
+        """提交前校验：严格 8 张牌，且觉醒卡必须包含在卡组中"""
         for i in (0, 1):
             deck = self._chosen(i)
             if len(deck) != 8:
@@ -182,19 +230,26 @@ class DeckDialog(QDialog):
         self.accept()
 
     def result_config(self) -> dict:
+        """打包导出卡组配置字典"""
         evo = lambda i: (self.evos[i].currentData(),) if self.evos[i].currentData() else ()  # noqa: E731
         return dict(player_deck=self._chosen(0), ai_deck=self._chosen(1), player_evo=evo(0), ai_evo=evo(1))
 
 
 # ---------------------------------------------------------------------------
 class CounterPanel(QGroupBox):
-    """Opponent elixir + cycle counter, with a quiz mode that hides it so you practise counting."""
+    """对手圣水与卡牌轮换追踪面板 (Opponent Elixir & Cycle Counter)
+    
+    支持两种模式：
+    1. Show (公开显示)：实时展示对手当前推测圣水、我方圣水差 (Advantage/Deficit)、对手手牌/出牌队列，以及贝叶斯卡组推断。
+    2. Quiz (圣水盲测练习)：隐藏对手圣水数值，玩家按 E 键盲猜对方圣水，系统记录平均绝对误差 (MAE) 与得分统计。
+    """
 
     def __init__(self, session: GameSession, on_guess, parent=None):
         super().__init__("Elixir Counter", parent)
         self.session = session
         lay = QVBoxLayout(self)
         top = QHBoxLayout()
+        # 模式切换下拉框 (Show vs Quiz)
         self.mode = QComboBox()
         self.mode.addItem("Show", "show")
         self.mode.addItem("Quiz (hidden, press E to guess)", "quiz")
@@ -204,6 +259,7 @@ class CounterPanel(QGroupBox):
         self.guess_btn.clicked.connect(on_guess)
         top.addWidget(self.guess_btn)
         lay.addLayout(top)
+        # 圣水数值与圣水差指示标签
         self.value = QLabel()
         self.value.setStyleSheet("font-size:22px; font-weight:bold; color:#d43cf0;")
         self.adv = QLabel()
@@ -213,25 +269,30 @@ class CounterPanel(QGroupBox):
         row.addStretch(1)
         row.addWidget(self.adv)
         lay.addLayout(row)
+        # 轮换追踪 (手牌推测与返回序列)
         self.cycle = QLabel()
         self.cycle.setWordWrap(True)
         self.cycle.setStyleSheet("font-size:12px;")
-        self.cycle.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)  # never squeezed; the log shrinks
+        self.cycle.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         lay.addWidget(self.cycle)
+        # 问答测验统计数据
         self.stats = QLabel()
         self.stats.setStyleSheet("font-size:11px; color:#888;")
         lay.addWidget(self.stats)
 
     @property
     def quiz_mode(self) -> bool:
+        """当前是否处于盲测练习模式"""
         return self.mode.currentData() == "quiz"
 
     def refresh(self) -> None:
+        """刷新对手感知数据：计算圣水差、轮换队列、漏水统计以及贝叶斯推断卡组"""
         s = self.session
         names = {cid: c["name"] for cid, c in s.db.cards.items()}
         n, mae, within = s.quiz_stats()
         self.stats.setText(f"Quiz stats: {n} tries · MAE {mae:.2f} · Within 0.5: {within:.0%}" if n else "Quiz stats: No attempts yet")
         if self.quiz_mode:
+            # 测验模式下隐藏对手实时圣水
             self.value.setText("AI ≈ ???")
             self.adv.setText("")
             self.cycle.setText("Track yourself: what did AI play, and what card returns next?")
@@ -245,16 +306,20 @@ class CounterPanel(QGroupBox):
         else:
             self.adv.setText(f"{'Advantage' if adv > 0 else 'Deficit'} {adv:+.1f}")
             self.adv.setStyleSheet(f"font-size:13px; font-weight:bold; color:{'#4cd964' if adv > 0 else '#ff6b5e'};")
+        # 显示轮换队列与已知手牌
         q = [names[c] if c else "?" for c in e.queue]
         hand = [names[c] for c in e.known_in_hand] + ["?"] * e.unknown_hand_slots
         lines = [f"In hand: {' · '.join(hand)}",
                  f"Returns next: ▶ {' → '.join(q)}"]
+        # 觉醒轮换层数计数
         evo = [f"{names[c]} {k}/{s.db.cards[c]['evolution']['cycles_required']}"
                for c, k in e.evo_progress.items()]
         if evo:
             lines.append("Evo cycles: " + ", ".join(evo))
+        # 圣水溢出 (Leaked Elixir) 提示
         if e.leaked > 0.05:
             lines.append(f"AI leaked {e.leaked:.1f} elixir")
+        # 贝叶斯卡组推断结果
         g = s.opp_deck_guess()
         if g is not None and g.card_probs:
             pretty = lambda c: names.get(c, c.replace("_", " ").title())  # noqa: E731
@@ -267,6 +332,18 @@ class CounterPanel(QGroupBox):
 
 # ---------------------------------------------------------------------------
 class MainWindow(QMainWindow):
+    """皇室战争 1v1 对战与复盘教练主窗口 (Main Application Window)
+    
+    模块组合：
+    - 竞技场对战棋盘 (BoardWidget)
+    - 时间轴跳转与快进/快退控制栏 (Timeline Scrubbing & 10s Rewind/Forward)
+    - 4 槽位手牌与圣水条 (HandBar & ElixirBar)
+    - 比赛状态区 (对局时钟、阶段倍速、皇冠比分)
+    - 对局配置面板 (启动/暂停、新建比赛、卡组编辑器、AI 角色性格、卡等调节、迷雾盲区高亮)
+    - 对手感知与盲测答题面板 (CounterPanel)
+    - 出牌历史日志 (Play log)，支持双击任意出牌瞬间接管对局
+    - 赛后教练复盘底部悬浮坞 (ReviewPanel QDockWidget)
+    """
     def __init__(self, session: Optional[GameSession] = None):
         super().__init__()
         self.setWindowTitle("CR Bot — 1v1 Sparring Arena")
@@ -276,11 +353,13 @@ class MainWindow(QMainWindow):
         self.selected: Optional[str] = None
         self.countdown_ms = 0
 
+        # 主棋盘交互控件
         self.board = BoardWidget(self.session)
         self.board.tileClicked.connect(self.on_tile)
         self.board.cancelled.connect(lambda: self.select(None))
         self.hand = HandBar(self.on_hand_slot)
 
+        # 时间轴与快进快退控制栏
         tl = QHBoxLayout()
         self.rew_btn = QPushButton("⏪ 10s (U)")
         self.rew_btn.clicked.connect(lambda: self.jump(self.session.rewind(10), "Rewind 10s"))
@@ -295,11 +374,13 @@ class MainWindow(QMainWindow):
         for w in (self.rew_btn, self.slider, self.slider_label, self.fwd_btn):
             tl.addWidget(w, 1 if w is self.slider else 0)
 
+        # 左侧竖向布局：竞技场棋盘 + 时间轴进度条 + 底部手牌与圣水
         left = QVBoxLayout()
         left.addWidget(self.board, 1)
         left.addLayout(tl)
         left.addWidget(self.hand)
 
+        # 右侧侧边栏：时钟、控制按钮、圣水轮换感知、日志
         right = QVBoxLayout()
         self.clock = QLabel()
         self.clock.setStyleSheet("font-size:34px; font-weight:bold;")
@@ -375,6 +456,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(root)
         self.resize(900, 900)
 
+        # 赛后教练复盘底部停靠窗口 (Post-match Coach Review Dock)
         names = lambda c: self.session.db.cards.get(c, {}).get("name", c)  # noqa: E731
         self.review_panel = ReviewPanel(names, self.run_review, self.take_over_review)
         self.review_panel.moveSelected.connect(self.show_review_move)
@@ -385,6 +467,7 @@ class MainWindow(QMainWindow):
         self.review_dock.hide()
         self.analyzing = False
 
+        # 注册全局快捷键
         for i in range(4):
             QShortcut(QKeySequence(str(i + 1)), self, activated=lambda i=i: self.on_hand_slot(i))
         QShortcut(QKeySequence(Qt.Key_Space), self, activated=self.toggle_run)
@@ -395,6 +478,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("F"), self, activated=self.fwd_btn.click)
         QShortcut(QKeySequence("R"), self, activated=self.run_review)
 
+        # 核心 50ms 定时器驱动模拟循环
         self.timer = QTimer(self)
         self.timer.setInterval(TICK_MS)
         self.timer.timeout.connect(self.on_timer)
@@ -402,9 +486,17 @@ class MainWindow(QMainWindow):
         self.refresh()
         self.flash("Press Space to start")
 
-    # -- loop --------------------------------------------------------------
+    # -- 模拟主循环 (Simulation Loop) ---------------------------------------
     def on_timer(self) -> None:
-        if self.countdown_ms > 0:  # real-time 3-2-1 after a jump; the match clock is frozen
+        """主定时器回调 (每 50ms 触发一次)
+        
+        处理：
+        1. 时间回溯后的真实时间 3-2-1 缓冲倒计时 (此时游戏逻辑时钟冻结)。
+        2. 推进物理模拟帧 (调用 session.tick(speed))。
+        3. 对局结束检测：自动暂停并弹出赛后复盘分析。
+        4. 刷新合法下牌格子与界面状态。
+        """
+        if self.countdown_ms > 0:  # 倒计时阶段：时钟停顿，屏幕显示 3, 2, 1
             self.countdown_ms -= TICK_MS
             if self.countdown_ms <= 0:
                 self.board.overlay_text = None
@@ -418,18 +510,25 @@ class MainWindow(QMainWindow):
         if not self.running or self.session.result is not None:
             return
         self.board.ghosts, self.board.banner = [], None
+        # 执行物理 tick 并记录新产生的落子事件
         self.add_log(self.session.tick(self.speed))
         if self.session.result is not None:
+            # 比赛结束，停止运行并自动调起教练复盘
             self.running = False
             self.start_btn.setText("Start (Space)")
             self.refresh()
-            self.run_review()  # auto post-match coach
+            self.run_review()
             return
         self.board.refresh_legal()
         self.refresh()
 
-    # -- post-match coach -----------------------------------------------------
+    # -- 赛后教练复盘 (Post-match Coach) -------------------------------------
     def run_review(self) -> None:
+        """运行赛后教练复盘分析
+        
+        对对局中玩家的所有出牌进行 8 秒 MCTS 深度推演评估，
+        计算理论最优解、落子损失，划分棋类等级并绘制胜率波动图。
+        """
         if self.analyzing:
             return
         if not any(e.side == HUMAN for e in self.session.log):
@@ -448,6 +547,7 @@ class MainWindow(QMainWindow):
         self.flash("Analyzing… simulating candidate moves 8s ahead")
 
         def progress(done: int, total: int) -> None:
+            """进度条更新回调"""
             panel.progress.setMaximum(max(total, 1))
             panel.progress.setValue(done)
             QApplication.processEvents()
@@ -463,6 +563,7 @@ class MainWindow(QMainWindow):
         self.flash(f"Review complete: Accuracy {review.accuracy:.0f}% · Click markers or list items to inspect moves")
 
     def show_review_move(self, i: int) -> None:
+        """在棋盘上展示第 i 手出牌的红绿虚影对比 (Red = Actual, Green = Best)"""
         review = self.review_panel.review
         mv = review.moves[i]
         if self.session.restore_before_event(mv.event_id) is None:
@@ -475,7 +576,9 @@ class MainWindow(QMainWindow):
         self.add_log([])
         self.select(None)
         a, b = mv.actual, mv.best
+        # 红虚影：玩家实际操作
         ghosts = [(a.card_id, a.x, a.y, "actual")]
+        # 绿虚影：引擎推荐最佳操作
         if not b.is_wait and (b.card_id, b.x, b.y) != (a.card_id, a.x, a.y):
             ghosts.append((b.card_id, b.x, b.y, "best"))
         self.board.ghosts = ghosts
@@ -484,10 +587,12 @@ class MainWindow(QMainWindow):
         self.refresh()
 
     def take_over_review(self) -> None:
+        """从复盘面板当前选中的步骤接管比赛继续对战"""
         self.jump(self.session.match.t_ms, "Take over from here")
 
     def toggle_run(self) -> None:
-        if self.countdown_ms > 0:  # Space during the countdown: stay paused instead
+        """空格键切换暂停与继续"""
+        if self.countdown_ms > 0:
             self._stop_countdown()
             self.running = False
             self.start_btn.setText("Resume (Space)")
@@ -498,20 +603,24 @@ class MainWindow(QMainWindow):
         self.start_btn.setText("Pause (Space)" if self.running else "Resume (Space)")
         self.flash("")
 
-    # -- match setup ---------------------------------------------------------
+    # -- 对局配置与管理 (Match Setup) ---------------------------------------
     def restart(self, **changes) -> None:
+        """应用新参数重开对局"""
         self.session.reconfigure(**changes)
         self._reset_view()
         self.flash("New match started with updated settings")
 
     def new_match(self) -> None:
+        """重置并开启全新对局"""
         self.session.new_match()
         self._reset_view()
         self.flash("New match · Press Space to start")
 
-    # -- timeline -----------------------------------------------------------
+    # -- 时间轴与接管 (Timeline & Take Over) ---------------------------------
     def jump(self, restored: Optional[int], what: str) -> None:
-        """After a rewind/forward/take-over: rebuild the view, then count 3-2-1 and resume."""
+        """执行时间轴跳转 (快进/快退/接管)：
+        重置界面、弹出 3 秒缓冲倒计时，并在倒计时结束后无缝恢复对局。
+        """
         if restored is None:
             self.flash("Nothing to jump to")
             self.refresh()
@@ -526,6 +635,7 @@ class MainWindow(QMainWindow):
         self.refresh()
 
     def take_over(self, item: QListWidgetItem) -> None:
+        """双击日志列表项：从该手下牌前的时间节点分支接管游戏"""
         i = self.log_list.row(item)
         e = self.session.log[i]
         who = "You" if e.side == HUMAN else "AI"
@@ -533,11 +643,13 @@ class MainWindow(QMainWindow):
         self.jump(self.session.take_over_before(i), f"Take over: Before {who} plays {name}")
 
     def _stop_countdown(self) -> None:
+        """清除倒计时状态"""
         self.countdown_ms = 0
         self.board.overlay_text = None
         self.board.update()
 
     def _reset_view(self) -> None:
+        """重置界面到对局初始状态"""
         self._stop_countdown()
         self.board.ghosts, self.board.banner = [], None
         self.review_panel.set_review(None, 0)
@@ -548,12 +660,13 @@ class MainWindow(QMainWindow):
         self.refresh()
 
     def edit_decks(self) -> None:
+        """打开卡组配置弹窗"""
         dlg = DeckDialog(self.session, self)
         if dlg.exec():
             self.restart(**dlg.result_config())
 
     def quiz_guess(self, guess: Optional[float] = None) -> None:
-        """Pause, ask for your estimate of the AI's elixir, then score it."""
+        """圣水盲测问答：暂停游戏，弹出输入框让玩家推测 AI 圣水，并根据绝对误差打分"""
         was_running = self.running
         self.running = False
         if guess is None or isinstance(guess, bool):
@@ -570,21 +683,25 @@ class MainWindow(QMainWindow):
         self.refresh()
 
     def _toggle_vision(self, on: bool) -> None:
+        """切换是否用黄色虚线标出 AI 处于迷雾盲区尚未看见的单位"""
         self.board.show_ai_vision = on
         self.board.update()
 
-    # -- input ---------------------------------------------------------------
+    # -- 玩家输入处理 (User Input Handling) ----------------------------------
     def on_hand_slot(self, i: int) -> None:
+        """手牌快捷键 1-4 槽位选择处理"""
         hand = self.session.match.sides[HUMAN].hand
         if i < len(hand):
             self.select(None if self.selected == hand[i] else hand[i])
 
     def select(self, card: Optional[str]) -> None:
+        """设置当前选中的卡牌"""
         self.selected = card
         self.board.set_selected(card)
         self.refresh()
 
     def on_tile(self, x: float, y: float) -> None:
+        """玩家点击棋盘执行下牌操作"""
         if not self.selected:
             return
         if self.countdown_ms > 0:
@@ -601,11 +718,13 @@ class MainWindow(QMainWindow):
         else:
             self.flash(REASONS.get(res.reason, res.reason))
 
-    # -- view ----------------------------------------------------------------
+    # -- 视图同步与日志 (View Sync & Logging) ---------------------------------
     def flash(self, msg: str) -> None:
+        """更新底部黄色状态栏提示信息"""
         self.status.setText(msg)
 
     def add_log(self, _new: List[LogEntry]) -> None:
+        """向日志列表追加新落子记录，包含出牌方、觉醒标记、坐标以及 AI 的认知延迟"""
         shown = self.log_list.count()
         names = {cid: c["name"] for cid, c in self.session.db.cards.items()}
         for e in self.session.log[shown:]:
@@ -621,6 +740,7 @@ class MainWindow(QMainWindow):
         self.log_list.scrollToBottom()
 
     def refresh(self) -> None:
+        """全面刷新主窗口视图：时钟、皇冠、手牌栏、圣水条、对手感知、时间轴滑块及棋盘"""
         s = self.session
         m = s.match
         st = m.sides[HUMAN]
@@ -646,6 +766,7 @@ class MainWindow(QMainWindow):
 
 
 def main() -> None:
+    """应用程序入口点：设置 Fusion 样式并启动 Qt 事件循环"""
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     w = MainWindow()
