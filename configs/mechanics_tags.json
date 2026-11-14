@@ -1,0 +1,40 @@
+{
+  "mechanics_taxonomy": {
+    "stun_reset": {
+      "description": "Interrupts and resets charge, dash, or beam ramp states to zero.",
+      "triggers": ["zap", "electro_wizard", "lightning", "freeze", "electro_spirit", "hero_ice_wizard"],
+      "vulnerable_cards": ["inferno_dragon", "inferno_tower", "sparky", "battle_ram", "prince", "dark_prince"]
+    },
+    "beam_ramp": {
+      "description": "Continuous single-target laser that ramps damage through stages 1, 2, and 3.",
+      "cards": ["inferno_dragon", "inferno_tower"]
+    },
+    "enhancement_throw": {
+      "description": "Throws damage enhancement buff to up to 2 allied units, granting damage multiplier on every 3rd attack.",
+      "cards": ["rune_giant"]
+    },
+    "champion_ability": {
+      "description": "Manual activation button with elixir cost and cooldown.",
+      "cards": {
+        "little_prince": {"ability": "royal_rescue", "cost": 3, "cd": 30.0},
+        "monk": {"ability": "parry", "cost": 1, "cd": 15.0},
+        "archer_queen": {"ability": "cloak", "cost": 1, "cd": 15.0},
+        "golden_knight": {"ability": "dashing_dash", "cost": 1, "cd": 11.0},
+        "skeleton_king": {"ability": "soul_summon", "cost": 2, "cd": 20.0}
+      }
+    },
+    "dash_iframe": {
+      "description": "Invulnerable animation during dash phase.",
+      "cards": ["bandit", "golden_knight"]
+    },
+    "death_action": {
+      "death_bomb": ["giant_skeleton", "balloon", "goblin_demolisher", "bomb_tower"],
+      "death_spawn": ["goblin_cage", "golem", "battle_ram", "lava_hound", "elixir_golem"],
+      "death_spell": ["lumberjack"]
+    },
+    "building_targeting": {
+      "description": "Ignores all enemy troops and moves directly to the nearest building or crown tower.",
+      "cards": ["rune_giant", "hog_rider", "battle_ram", "royal_giant", "golem", "balloon", "giant", "wall_breakers", "ram_rider", "elixir_golem"]
+    }
+  }
+}

@@ -1,0 +1,12247 @@
+{
+ "source": "huggingface:Cochon123/clash-royale-replays/cleaned-legacy/matches.jsonl",
+ "as_of": "2025-12",
+ "battles": 1592,
+ "deck_observations": 3184,
+ "unique_decks": 932,
+ "card_usage": {
+  "skeletons": 1258,
+  "barbarian_barrel": 879,
+  "fireball": 869,
+  "the_log": 851,
+  "electro_spirit": 649,
+  "royal_ghost": 639,
+  "ice_spirit": 619,
+  "knight": 611,
+  "cannon": 570,
+  "mini_pekka": 517,
+  "tornado": 494,
+  "ice_golem": 473,
+  "musketeer": 464,
+  "vines": 458,
+  "hog_rider": 442,
+  "baby_dragon": 438,
+  "valkyrie": 431,
+  "dart_goblin": 419,
+  "zap": 406,
+  "arrows": 372,
+  "skeleton_army": 364,
+  "balloon": 357,
+  "skeleton_barrel": 338,
+  "minions": 331,
+  "lightning": 329,
+  "royal_giant": 319,
+  "wall_breakers": 305,
+  "royal_hogs": 303,
+  "fisherman": 300,
+  "miner": 300,
+  "rocket": 285,
+  "fire_spirit": 279,
+  "giant_snowball": 279,
+  "hunter": 271,
+  "ice_wizard": 267,
+  "tesla": 267,
+  "skeleton_king": 249,
+  "golden_knight": 229,
+  "golem": 228,
+  "goblin_gang": 222,
+  "guards": 217,
+  "executioner": 213,
+  "royal_delivery": 209,
+  "poison": 202,
+  "princess": 202,
+  "suspicious_bush": 184,
+  "goblin_drill": 178,
+  "goblin_cage": 177,
+  "goblin_barrel": 176,
+  "goblin_hut": 174,
+  "inferno_dragon": 174,
+  "elixir_collector": 169,
+  "freeze": 165,
+  "heal_spirit": 164,
+  "bomber": 159,
+  "battle_ram": 145,
+  "three_musketeers": 142,
+  "dark_prince": 137,
+  "zappies": 136,
+  "mega_minion": 135,
+  "goblin_demolisher": 131,
+  "lava_hound": 127,
+  "bomb_tower": 126,
+  "tombstone": 124,
+  "pekka": 122,
+  "rascals": 122,
+  "rage": 122,
+  "royal_recruits": 118,
+  "mortar": 115,
+  "bowler": 115,
+  "mega_knight": 114,
+  "lumberjack": 107,
+  "electro_dragon": 106,
+  "mother_witch": 105,
+  "earthquake": 102,
+  "mighty_miner": 101,
+  "x_bow": 100,
+  "firecracker": 99,
+  "berserker": 98,
+  "minion_horde": 97,
+  "night_witch": 94,
+  "archer_queen": 93,
+  "electro_wizard": 93,
+  "elixir_golem": 91,
+  "inferno_tower": 89,
+  "bats": 89,
+  "monk": 87,
+  "bandit": 84,
+  "battle_healer": 79,
+  "flying_machine": 76,
+  "archers": 75,
+  "barbarians": 73,
+  "boss_bandit": 72,
+  "witch": 70,
+  "graveyard": 66,
+  "wizard": 66,
+  "cannon_cart": 62,
+  "electro_giant": 56,
+  "magic_archer": 55,
+  "ram_rider": 54,
+  "prince": 54,
+  "goblins": 50,
+  "giant": 50,
+  "goblin_curse": 49,
+  "elite_barbarians": 41,
+  "void": 38,
+  "sparky": 38,
+  "skeleton_dragons": 36,
+  "furnace": 34,
+  "goblinstein": 33,
+  "giant_skeleton": 31,
+  "spear_goblins": 22,
+  "phoenix": 21,
+  "goblin_giant": 14,
+  "mirror": 14,
+  "clone": 11,
+  "spirit_empress": 9,
+  "goblin_machine": 8,
+  "little_prince": 4,
+  "barbarian_hut": 1
+ },
+ "decks": [
+  {
+   "cards": [
+    "cannon",
+    "fireball",
+    "hog_rider",
+    "ice_golem",
+    "ice_spirit",
+    "musketeer",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 218
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 153
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "ice_spirit",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 87
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_hut",
+    "lightning",
+    "musketeer",
+    "royal_delivery",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 77
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bomb_tower",
+    "giant_snowball",
+    "ice_golem",
+    "miner",
+    "musketeer",
+    "skeletons"
+   ],
+   "count": 64
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "fireball",
+    "lava_hound",
+    "mega_minion",
+    "tombstone",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 57
+  },
+  {
+   "cards": [
+    "archers",
+    "electro_spirit",
+    "fireball",
+    "knight",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 47
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 44
+  },
+  {
+   "cards": [
+    "executioner",
+    "goblins",
+    "hog_rider",
+    "ice_spirit",
+    "rocket",
+    "the_log",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 42
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "ice_spirit",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 42
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "mini_pekka",
+    "rascals",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 40
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "dark_prince",
+    "golem",
+    "ice_wizard",
+    "mini_pekka",
+    "rocket",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 39
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "electro_spirit",
+    "flying_machine",
+    "goblin_cage",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 35
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 33
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 33
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "knight",
+    "miner",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 32
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "knight",
+    "tornado"
+   ],
+   "count": 31
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "goblin_hut",
+    "ice_wizard",
+    "lightning",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 29
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "heal_spirit",
+    "ice_golem",
+    "minions",
+    "royal_ghost",
+    "royal_hogs",
+    "three_musketeers"
+   ],
+   "count": 25
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "princess",
+    "skeleton_army",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 23
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "dark_prince",
+    "golem",
+    "ice_wizard",
+    "mini_pekka",
+    "tornado",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 23
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "fire_spirit",
+    "goblin_barrel",
+    "ice_spirit",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 23
+  },
+  {
+   "cards": [
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons"
+   ],
+   "count": 21
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeletons"
+   ],
+   "count": 19
+  },
+  {
+   "cards": [
+    "balloon",
+    "cannon",
+    "executioner",
+    "guards",
+    "miner",
+    "tornado",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 19
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "goblin_curse",
+    "night_witch",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "void",
+    "wizard"
+   ],
+   "count": 19
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "goblin_cage",
+    "ice_golem",
+    "inferno_dragon",
+    "mega_minion",
+    "miner",
+    "zap"
+   ],
+   "count": 18
+  },
+  {
+   "cards": [
+    "bomber",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 16
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "earthquake",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "mighty_miner",
+    "skeletons"
+   ],
+   "count": 16
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "executioner",
+    "fisherman",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons",
+    "the_log",
+    "vines"
+   ],
+   "count": 15
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomber",
+    "cannon",
+    "fireball",
+    "giant_snowball",
+    "goblin_drill",
+    "knight",
+    "skeletons"
+   ],
+   "count": 15
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "executioner",
+    "goblin_cage",
+    "heal_spirit",
+    "tornado"
+   ],
+   "count": 15
+  },
+  {
+   "cards": [
+    "bomber",
+    "elite_barbarians",
+    "freeze",
+    "hog_rider",
+    "ice_golem",
+    "minions",
+    "tesla",
+    "zap"
+   ],
+   "count": 15
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "tombstone",
+    "tornado"
+   ],
+   "count": 14
+  },
+  {
+   "cards": [
+    "cannon",
+    "executioner",
+    "freeze",
+    "guards",
+    "hog_rider",
+    "mega_knight",
+    "minions",
+    "valkyrie"
+   ],
+   "count": 13
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 13
+  },
+  {
+   "cards": [
+    "bandit",
+    "elixir_collector",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 13
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "dark_prince",
+    "electro_giant",
+    "goblin_cage",
+    "ice_wizard",
+    "lightning",
+    "tornado"
+   ],
+   "count": 13
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "bandit",
+    "goblin_gang",
+    "mega_knight",
+    "prince",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 12
+  },
+  {
+   "cards": [
+    "fireball",
+    "fisherman",
+    "mother_witch",
+    "royal_giant",
+    "skeleton_army",
+    "skeleton_king",
+    "the_log",
+    "zappies"
+   ],
+   "count": 12
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "cannon",
+    "electro_giant",
+    "knight",
+    "lightning",
+    "tornado"
+   ],
+   "count": 12
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "lightning",
+    "mighty_miner",
+    "skeletons"
+   ],
+   "count": 12
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "goblinstein",
+    "guards",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel"
+   ],
+   "count": 12
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "mini_pekka",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeletons"
+   ],
+   "count": 11
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "magic_archer",
+    "skeletons",
+    "the_log",
+    "tornado"
+   ],
+   "count": 11
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_gang",
+    "guards",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 11
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "ice_wizard",
+    "lightning",
+    "royal_giant",
+    "skeleton_king",
+    "tombstone",
+    "tornado"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "bandit",
+    "goblin_gang",
+    "mega_knight",
+    "mini_pekka",
+    "minions",
+    "princess",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bats",
+    "golem",
+    "lightning",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_king",
+    "vines"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_spirit",
+    "golden_knight",
+    "knight",
+    "mother_witch",
+    "pekka",
+    "rage",
+    "royal_ghost"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "skeletons"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "dart_goblin",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "hog_rider",
+    "minion_horde",
+    "minions",
+    "royal_giant",
+    "sparky",
+    "zap"
+   ],
+   "count": 10
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "dart_goblin",
+    "rascals",
+    "rocket",
+    "royal_ghost",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "berserker",
+    "bomber",
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "rocket",
+    "skeletons"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "archers",
+    "electro_spirit",
+    "knight",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "inferno_dragon",
+    "lava_hound",
+    "minion_horde",
+    "minions",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "barbarians",
+    "freeze",
+    "hog_rider",
+    "ice_wizard",
+    "miner",
+    "minion_horde",
+    "princess",
+    "valkyrie"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bomber",
+    "goblin_hut",
+    "golem",
+    "lightning",
+    "mini_pekka",
+    "skeleton_king",
+    "vines"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "goblin_gang",
+    "inferno_tower",
+    "knight",
+    "miner",
+    "minion_horde",
+    "princess",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "elixir_golem",
+    "mini_pekka",
+    "rage",
+    "tornado"
+   ],
+   "count": 9
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "goblin_hut",
+    "lightning",
+    "musketeer",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "electro_dragon",
+    "ice_wizard",
+    "lumberjack",
+    "pekka",
+    "tornado",
+    "vines"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "electro_dragon",
+    "freeze",
+    "inferno_dragon",
+    "knight",
+    "tornado"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "rocket",
+    "the_log"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "goblin_curse",
+    "golem",
+    "inferno_dragon",
+    "miner",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_king",
+    "zap"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "goblin_demolisher",
+    "mini_pekka",
+    "ram_rider",
+    "vines",
+    "zap"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "fireball",
+    "flying_machine",
+    "goblin_cage",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "executioner",
+    "freeze",
+    "guards",
+    "hog_rider",
+    "mini_pekka",
+    "minion_horde",
+    "zap"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "mini_pekka",
+    "rascals",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "princess",
+    "rocket",
+    "skeleton_army"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "arrows",
+    "bomber",
+    "elite_barbarians",
+    "golem",
+    "lumberjack",
+    "night_witch",
+    "phoenix",
+    "zap"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "bomber",
+    "electro_spirit",
+    "freeze",
+    "lumberjack",
+    "mighty_miner",
+    "tornado"
+   ],
+   "count": 8
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "knight",
+    "minions",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "golden_knight",
+    "miner",
+    "minion_horde",
+    "mortar",
+    "mother_witch",
+    "royal_ghost",
+    "skeleton_army",
+    "vines"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "freeze",
+    "golden_knight",
+    "ice_wizard",
+    "pekka",
+    "tornado",
+    "vines"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "bats",
+    "goblin_gang",
+    "inferno_dragon",
+    "mega_knight",
+    "miner",
+    "skeleton_barrel",
+    "spear_goblins",
+    "zap"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "giant_snowball",
+    "goblin_barrel",
+    "golden_knight",
+    "princess",
+    "rascals",
+    "skeletons",
+    "wall_breakers"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "ice_wizard",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "tornado",
+    "valkyrie",
+    "x_bow"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "royal_ghost",
+    "vines",
+    "zappies"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "earthquake",
+    "firecracker",
+    "hog_rider",
+    "ice_golem",
+    "ice_spirit",
+    "mini_pekka",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "electro_giant",
+    "goblin_hut",
+    "knight",
+    "lightning",
+    "tornado"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "goblin_demolisher",
+    "ice_spirit",
+    "knight",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "lava_hound",
+    "mega_minion",
+    "skeleton_dragons",
+    "tombstone",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "berserker",
+    "furnace",
+    "goblin_drill",
+    "guards",
+    "mega_knight",
+    "minions",
+    "poison",
+    "rage"
+   ],
+   "count": 7
+  },
+  {
+   "cards": [
+    "bomber",
+    "dark_prince",
+    "golem",
+    "mega_minion",
+    "mini_pekka",
+    "minions",
+    "vines",
+    "zap"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "dart_goblin",
+    "rascals",
+    "rocket",
+    "royal_ghost",
+    "skeleton_barrel",
+    "suspicious_bush"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "balloon",
+    "electro_spirit",
+    "executioner",
+    "knight",
+    "miner",
+    "skeletons",
+    "tornado",
+    "zap"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "goblin_cage",
+    "goblinstein",
+    "graveyard",
+    "guards",
+    "ice_wizard",
+    "poison",
+    "valkyrie"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "fireball",
+    "giant",
+    "guards",
+    "hunter",
+    "mega_minion",
+    "miner",
+    "the_log",
+    "zap"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "elixir_collector",
+    "fire_spirit",
+    "ice_spirit",
+    "musketeer",
+    "skeletons",
+    "valkyrie",
+    "x_bow"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "inferno_tower",
+    "knight",
+    "miner",
+    "minion_horde",
+    "princess",
+    "skeleton_army",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "elixir_collector",
+    "heal_spirit",
+    "knight",
+    "rage",
+    "royal_ghost",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "executioner",
+    "goblin_curse",
+    "night_witch",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "void"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "balloon",
+    "giant_snowball",
+    "ice_golem",
+    "inferno_tower",
+    "miner",
+    "musketeer",
+    "skeletons",
+    "valkyrie"
+   ],
+   "count": 6
+  },
+  {
+   "cards": [
+    "berserker",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "inferno_tower",
+    "princess",
+    "rocket",
+    "skeleton_army"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "ice_wizard",
+    "knight",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "tornado",
+    "x_bow"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomber",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "mini_pekka",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bats",
+    "freeze",
+    "giant",
+    "minion_horde",
+    "minions",
+    "skeleton_army"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "golem",
+    "ice_wizard",
+    "mini_pekka",
+    "monk",
+    "tornado",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "goblin_gang",
+    "inferno_tower",
+    "miner",
+    "minion_horde",
+    "princess",
+    "skeleton_army",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "goblin_gang",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "rocket",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "ice_wizard",
+    "knight",
+    "miner",
+    "rocket",
+    "skeletons",
+    "tornado",
+    "wall_breakers"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bowler",
+    "electro_giant",
+    "goblin_cage",
+    "golden_knight",
+    "lightning",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bomber",
+    "bowler",
+    "lightning",
+    "royal_giant",
+    "tombstone",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fisherman",
+    "hunter",
+    "lightning",
+    "monk",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "barbarians",
+    "giant",
+    "lightning",
+    "minions",
+    "mirror",
+    "sparky",
+    "wizard",
+    "zap"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "bandit",
+    "goblin_barrel",
+    "magic_archer",
+    "princess",
+    "royal_ghost",
+    "royal_recruits",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "electro_giant",
+    "goblin_cage",
+    "knight",
+    "lightning",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarians",
+    "fireball",
+    "lava_hound",
+    "mega_minion",
+    "skeleton_dragons",
+    "tombstone",
+    "zap"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "fireball",
+    "guards",
+    "lava_hound",
+    "mega_minion",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "bomber",
+    "dark_prince",
+    "electro_giant",
+    "goblin_cage",
+    "inferno_dragon",
+    "lightning",
+    "mother_witch",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_demolisher",
+    "knight",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarians",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "golden_knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "guards",
+    "hunter",
+    "mighty_miner",
+    "minions",
+    "mortar",
+    "royal_hogs"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "ice_spirit",
+    "knight",
+    "poison",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "bandit",
+    "elite_barbarians",
+    "elixir_collector",
+    "heal_spirit",
+    "ice_golem",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "princess",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "golden_knight",
+    "minions",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 5
+  },
+  {
+   "cards": [
+    "archers",
+    "fireball",
+    "ice_spirit",
+    "knight",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "berserker",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "vines",
+    "witch"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "knight",
+    "royal_ghost",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "bats",
+    "fireball",
+    "firecracker",
+    "goblin_gang",
+    "ice_golem",
+    "mini_pekka",
+    "royal_hogs",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "golem",
+    "guards",
+    "lumberjack",
+    "mini_pekka",
+    "poison",
+    "wizard",
+    "zap"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "fire_spirit",
+    "ice_spirit",
+    "musketeer",
+    "skeletons",
+    "the_log",
+    "valkyrie",
+    "x_bow"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "bomber",
+    "goblin_cage",
+    "guards",
+    "inferno_dragon",
+    "lava_hound",
+    "lightning"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "ice_spirit",
+    "knight",
+    "miner",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "barbarian_barrel",
+    "freeze",
+    "ice_wizard",
+    "lumberjack",
+    "pekka",
+    "tornado"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "electro_wizard",
+    "goblin_giant",
+    "heal_spirit",
+    "mini_pekka",
+    "rage",
+    "sparky",
+    "zap"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "elixir_collector",
+    "heal_spirit",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "cannon",
+    "fire_spirit",
+    "fireball",
+    "goblin_drill",
+    "mighty_miner",
+    "skeletons",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fisherman",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant",
+    "vines",
+    "witch"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "mini_pekka",
+    "princess",
+    "skeleton_army",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fisherman",
+    "guards",
+    "hunter",
+    "monk",
+    "rage",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "fireball",
+    "goblin_giant",
+    "minions",
+    "musketeer",
+    "princess",
+    "skeleton_army",
+    "sparky",
+    "zap"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "boss_bandit",
+    "executioner",
+    "mini_pekka",
+    "skeletons",
+    "vines",
+    "zap"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "monk",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "cannon",
+    "ice_spirit",
+    "mighty_miner",
+    "miner",
+    "musketeer",
+    "rocket",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "giant_snowball",
+    "inferno_dragon",
+    "knight",
+    "lava_hound",
+    "minions",
+    "skeleton_army"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "rocket",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_dragon",
+    "ice_wizard",
+    "knight",
+    "monk",
+    "skeletons",
+    "tornado",
+    "vines"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "balloon",
+    "cannon",
+    "goblinstein",
+    "ice_wizard",
+    "knight",
+    "lightning",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "electro_spirit",
+    "elixir_collector",
+    "fire_spirit",
+    "mini_pekka",
+    "skeletons",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "ice_spirit",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "the_log"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "electro_spirit",
+    "flying_machine",
+    "goblin_cage",
+    "musketeer",
+    "royal_hogs",
+    "royal_recruits"
+   ],
+   "count": 4
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "tornado"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "boss_bandit",
+    "cannon",
+    "executioner",
+    "mini_pekka",
+    "vines",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "fireball",
+    "fisherman",
+    "musketeer",
+    "royal_recruits",
+    "skeleton_king",
+    "zappies"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "bomber",
+    "fire_spirit",
+    "fireball",
+    "goblin_drill",
+    "inferno_tower",
+    "skeleton_army",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "knight",
+    "skeleton_dragons",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "royal_delivery",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "magic_archer",
+    "skeletons",
+    "tesla",
+    "tornado"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "fire_spirit",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "fireball",
+    "giant_skeleton",
+    "giant_snowball",
+    "goblin_hut",
+    "guards",
+    "miner"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "minions",
+    "mortar",
+    "musketeer",
+    "skeleton_barrel",
+    "skeletons",
+    "valkyrie"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "golden_knight",
+    "heal_spirit",
+    "mother_witch",
+    "royal_ghost",
+    "zap",
+    "zappies"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "fireball",
+    "firecracker",
+    "golden_knight",
+    "hog_rider",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_barrel",
+    "mighty_miner",
+    "princess",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "princess",
+    "rocket",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "earthquake",
+    "goblin_barrel",
+    "ice_spirit",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "minions",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fisherman",
+    "hunter",
+    "lightning",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "mortar",
+    "rascals",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "elixir_golem",
+    "mirror",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "mini_pekka",
+    "ram_rider",
+    "vines",
+    "zappies"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bats",
+    "cannon_cart",
+    "fireball",
+    "golden_knight",
+    "ram_rider",
+    "royal_ghost",
+    "zappies"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "freeze",
+    "ice_wizard",
+    "lumberjack",
+    "pekka",
+    "tornado",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "electro_wizard",
+    "fireball",
+    "golden_knight",
+    "minions",
+    "ram_rider",
+    "royal_ghost"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "fireball",
+    "golden_knight",
+    "minions",
+    "musketeer",
+    "ram_rider",
+    "royal_ghost"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "bomber",
+    "boss_bandit",
+    "executioner",
+    "mini_pekka",
+    "vines",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "goblin_gang",
+    "ice_wizard",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "goblin_hut",
+    "lightning",
+    "musketeer",
+    "royal_delivery",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "miner",
+    "minions",
+    "mortar",
+    "musketeer",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "miner",
+    "minions",
+    "poison",
+    "royal_ghost",
+    "skeletons",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bats",
+    "bomber",
+    "freeze",
+    "giant",
+    "minions",
+    "skeleton_army"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "fireball",
+    "giant",
+    "guards",
+    "hunter",
+    "inferno_dragon",
+    "miner",
+    "the_log",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "dark_prince",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "monk",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "balloon",
+    "guards",
+    "inferno_dragon",
+    "knight",
+    "lava_hound",
+    "vines"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "heal_spirit",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_ghost",
+    "three_musketeers",
+    "wizard"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "mega_minion",
+    "mother_witch",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "fireball",
+    "goblin_gang",
+    "mighty_miner",
+    "minions",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "freeze",
+    "hog_rider",
+    "ice_golem",
+    "mini_pekka",
+    "minions",
+    "princess",
+    "skeletons",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bats",
+    "clone",
+    "flying_machine",
+    "lava_hound",
+    "lumberjack",
+    "skeleton_army",
+    "vines"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_machine",
+    "golem",
+    "minions",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "goblinstein",
+    "graveyard",
+    "guards",
+    "ice_wizard",
+    "knight",
+    "poison"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "fisherman",
+    "furnace",
+    "mother_witch",
+    "royal_giant",
+    "skeleton_king",
+    "tombstone"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "golem",
+    "inferno_dragon",
+    "lightning",
+    "lumberjack",
+    "mini_pekka",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "mini_pekka",
+    "skeleton_army",
+    "skeleton_barrel",
+    "the_log",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "knight",
+    "minions",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "goblin_drill",
+    "goblin_gang",
+    "inferno_dragon",
+    "mega_knight",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 3
+  },
+  {
+   "cards": [
+    "bomber",
+    "golem",
+    "mega_minion",
+    "mini_pekka",
+    "skeleton_army",
+    "tornado",
+    "witch",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "tornado",
+    "witch"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "heal_spirit",
+    "mini_pekka",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "ice_spirit",
+    "miner",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "guards",
+    "lumberjack",
+    "mother_witch",
+    "pekka"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "barbarians",
+    "electro_dragon",
+    "golem",
+    "lightning",
+    "lumberjack",
+    "phoenix",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "berserker",
+    "dart_goblin",
+    "electro_spirit",
+    "fire_spirit",
+    "skeleton_army",
+    "suspicious_bush",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "fireball",
+    "golem",
+    "mega_minion",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "guards",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "rocket",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "bandit",
+    "electro_wizard",
+    "firecracker",
+    "giant_skeleton",
+    "inferno_dragon",
+    "prince",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "ice_spirit",
+    "mini_pekka",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "three_musketeers",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fisherman",
+    "guards",
+    "lightning",
+    "monk",
+    "royal_giant",
+    "the_log",
+    "wizard"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "freeze",
+    "giant_snowball",
+    "lumberjack",
+    "musketeer",
+    "skeleton_dragons",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "fire_spirit",
+    "guards",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_gang",
+    "guards",
+    "mighty_miner",
+    "royal_recruits",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "ice_wizard",
+    "knight",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "battle_healer",
+    "elixir_collector",
+    "elixir_golem",
+    "executioner",
+    "monk",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "fireball",
+    "giant",
+    "lumberjack",
+    "mega_minion",
+    "prince",
+    "rage",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "mini_pekka",
+    "rascals",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "bomber",
+    "golem",
+    "mega_minion",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "heal_spirit",
+    "mini_pekka",
+    "rage",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "executioner",
+    "monk",
+    "night_witch",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "void"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "elixir_collector",
+    "goblin_gang",
+    "ice_golem",
+    "miner",
+    "minion_horde",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "knight",
+    "rocket",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "goblin_cage",
+    "golden_knight",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "knight",
+    "magic_archer",
+    "miner",
+    "spear_goblins",
+    "tesla",
+    "tornado",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_barrel",
+    "goblin_gang",
+    "knight",
+    "princess",
+    "rocket",
+    "tesla",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "bomber",
+    "giant_snowball",
+    "inferno_dragon",
+    "lava_hound",
+    "void"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "knight",
+    "princess",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "elixir_collector",
+    "golden_knight",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "barbarians",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "lumberjack",
+    "phoenix",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "hog_rider",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "guards",
+    "knight",
+    "poison",
+    "tesla"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "knight",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "golem",
+    "lightning",
+    "lumberjack",
+    "mini_pekka",
+    "night_witch",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "dark_prince",
+    "electro_wizard",
+    "giant",
+    "skeleton_army",
+    "sparky",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "royal_hogs",
+    "skeletons",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "executioner",
+    "freeze",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_king",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "boss_bandit",
+    "executioner",
+    "golden_knight",
+    "guards",
+    "ram_rider",
+    "royal_ghost",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "magic_archer",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bandit",
+    "barbarian_barrel",
+    "electro_wizard",
+    "giant_snowball",
+    "lightning",
+    "pekka",
+    "ram_rider"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "electro_spirit",
+    "golden_knight",
+    "guards",
+    "musketeer",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "guards",
+    "knight",
+    "minions",
+    "mother_witch",
+    "pekka"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "earthquake",
+    "firecracker",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "rocket",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "ice_spirit",
+    "lightning",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarians",
+    "goblin_gang",
+    "miner",
+    "minion_horde",
+    "princess",
+    "the_log",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "golden_knight",
+    "golem",
+    "guards",
+    "tornado",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "skeleton_army",
+    "skeleton_barrel",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "firecracker",
+    "goblin_gang",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "fisherman",
+    "goblin_giant",
+    "knight",
+    "minions",
+    "pekka",
+    "rage",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "boss_bandit",
+    "electro_wizard",
+    "golden_knight",
+    "magic_archer",
+    "royal_ghost",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "elixir_golem",
+    "mini_pekka",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "firecracker",
+    "goblin_gang",
+    "guards",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "firecracker",
+    "mega_knight",
+    "miner",
+    "minions",
+    "royal_ghost",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarians",
+    "fireball",
+    "freeze",
+    "hog_rider",
+    "inferno_dragon",
+    "mighty_miner",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_hut",
+    "musketeer",
+    "poison",
+    "royal_delivery",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "ice_wizard",
+    "mini_pekka",
+    "pekka",
+    "rage",
+    "tornado",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "guards",
+    "mighty_miner",
+    "minions",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "golem",
+    "lightning",
+    "mini_pekka",
+    "night_witch",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_hut",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "fireball",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "magic_archer",
+    "miner",
+    "spear_goblins",
+    "tornado",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "inferno_dragon",
+    "knight",
+    "lumberjack",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "furnace",
+    "golden_knight",
+    "minions",
+    "vines",
+    "zap",
+    "zappies"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "elixir_golem",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "cannon",
+    "electro_dragon",
+    "elixir_golem",
+    "heal_spirit",
+    "knight",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "cannon",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "elixir_golem",
+    "monk",
+    "rage",
+    "skeleton_king",
+    "void",
+    "witch"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "guards",
+    "ice_spirit",
+    "princess",
+    "skeleton_army",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "guards",
+    "monk",
+    "royal_giant",
+    "wizard"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "fireball",
+    "lumberjack",
+    "minions",
+    "ram_rider",
+    "royal_ghost",
+    "zappies"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "guards",
+    "knight",
+    "rocket"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "fireball",
+    "knight",
+    "lava_hound",
+    "minions",
+    "skeleton_army",
+    "spirit_empress",
+    "tombstone",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "mother_witch",
+    "skeleton_army",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "balloon",
+    "bowler",
+    "freeze",
+    "ice_wizard",
+    "inferno_dragon",
+    "knight",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "goblin_cage",
+    "goblinstein",
+    "graveyard",
+    "guards",
+    "ice_wizard",
+    "knight",
+    "poison"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "bomber",
+    "freeze",
+    "inferno_dragon",
+    "mega_knight",
+    "mini_pekka",
+    "mother_witch",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "cannon",
+    "electro_giant",
+    "golden_knight",
+    "lightning",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "berserker",
+    "cannon",
+    "fireball",
+    "hog_rider",
+    "ice_golem",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "guards",
+    "lightning",
+    "mini_pekka",
+    "ram_rider"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "royal_ghost",
+    "spirit_empress",
+    "vines"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "elixir_collector",
+    "giant",
+    "minion_horde",
+    "skeleton_army",
+    "skeleton_king",
+    "three_musketeers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "magic_archer",
+    "miner",
+    "skeletons",
+    "the_log",
+    "tornado",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_demolisher",
+    "miner",
+    "minion_horde",
+    "mortar",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "minions",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bomber",
+    "dark_prince",
+    "fireball",
+    "giant",
+    "mega_minion",
+    "prince",
+    "rage",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "goblin_cage",
+    "goblins",
+    "lumberjack",
+    "musketeer",
+    "royal_giant"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bats",
+    "dart_goblin",
+    "goblin_barrel",
+    "mega_knight",
+    "prince",
+    "princess",
+    "royal_giant",
+    "skeleton_army"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "fireball",
+    "hog_rider",
+    "ice_golem",
+    "musketeer",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "guards",
+    "knight",
+    "poison",
+    "tesla",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "berserker",
+    "cannon",
+    "earthquake",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "dark_prince",
+    "goblin_curse",
+    "golden_knight",
+    "minions",
+    "musketeer",
+    "pekka",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mega_minion",
+    "royal_giant",
+    "the_log",
+    "tombstone"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "lightning",
+    "mighty_miner",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "guards",
+    "hunter",
+    "monk",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "giant",
+    "giant_snowball",
+    "graveyard",
+    "minions",
+    "skeleton_army",
+    "witch"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "mini_pekka",
+    "rocket",
+    "skeleton_army",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarians",
+    "firecracker",
+    "giant_skeleton",
+    "guards",
+    "hog_rider",
+    "lightning",
+    "minion_horde",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fisherman",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant",
+    "vines",
+    "wizard"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_wizard",
+    "magic_archer",
+    "pekka",
+    "poison",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "electro_dragon",
+    "freeze",
+    "inferno_dragon",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "mini_pekka",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers",
+    "witch"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "bats",
+    "goblin_gang",
+    "lumberjack",
+    "mega_knight",
+    "prince",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "goblin_demolisher",
+    "knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "heal_spirit",
+    "hunter",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "fireball",
+    "guards",
+    "mini_pekka",
+    "ram_rider",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "bandit",
+    "cannon_cart",
+    "dark_prince",
+    "giant_snowball",
+    "goblin_barrel",
+    "princess",
+    "rascals",
+    "rocket"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "arrows",
+    "elixir_collector",
+    "giant",
+    "goblin_gang",
+    "minion_horde",
+    "minions",
+    "sparky",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "mini_pekka",
+    "royal_hogs",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "mighty_miner",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "ice_spirit",
+    "mini_pekka",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeletons"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "electro_spirit",
+    "knight",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "earthquake",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "knight",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "ice_spirit",
+    "mini_pekka",
+    "skeleton_barrel",
+    "skeletons",
+    "suspicious_bush",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 2
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "berserker",
+    "goblin_hut",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "bomb_tower",
+    "giant_snowball",
+    "ice_golem",
+    "miner",
+    "musketeer",
+    "royal_delivery",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "freeze",
+    "giant",
+    "minion_horde",
+    "minions",
+    "skeleton_army",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "hog_rider",
+    "ice_spirit",
+    "royal_delivery",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "clone",
+    "executioner",
+    "golem",
+    "lumberjack",
+    "night_witch",
+    "rocket",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "lumberjack",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "goblin_gang",
+    "inferno_dragon",
+    "mega_knight",
+    "miner",
+    "rascals",
+    "skeleton_barrel",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_demolisher",
+    "goblin_hut",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "fire_spirit",
+    "mortar",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "heal_spirit",
+    "knight",
+    "minions",
+    "royal_ghost",
+    "skeletons",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "dark_prince",
+    "elixir_collector",
+    "ice_golem",
+    "minion_horde",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "knight",
+    "lumberjack",
+    "minions",
+    "prince",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "magic_archer",
+    "mini_pekka",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bats",
+    "freeze",
+    "giant_skeleton",
+    "ice_wizard",
+    "inferno_dragon",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "mini_pekka",
+    "poison",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "hog_rider",
+    "ice_wizard",
+    "knight",
+    "mega_knight",
+    "tesla",
+    "the_log",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "bowler",
+    "giant",
+    "giant_snowball",
+    "graveyard",
+    "guards",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "elite_barbarians",
+    "elixir_golem",
+    "executioner",
+    "mega_knight",
+    "royal_hogs",
+    "skeleton_army",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "executioner",
+    "fireball",
+    "firecracker",
+    "hog_rider",
+    "mega_knight",
+    "skeleton_barrel",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bowler",
+    "fireball",
+    "giant",
+    "guards",
+    "inferno_tower",
+    "miner",
+    "night_witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "lumberjack",
+    "tornado",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "princess",
+    "skeleton_army",
+    "skeleton_king",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "fireball",
+    "firecracker",
+    "hog_rider",
+    "ice_golem",
+    "mini_pekka",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bowler",
+    "executioner",
+    "freeze",
+    "golden_knight",
+    "graveyard",
+    "inferno_dragon",
+    "tornado",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "flying_machine",
+    "goblin_curse",
+    "lava_hound",
+    "miner",
+    "phoenix",
+    "tombstone",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "electro_wizard",
+    "fireball",
+    "hog_rider",
+    "skeleton_army",
+    "sparky",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "goblin_gang",
+    "ice_spirit",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "furnace",
+    "goblin_cage",
+    "graveyard",
+    "knight",
+    "poison",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "berserker",
+    "goblin_barrel",
+    "mini_pekka",
+    "princess",
+    "skeleton_barrel",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "clone",
+    "dart_goblin",
+    "furnace",
+    "giant_skeleton",
+    "skeleton_barrel",
+    "the_log",
+    "tombstone",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_wizard",
+    "lumberjack",
+    "magic_archer",
+    "pekka",
+    "poison",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "barbarian_barrel",
+    "executioner",
+    "fireball",
+    "firecracker",
+    "mega_knight",
+    "mini_pekka",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "fireball",
+    "heal_spirit",
+    "ice_golem",
+    "minions",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "giant",
+    "giant_snowball",
+    "graveyard",
+    "guards",
+    "minions",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_hut",
+    "miner",
+    "minions",
+    "poison",
+    "skeleton_army",
+    "skeleton_king",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "barbarian_barrel",
+    "fire_spirit",
+    "fireball",
+    "knight",
+    "mortar",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "giant_snowball",
+    "golden_knight",
+    "guards",
+    "ice_wizard",
+    "monk",
+    "ram_rider",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "berserker",
+    "electro_spirit",
+    "fire_spirit",
+    "heal_spirit",
+    "ice_spirit",
+    "skeletons",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "fireball",
+    "hog_rider",
+    "ice_spirit",
+    "mighty_miner",
+    "musketeer",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "executioner",
+    "ice_spirit",
+    "miner",
+    "monk",
+    "skeletons",
+    "tornado",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "flying_machine",
+    "goblin_cage",
+    "mini_pekka",
+    "mother_witch",
+    "royal_hogs",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "knight",
+    "monk",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "guards",
+    "knight",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "barbarian_barrel",
+    "bowler",
+    "electro_giant",
+    "goblin_cage",
+    "lightning",
+    "phoenix",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "goblin_gang",
+    "goblin_giant",
+    "mini_pekka",
+    "minions",
+    "sparky",
+    "tornado",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "ice_spirit",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "giant_snowball",
+    "goblin_barrel",
+    "golden_knight",
+    "princess",
+    "rascals",
+    "rocket",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "knight",
+    "prince",
+    "princess",
+    "rascals",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "cannon_cart",
+    "executioner",
+    "fireball",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bandit",
+    "goblin_gang",
+    "knight",
+    "lumberjack",
+    "wall_breakers",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "boss_bandit",
+    "electro_wizard",
+    "golden_knight",
+    "magic_archer",
+    "mother_witch",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "lightning",
+    "musketeer",
+    "royal_delivery",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "inferno_dragon",
+    "rage",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "fireball",
+    "goblin_hut",
+    "golden_knight",
+    "ice_wizard",
+    "royal_ghost",
+    "royal_hogs",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomber",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "golden_knight",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "executioner",
+    "golem",
+    "lightning",
+    "minions",
+    "night_witch",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "battle_ram",
+    "fireball",
+    "goblin_gang",
+    "pekka",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "bomber",
+    "fireball",
+    "fisherman",
+    "golem",
+    "mother_witch",
+    "night_witch",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "goblin_gang",
+    "ice_wizard",
+    "mega_knight",
+    "mini_pekka",
+    "royal_hogs",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "heal_spirit",
+    "mini_pekka",
+    "monk",
+    "mother_witch",
+    "skeletons",
+    "vines",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "golden_knight",
+    "miner",
+    "mini_pekka",
+    "minion_horde",
+    "mortar",
+    "mother_witch",
+    "skeleton_army",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "mega_knight",
+    "miner",
+    "minions",
+    "prince",
+    "wall_breakers",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fireball",
+    "goblin_barrel",
+    "prince",
+    "princess",
+    "rascals",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "musketeer",
+    "princess",
+    "tesla",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "firecracker",
+    "freeze",
+    "lumberjack",
+    "mini_pekka",
+    "pekka",
+    "the_log",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "firecracker",
+    "goblin_gang",
+    "hog_rider",
+    "mini_pekka",
+    "royal_giant",
+    "the_log",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "mother_witch",
+    "phoenix",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "firecracker",
+    "goblin_barrel",
+    "inferno_tower",
+    "knight",
+    "skeleton_barrel",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "boss_bandit",
+    "cannon_cart",
+    "lightning",
+    "mini_pekka",
+    "mortar",
+    "mother_witch",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "boss_bandit",
+    "cannon",
+    "dart_goblin",
+    "electro_spirit",
+    "mirror",
+    "rocket",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "lava_hound",
+    "miner",
+    "minions",
+    "spirit_empress",
+    "tombstone",
+    "valkyrie",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bats",
+    "inferno_dragon",
+    "knight",
+    "mega_knight",
+    "miner",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fireball",
+    "fisherman",
+    "goblin_cage",
+    "mega_minion",
+    "mother_witch",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "musketeer",
+    "princess",
+    "rascals",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "goblins",
+    "ice_spirit",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "lightning",
+    "mighty_miner",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bandit",
+    "bats",
+    "dark_prince",
+    "dart_goblin",
+    "elite_barbarians",
+    "goblin_gang",
+    "mirror"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "lumberjack",
+    "magic_archer",
+    "mega_knight",
+    "musketeer",
+    "tesla",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "inferno_dragon",
+    "night_witch",
+    "pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_dragon",
+    "fisherman",
+    "lava_hound",
+    "miner",
+    "skeleton_dragons",
+    "skeleton_king",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "firecracker",
+    "hog_rider",
+    "lumberjack",
+    "prince",
+    "skeletons",
+    "valkyrie",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "knight",
+    "magic_archer",
+    "miner",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "tornado",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "fireball",
+    "firecracker",
+    "hog_rider",
+    "knight",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "electro_spirit",
+    "fire_spirit",
+    "goblin_barrel",
+    "rocket",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "goblin_barrel",
+    "magic_archer",
+    "miner",
+    "princess",
+    "royal_ghost",
+    "royal_recruits",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "fire_spirit",
+    "goblin_drill",
+    "mighty_miner",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "dark_prince",
+    "fireball",
+    "giant",
+    "guards",
+    "prince",
+    "spear_goblins",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "firecracker",
+    "goblin_gang",
+    "golden_knight",
+    "hunter",
+    "mega_knight",
+    "minions",
+    "skeleton_barrel",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "guards",
+    "monk",
+    "royal_giant",
+    "the_log",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "heal_spirit",
+    "inferno_dragon",
+    "mini_pekka",
+    "rage"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "fireball",
+    "firecracker",
+    "golem",
+    "tornado",
+    "valkyrie",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "freeze",
+    "goblin_demolisher",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "executioner",
+    "golden_knight",
+    "golem",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "fire_spirit",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "tesla",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "barbarian_barrel",
+    "magic_archer",
+    "miner",
+    "mini_pekka",
+    "princess",
+    "royal_ghost",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "freeze",
+    "giant",
+    "minion_horde",
+    "minions",
+    "skeleton_army",
+    "sparky"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "giant",
+    "guards",
+    "miner",
+    "mother_witch",
+    "night_witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "tornado",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "executioner",
+    "freeze",
+    "inferno_dragon",
+    "pekka",
+    "tornado",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "mini_pekka",
+    "phoenix",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "dart_goblin",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "the_log",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "bandit",
+    "bats",
+    "goblin_gang",
+    "mega_knight",
+    "prince",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "executioner",
+    "giant_snowball",
+    "graveyard",
+    "guards",
+    "ice_golem",
+    "monk",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "battle_healer",
+    "bomb_tower",
+    "electro_dragon",
+    "elixir_golem",
+    "heal_spirit",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "earthquake",
+    "giant_skeleton",
+    "hog_rider",
+    "ice_spirit",
+    "musketeer",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "elixir_collector",
+    "golem",
+    "minion_horde",
+    "skeleton_army",
+    "skeleton_dragons",
+    "three_musketeers",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "mortar",
+    "rascals",
+    "rocket",
+    "skeletons",
+    "suspicious_bush",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "electro_wizard",
+    "guards",
+    "hog_rider",
+    "musketeer",
+    "valkyrie",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "elixir_collector",
+    "golem",
+    "guards",
+    "mini_pekka",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "inferno_dragon",
+    "lava_hound",
+    "lightning",
+    "minions",
+    "tombstone",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_barrel",
+    "knight",
+    "princess",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "the_log",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "knight",
+    "miner",
+    "minions",
+    "poison",
+    "skeleton_army",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "mighty_miner",
+    "skeletons",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "goblin_demolisher",
+    "mini_pekka",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "guards",
+    "knight",
+    "miner",
+    "minions",
+    "mortar",
+    "poison",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "dart_goblin",
+    "goblin_barrel",
+    "mega_knight",
+    "prince",
+    "princess",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "battle_ram",
+    "lightning",
+    "mini_pekka",
+    "minions",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "electro_spirit",
+    "fireball",
+    "ice_golem",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "firecracker",
+    "goblin_gang",
+    "hog_rider",
+    "mini_pekka",
+    "royal_recruits",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "executioner",
+    "goblin_drill",
+    "golden_knight",
+    "royal_ghost",
+    "tornado",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "golden_knight",
+    "ice_golem",
+    "lumberjack",
+    "mini_pekka",
+    "minions",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_spirit",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "firecracker",
+    "mega_knight",
+    "miner",
+    "minions",
+    "royal_ghost",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "bomb_tower",
+    "giant_snowball",
+    "ice_golem",
+    "lumberjack",
+    "musketeer",
+    "skeletons",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_healer",
+    "electro_dragon",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "spirit_empress",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "guards",
+    "inferno_dragon",
+    "lava_hound",
+    "skeleton_dragons",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost",
+    "skeleton_dragons",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "giant_snowball",
+    "ice_golem",
+    "ice_spirit",
+    "lumberjack",
+    "minions",
+    "musketeer",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "goblin_hut",
+    "ice_wizard",
+    "lightning",
+    "royal_delivery",
+    "royal_hogs",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "fireball",
+    "magic_archer",
+    "miner",
+    "skeletons",
+    "tornado",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "mega_knight",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_dragons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "electro_wizard",
+    "ice_spirit",
+    "mini_pekka",
+    "monk",
+    "mortar",
+    "rocket"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "cannon",
+    "executioner",
+    "firecracker",
+    "goblin_barrel",
+    "mega_knight",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "dart_goblin",
+    "lumberjack",
+    "ram_rider",
+    "skeleton_army",
+    "skeleton_barrel",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "golden_knight",
+    "mega_minion",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "fisherman",
+    "golden_knight",
+    "lightning",
+    "mother_witch",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "phoenix",
+    "skeleton_army",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "bomb_tower",
+    "mighty_miner",
+    "miner",
+    "poison",
+    "spear_goblins",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bandit",
+    "electro_wizard",
+    "executioner",
+    "mega_knight",
+    "mini_pekka",
+    "prince",
+    "rage"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "boss_bandit",
+    "executioner",
+    "furnace",
+    "golden_knight",
+    "skeletons",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "goblins",
+    "hog_rider",
+    "lightning",
+    "minions",
+    "pekka",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "magic_archer",
+    "miner",
+    "spear_goblins",
+    "the_log",
+    "tornado",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "fireball",
+    "guards",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "cannon_cart",
+    "goblin_gang",
+    "miner",
+    "mortar",
+    "mother_witch",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "guards",
+    "lightning",
+    "mortar",
+    "mother_witch",
+    "royal_ghost",
+    "skeleton_king",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "barbarians",
+    "elixir_collector",
+    "heal_spirit",
+    "monk",
+    "rage",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "lumberjack",
+    "mother_witch",
+    "musketeer",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "mini_pekka",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "cannon",
+    "inferno_dragon",
+    "knight",
+    "lightning",
+    "royal_ghost",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "inferno_dragon",
+    "lava_hound",
+    "miner",
+    "minions",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "freeze",
+    "lumberjack",
+    "minion_horde",
+    "mortar",
+    "musketeer"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "elite_barbarians",
+    "executioner",
+    "goblin_gang",
+    "hog_rider",
+    "tesla",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "dart_goblin",
+    "firecracker",
+    "goblin_gang",
+    "mega_knight",
+    "royal_recruits",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "fireball",
+    "hog_rider",
+    "mini_pekka",
+    "minion_horde",
+    "prince",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "hunter",
+    "ice_wizard",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "bandit",
+    "electro_wizard",
+    "firecracker",
+    "furnace",
+    "inferno_tower",
+    "mega_knight"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "knight",
+    "magic_archer",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "cannon",
+    "hog_rider",
+    "mega_knight",
+    "mini_pekka",
+    "royal_delivery",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "bomber",
+    "executioner",
+    "goblin_gang",
+    "mega_knight",
+    "skeleton_army",
+    "skeletons",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "giant_skeleton",
+    "goblin_gang",
+    "inferno_dragon",
+    "minions",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "bomb_tower",
+    "knight",
+    "little_prince",
+    "miner",
+    "poison",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fireball",
+    "golden_knight",
+    "heal_spirit",
+    "inferno_dragon",
+    "lumberjack",
+    "musketeer",
+    "ram_rider",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "fisherman",
+    "goblin_barrel",
+    "goblin_gang",
+    "princess",
+    "rascals",
+    "royal_recruits",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "earthquake",
+    "electro_spirit",
+    "goblin_cage",
+    "hunter",
+    "royal_delivery",
+    "royal_hogs",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fire_spirit",
+    "giant_snowball",
+    "guards",
+    "knight",
+    "princess",
+    "rocket",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeletons",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "dark_prince",
+    "giant_snowball",
+    "goblin_barrel",
+    "goblin_gang",
+    "princess",
+    "rascals"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "guards",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "lightning",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "bats",
+    "freeze",
+    "giant",
+    "mega_minion",
+    "minions",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fireball",
+    "goblin_drill",
+    "inferno_tower",
+    "skeleton_army",
+    "skeleton_king",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_hut",
+    "ice_wizard",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "goblin_gang",
+    "mega_knight",
+    "minions",
+    "prince",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "firecracker",
+    "guards",
+    "hog_rider",
+    "ice_spirit",
+    "lightning",
+    "mighty_miner",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "fireball",
+    "firecracker",
+    "guards",
+    "ice_golem",
+    "mini_pekka",
+    "royal_hogs",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "guards",
+    "inferno_dragon",
+    "lava_hound",
+    "skeleton_dragons",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fireball",
+    "furnace",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "zap",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "arrows",
+    "barbarians",
+    "bowler",
+    "giant",
+    "giant_snowball",
+    "graveyard",
+    "minions"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "giant_skeleton",
+    "goblin_curse",
+    "musketeer",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "fireball",
+    "goblin_gang",
+    "ice_wizard",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "fire_spirit",
+    "knight",
+    "lightning",
+    "mortar",
+    "skeletons",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "battle_healer",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "valkyrie",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "electro_spirit",
+    "fireball",
+    "skeleton_army",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "ice_wizard",
+    "knight",
+    "royal_giant",
+    "tombstone",
+    "tornado",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "battle_ram",
+    "electro_spirit",
+    "golden_knight",
+    "mini_pekka",
+    "mother_witch",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dark_prince",
+    "electro_spirit",
+    "fisherman",
+    "goblinstein",
+    "musketeer",
+    "royal_giant",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "firecracker",
+    "goblin_gang",
+    "hog_rider",
+    "mega_knight",
+    "mini_pekka",
+    "the_log",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_hut",
+    "ice_golem",
+    "miner",
+    "poison",
+    "royal_ghost",
+    "skeletons",
+    "the_log",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "cannon",
+    "earthquake",
+    "hog_rider",
+    "ice_golem",
+    "royal_delivery",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_spirit",
+    "fireball",
+    "pekka",
+    "royal_ghost",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "executioner",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "tornado",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "fisherman",
+    "hunter",
+    "lightning",
+    "magic_archer",
+    "mega_knight",
+    "minions",
+    "ram_rider"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "berserker",
+    "furnace",
+    "goblin_hut",
+    "graveyard",
+    "knight",
+    "poison"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "electro_spirit",
+    "fire_spirit",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "berserker",
+    "ice_spirit",
+    "princess",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "fire_spirit",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "fireball",
+    "guards",
+    "minions",
+    "mortar",
+    "rascals",
+    "skeleton_barrel",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "mini_pekka",
+    "minions",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_spirit",
+    "golden_knight",
+    "mother_witch",
+    "musketeer",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bats",
+    "dart_goblin",
+    "knight",
+    "mortar",
+    "poison",
+    "skeleton_barrel",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fisherman",
+    "guards",
+    "lightning",
+    "monk",
+    "royal_giant",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "furnace",
+    "goblin_barrel",
+    "inferno_dragon",
+    "mega_knight",
+    "princess",
+    "rocket",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "elite_barbarians",
+    "elixir_collector",
+    "heal_spirit",
+    "knight",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "knight",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "goblin_hut",
+    "graveyard",
+    "knight",
+    "poison",
+    "skeletons",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "electro_wizard",
+    "fireball",
+    "firecracker",
+    "prince",
+    "princess",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "dart_goblin",
+    "electro_spirit",
+    "goblin_hut",
+    "princess",
+    "rocket",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "fire_spirit",
+    "goblin_barrel",
+    "knight",
+    "princess",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "bandit",
+    "battle_ram",
+    "dark_prince",
+    "magic_archer",
+    "royal_ghost",
+    "void",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "berserker",
+    "goblin_hut",
+    "graveyard",
+    "poison",
+    "valkyrie",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_hut",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "boss_bandit",
+    "cannon_cart",
+    "dark_prince",
+    "giant_snowball",
+    "goblin_barrel",
+    "princess",
+    "rascals"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bandit",
+    "barbarian_barrel",
+    "electro_wizard",
+    "fireball",
+    "pekka",
+    "ram_rider",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon",
+    "ice_wizard",
+    "knight",
+    "lightning",
+    "mega_knight",
+    "ram_rider",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "hunter",
+    "lumberjack",
+    "mega_knight",
+    "mini_pekka",
+    "mirror",
+    "monk",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bowler",
+    "freeze",
+    "giant_snowball",
+    "graveyard",
+    "guards",
+    "ice_wizard",
+    "knight",
+    "spirit_empress"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "executioner",
+    "giant_skeleton",
+    "mini_pekka",
+    "skeleton_army",
+    "tornado",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "magic_archer",
+    "mighty_miner",
+    "miner",
+    "poison",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "guards",
+    "mini_pekka",
+    "princess",
+    "rascals",
+    "rocket",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "firecracker",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "electro_wizard",
+    "fireball",
+    "mini_pekka",
+    "mother_witch",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "fireball",
+    "goblin_demolisher",
+    "knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "executioner",
+    "giant_snowball",
+    "goblin_drill",
+    "golden_knight",
+    "knight",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fireball",
+    "goblin_gang",
+    "prince",
+    "royal_ghost",
+    "skeleton_barrel",
+    "skeleton_king",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "mega_minion",
+    "prince",
+    "tornado",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "heal_spirit",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "berserker",
+    "golem",
+    "mini_pekka",
+    "minion_horde",
+    "tornado",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "miner",
+    "minions",
+    "mortar",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "fireball",
+    "mega_knight",
+    "musketeer",
+    "prince",
+    "royal_ghost",
+    "skeletons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bomber",
+    "fisherman",
+    "guards",
+    "mega_knight",
+    "phoenix",
+    "ram_rider",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "fisherman",
+    "giant_skeleton",
+    "mother_witch",
+    "royal_recruits",
+    "skeleton_barrel",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "fireball",
+    "minions",
+    "mortar",
+    "musketeer",
+    "skeleton_barrel",
+    "skeletons",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "earthquake",
+    "firecracker",
+    "giant_snowball",
+    "hog_rider",
+    "ice_golem",
+    "mini_pekka",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fire_spirit",
+    "ice_spirit",
+    "mortar",
+    "rascals",
+    "rocket",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "golden_knight",
+    "heal_spirit",
+    "mini_pekka",
+    "royal_ghost",
+    "royal_hogs",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_curse",
+    "golem",
+    "miner",
+    "musketeer",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_king",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "ice_spirit",
+    "mortar",
+    "rascals",
+    "rocket",
+    "skeletons",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_dragon",
+    "golden_knight",
+    "ice_wizard",
+    "monk",
+    "skeletons",
+    "tornado",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "ice_spirit",
+    "mini_pekka",
+    "rocket",
+    "skeleton_army",
+    "skeleton_barrel",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "goblin_hut",
+    "ice_wizard",
+    "poison",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_king",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "barbarians",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "skeleton_dragons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "fireball",
+    "guards",
+    "ice_wizard",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fireball",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "princess",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "flying_machine",
+    "furnace",
+    "goblin_gang",
+    "goblin_hut",
+    "lightning",
+    "lumberjack",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_healer",
+    "electro_spirit",
+    "elixir_collector",
+    "heal_spirit",
+    "ice_spirit",
+    "monk",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "miner",
+    "musketeer",
+    "poison",
+    "skeletons",
+    "the_log",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "berserker",
+    "bomber",
+    "cannon",
+    "fireball",
+    "giant_snowball",
+    "goblin_drill",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "hog_rider",
+    "inferno_dragon",
+    "knight",
+    "lightning",
+    "mega_knight",
+    "prince"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "lumberjack",
+    "mini_pekka",
+    "minions",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "princess",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fisherman",
+    "goblin_giant",
+    "goblin_machine",
+    "lightning",
+    "minions",
+    "pekka",
+    "rage",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "furnace",
+    "giant_skeleton",
+    "goblin_curse",
+    "mini_pekka",
+    "royal_hogs",
+    "skeleton_army",
+    "skeleton_dragons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_gang",
+    "hog_rider",
+    "knight",
+    "minion_horde",
+    "princess",
+    "skeleton_army",
+    "the_log",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "barbarians",
+    "bowler",
+    "freeze",
+    "furnace",
+    "giant_skeleton",
+    "hog_rider",
+    "ice_wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "knight",
+    "tornado",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "goblin_machine",
+    "hog_rider",
+    "inferno_tower",
+    "phoenix",
+    "ram_rider",
+    "skeleton_army",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "giant_skeleton",
+    "lightning",
+    "mini_pekka",
+    "minions",
+    "royal_hogs",
+    "skeletons",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "arrows",
+    "inferno_dragon",
+    "lava_hound",
+    "minion_horde",
+    "musketeer",
+    "skeleton_army",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "lumberjack",
+    "mega_knight",
+    "minions",
+    "skeleton_army",
+    "the_log",
+    "valkyrie",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "fire_spirit",
+    "royal_ghost",
+    "skeletons",
+    "suspicious_bush",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_wizard",
+    "knight",
+    "miner",
+    "pekka",
+    "valkyrie",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "fireball",
+    "inferno_dragon",
+    "lava_hound",
+    "mega_minion",
+    "miner",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "earthquake",
+    "fire_spirit",
+    "firecracker",
+    "hog_rider",
+    "knight",
+    "royal_delivery",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_giant",
+    "golden_knight",
+    "lightning",
+    "mini_pekka",
+    "skeletons",
+    "the_log",
+    "tornado",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "elixir_golem",
+    "goblin_curse",
+    "lightning",
+    "mini_pekka",
+    "skeleton_king",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "electro_spirit",
+    "furnace",
+    "goblin_hut",
+    "lightning",
+    "skeleton_barrel",
+    "skeleton_king",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_dragon",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "tornado",
+    "vines",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "electro_wizard",
+    "hog_rider",
+    "mega_knight",
+    "mini_pekka",
+    "pekka",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "guards",
+    "hunter",
+    "monk",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "goblin_hut",
+    "lightning",
+    "musketeer",
+    "royal_ghost",
+    "royal_hogs",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "mini_pekka",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "fireball",
+    "lava_hound",
+    "minions",
+    "tombstone",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dark_prince",
+    "executioner",
+    "freeze",
+    "goblin_cage",
+    "graveyard",
+    "mega_minion",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "cannon",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "guards",
+    "inferno_dragon",
+    "lava_hound",
+    "skeleton_dragons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mini_pekka",
+    "monk",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "dart_goblin",
+    "mega_knight",
+    "prince",
+    "princess",
+    "skeleton_army",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "phoenix",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_gang",
+    "hog_rider",
+    "inferno_tower",
+    "knight",
+    "prince",
+    "princess",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "giant_snowball",
+    "goblin_cage",
+    "hunter",
+    "lightning",
+    "minions",
+    "monk",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "fireball",
+    "ice_wizard",
+    "minions",
+    "mortar",
+    "rascals",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "inferno_dragon",
+    "knight",
+    "lava_hound",
+    "lightning",
+    "miner",
+    "skeleton_dragons",
+    "tombstone",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "heal_spirit",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "elite_barbarians",
+    "elixir_collector",
+    "heal_spirit",
+    "monk",
+    "rage",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "fisherman",
+    "lightning",
+    "mighty_miner",
+    "mother_witch",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "elixir_golem",
+    "goblin_curse",
+    "inferno_dragon",
+    "night_witch",
+    "rage",
+    "skeleton_king",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "golem",
+    "lightning",
+    "night_witch",
+    "skeleton_king",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "electro_spirit",
+    "elixir_collector",
+    "fire_spirit",
+    "giant_snowball",
+    "mini_pekka",
+    "skeletons",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "inferno_dragon",
+    "rage",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "berserker",
+    "cannon",
+    "electro_spirit",
+    "lumberjack",
+    "musketeer",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "electro_giant",
+    "goblin_cage",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "goblin_hut",
+    "miner",
+    "minions",
+    "poison",
+    "royal_ghost",
+    "skeletons",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "boss_bandit",
+    "electro_wizard",
+    "magic_archer",
+    "mini_pekka",
+    "skeletons",
+    "the_log",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dark_prince",
+    "electro_wizard",
+    "fireball",
+    "firecracker",
+    "golden_knight",
+    "pekka",
+    "ram_rider"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "ice_spirit",
+    "knight",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "goblin_demolisher",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_barrel",
+    "goblin_gang",
+    "princess",
+    "rocket",
+    "tesla",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "bandit",
+    "mega_knight",
+    "minions",
+    "prince",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "goblin_drill",
+    "mini_pekka",
+    "royal_ghost",
+    "skeleton_army",
+    "skeleton_king",
+    "tornado",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "rage",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "royal_giant",
+    "skeleton_king",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "fireball",
+    "inferno_tower",
+    "magic_archer",
+    "mega_knight",
+    "ram_rider",
+    "royal_ghost",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "fireball",
+    "flying_machine",
+    "mother_witch",
+    "royal_hogs",
+    "royal_recruits",
+    "the_log",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "golden_knight",
+    "ram_rider",
+    "skeletons",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "goblin_gang",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "electro_spirit",
+    "goblin_gang",
+    "hog_rider",
+    "mega_knight",
+    "mini_pekka",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "firecracker",
+    "hog_rider",
+    "lumberjack",
+    "minion_horde",
+    "poison",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_wizard",
+    "freeze",
+    "guards",
+    "hog_rider",
+    "mega_knight",
+    "prince",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "night_witch",
+    "rage",
+    "void"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "elixir_collector",
+    "ice_golem",
+    "little_prince",
+    "mini_pekka",
+    "rage",
+    "royal_ghost",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "dark_prince",
+    "fireball",
+    "goblin_curse",
+    "golden_knight",
+    "mini_pekka",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "clone",
+    "electro_wizard",
+    "giant_skeleton",
+    "knight",
+    "skeleton_barrel",
+    "sparky",
+    "tornado",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "princess",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "goblin_cage",
+    "golem",
+    "guards",
+    "lightning",
+    "mini_pekka",
+    "night_witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "berserker",
+    "inferno_dragon",
+    "lava_hound",
+    "lightning",
+    "skeleton_army",
+    "skeleton_dragons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "goblin_hut",
+    "miner",
+    "minions",
+    "poison",
+    "skeleton_army",
+    "skeleton_king",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "dark_prince",
+    "electro_wizard",
+    "fireball",
+    "inferno_dragon",
+    "pekka",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "balloon",
+    "lava_hound",
+    "lightning",
+    "mega_minion",
+    "skeleton_army",
+    "tombstone"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "electro_wizard",
+    "fireball",
+    "hog_rider",
+    "ice_golem",
+    "mega_minion",
+    "mini_pekka"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "clone",
+    "giant_skeleton",
+    "golem",
+    "mini_pekka",
+    "skeleton_barrel",
+    "sparky",
+    "witch",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "inferno_tower",
+    "miner",
+    "mirror",
+    "prince",
+    "skeleton_army",
+    "sparky",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "electro_dragon",
+    "golem",
+    "knight",
+    "lightning",
+    "night_witch",
+    "tornado",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "fireball",
+    "golden_knight",
+    "minions",
+    "musketeer",
+    "pekka",
+    "rage",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "electro_spirit",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "golden_knight",
+    "guards",
+    "lightning",
+    "royal_giant",
+    "the_log",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "giant_skeleton",
+    "hunter",
+    "ice_golem",
+    "miner",
+    "minions",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "inferno_dragon",
+    "lava_hound",
+    "miner",
+    "minion_horde",
+    "minions",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "berserker",
+    "dart_goblin",
+    "goblin_gang",
+    "mini_pekka",
+    "mortar",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "knight",
+    "rocket",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "lava_hound",
+    "miner",
+    "minion_horde",
+    "minions",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "goblin_hut",
+    "lightning",
+    "royal_delivery",
+    "royal_ghost",
+    "royal_hogs",
+    "skeletons",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "bowler",
+    "freeze",
+    "inferno_dragon",
+    "knight",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "goblin_gang",
+    "ice_wizard",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king",
+    "spear_goblins"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "electro_dragon",
+    "monk",
+    "skeleton_dragons",
+    "tombstone",
+    "tornado",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "fire_spirit",
+    "knight",
+    "mortar",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_hut",
+    "ice_spirit",
+    "miner",
+    "musketeer",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "fire_spirit",
+    "ice_spirit",
+    "mini_pekka",
+    "skeleton_army",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "goblin_hut",
+    "ice_spirit",
+    "lightning",
+    "royal_hogs",
+    "skeletons",
+    "the_log",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "guards",
+    "mini_pekka",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "hog_rider",
+    "miner",
+    "minions",
+    "musketeer",
+    "skeleton_army",
+    "valkyrie",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "inferno_dragon",
+    "lava_hound",
+    "skeleton_dragons",
+    "tombstone",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "goblin_gang",
+    "guards",
+    "mighty_miner",
+    "minions",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "dark_prince",
+    "electro_wizard",
+    "fisherman",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "fireball",
+    "goblin_drill",
+    "minion_horde",
+    "princess",
+    "skeleton_army",
+    "sparky",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_drill",
+    "goblin_hut",
+    "knight",
+    "magic_archer",
+    "skeletons",
+    "spear_goblins",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "inferno_dragon",
+    "knight",
+    "mega_knight",
+    "mother_witch",
+    "royal_delivery",
+    "skeleton_barrel",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "minions",
+    "mortar",
+    "musketeer",
+    "skeleton_barrel",
+    "skeleton_king",
+    "skeletons",
+    "spear_goblins"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "goblin_hut",
+    "golden_knight",
+    "lightning",
+    "mother_witch",
+    "musketeer",
+    "royal_ghost",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "goblin_drill",
+    "knight",
+    "magic_archer",
+    "skeletons",
+    "spear_goblins",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "bomber",
+    "cannon",
+    "earthquake",
+    "fire_spirit",
+    "guards",
+    "royal_delivery",
+    "royal_hogs"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "furnace",
+    "goblin_cage",
+    "mother_witch",
+    "royal_hogs",
+    "royal_recruits",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "fireball",
+    "furnace",
+    "hog_rider",
+    "ice_spirit",
+    "mega_knight",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "fire_spirit",
+    "ice_spirit",
+    "little_prince",
+    "poison",
+    "skeletons",
+    "valkyrie",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "clone",
+    "giant_skeleton",
+    "skeleton_barrel",
+    "skeleton_dragons",
+    "tornado",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dark_prince",
+    "fireball",
+    "giant",
+    "graveyard",
+    "inferno_dragon",
+    "skeleton_army",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "furnace",
+    "giant_snowball",
+    "goblin_drill",
+    "goblin_hut",
+    "ice_wizard",
+    "knight",
+    "poison"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "hog_rider",
+    "knight",
+    "mega_knight",
+    "skeletons",
+    "tesla",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "dart_goblin",
+    "firecracker",
+    "ice_spirit",
+    "mega_knight",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "freeze",
+    "goblin_hut",
+    "hog_rider",
+    "inferno_dragon",
+    "knight",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_dragon",
+    "giant_snowball",
+    "goblin_barrel",
+    "goblin_gang",
+    "mini_pekka",
+    "princess",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "bowler",
+    "flying_machine",
+    "goblin_cage",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "dart_goblin",
+    "fireball",
+    "goblin_gang",
+    "mortar",
+    "rascals",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "musketeer",
+    "royal_hogs",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "knight",
+    "royal_ghost",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "fireball",
+    "minions",
+    "mortar",
+    "rascals",
+    "skeleton_barrel",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "balloon",
+    "barbarian_barrel",
+    "goblin_cage",
+    "goblinstein",
+    "guards",
+    "lightning",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bowler",
+    "cannon",
+    "graveyard",
+    "knight",
+    "poison",
+    "tornado",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "princess",
+    "rascals",
+    "royal_ghost",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "firecracker",
+    "golden_knight",
+    "guards",
+    "mega_knight",
+    "musketeer",
+    "pekka",
+    "rage",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "mini_pekka",
+    "mother_witch",
+    "skeletons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "earthquake",
+    "ice_spirit",
+    "mini_pekka",
+    "royal_delivery",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "furnace",
+    "goblin_hut",
+    "graveyard",
+    "ice_wizard",
+    "knight",
+    "poison"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "elixir_golem",
+    "executioner",
+    "goblin_gang",
+    "lightning",
+    "night_witch",
+    "rage"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "flying_machine",
+    "goblin_cage",
+    "mother_witch",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "furnace",
+    "ice_spirit",
+    "lightning",
+    "skeleton_barrel",
+    "skeleton_king",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "electro_wizard",
+    "executioner",
+    "giant",
+    "pekka",
+    "poison",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_gang",
+    "inferno_tower",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dark_prince",
+    "furnace",
+    "rocket",
+    "skeleton_barrel",
+    "skeletons",
+    "spear_goblins",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "firecracker",
+    "hog_rider",
+    "knight",
+    "rocket",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elite_barbarians",
+    "golem",
+    "minions",
+    "sparky",
+    "valkyrie",
+    "witch",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_dragon",
+    "firecracker",
+    "guards",
+    "hog_rider",
+    "inferno_tower",
+    "lightning",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bowler",
+    "electro_giant",
+    "goblin_cage",
+    "golden_knight",
+    "guards",
+    "inferno_dragon",
+    "lightning",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "minions",
+    "royal_ghost",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "mighty_miner",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "fireball",
+    "goblin_gang",
+    "hog_rider",
+    "inferno_dragon",
+    "mortar",
+    "rascals",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "clone",
+    "flying_machine",
+    "giant_skeleton",
+    "goblin_cage",
+    "lava_hound",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "bomber",
+    "cannon",
+    "electro_giant",
+    "prince",
+    "rascals",
+    "tornado",
+    "void"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "goblin_curse",
+    "goblin_giant",
+    "golden_knight",
+    "lightning",
+    "night_witch",
+    "pekka",
+    "rage"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_hut",
+    "elixir_golem",
+    "freeze",
+    "heal_spirit",
+    "inferno_dragon",
+    "monk",
+    "sparky",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "earthquake",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "mighty_miner",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "golem",
+    "guards",
+    "lightning",
+    "mini_pekka",
+    "valkyrie",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "tornado",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "bats",
+    "fisherman",
+    "giant_skeleton",
+    "giant_snowball",
+    "guards",
+    "miner",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_healer",
+    "electro_spirit",
+    "freeze",
+    "inferno_dragon",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_wizard",
+    "fireball",
+    "hog_rider",
+    "knight",
+    "princess",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "ice_spirit",
+    "ice_wizard",
+    "mega_knight",
+    "mini_pekka",
+    "skeleton_barrel",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "night_witch",
+    "royal_ghost",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "elite_barbarians",
+    "freeze",
+    "mini_pekka",
+    "mirror",
+    "skeleton_army",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "dart_goblin",
+    "miner",
+    "minions",
+    "mortar",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "elixir_golem",
+    "mini_pekka",
+    "tornado",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "ice_spirit",
+    "knight",
+    "poison",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "electro_spirit",
+    "goblin_demolisher",
+    "knight",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "goblin_curse",
+    "mini_pekka",
+    "rage",
+    "rascals",
+    "skeleton_army",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_dragon",
+    "furnace",
+    "golden_knight",
+    "golem",
+    "mini_pekka",
+    "tornado",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "mini_pekka",
+    "skeleton_army",
+    "skeleton_barrel",
+    "spear_goblins",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "fireball",
+    "minions",
+    "princess",
+    "royal_giant",
+    "valkyrie",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "battle_healer",
+    "fire_spirit",
+    "freeze",
+    "inferno_dragon",
+    "mini_pekka",
+    "monk"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "mega_knight",
+    "poison",
+    "skeleton_barrel",
+    "skeletons",
+    "the_log",
+    "tombstone"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "giant_skeleton",
+    "hog_rider",
+    "mini_pekka",
+    "skeleton_army",
+    "valkyrie",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "dart_goblin",
+    "electro_wizard",
+    "goblin_gang",
+    "lumberjack",
+    "monk",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "goblin_hut",
+    "hunter",
+    "monk",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "bowler",
+    "fireball",
+    "graveyard",
+    "inferno_dragon",
+    "tombstone",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "fireball",
+    "fisherman",
+    "goblin_curse",
+    "golem",
+    "mega_minion",
+    "night_witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "guards",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "electro_spirit",
+    "fireball",
+    "knight",
+    "minions",
+    "mortar",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "balloon",
+    "lava_hound",
+    "minion_horde",
+    "minions",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "electro_spirit",
+    "fire_spirit",
+    "knight",
+    "mortar",
+    "rocket",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_golem",
+    "monk",
+    "skeleton_king",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "golden_knight",
+    "guards",
+    "knight",
+    "mother_witch",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "electro_spirit",
+    "goblin_gang",
+    "mini_pekka",
+    "princess",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "dark_prince",
+    "elixir_collector",
+    "ice_golem",
+    "mega_minion",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "minions",
+    "royal_ghost",
+    "royal_hogs",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "elite_barbarians",
+    "elixir_collector",
+    "heal_spirit",
+    "knight",
+    "monk",
+    "rage",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "electro_dragon",
+    "electro_spirit",
+    "hog_rider",
+    "monk",
+    "skeletons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "cannon",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "ice_spirit",
+    "rocket",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "guards",
+    "ice_wizard",
+    "inferno_dragon",
+    "royal_hogs",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "earthquake",
+    "hog_rider",
+    "mighty_miner",
+    "musketeer",
+    "royal_delivery",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "berserker",
+    "goblin_demolisher",
+    "goblin_gang",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "bandit",
+    "barbarian_barrel",
+    "bats",
+    "mega_knight",
+    "miner",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "fireball",
+    "goblin_gang",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "golden_knight",
+    "monk",
+    "mortar",
+    "skeleton_army",
+    "sparky",
+    "witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "lava_hound",
+    "lightning",
+    "mega_minion",
+    "skeleton_army",
+    "skeleton_dragons",
+    "tombstone",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "boss_bandit",
+    "cannon_cart",
+    "executioner",
+    "golden_knight",
+    "ram_rider",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fireball",
+    "firecracker",
+    "goblins",
+    "ice_spirit",
+    "knight",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "dart_goblin",
+    "goblin_barrel",
+    "rascals",
+    "rocket",
+    "royal_ghost",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "princess",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "freeze",
+    "hog_rider",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "fireball",
+    "hog_rider",
+    "ice_golem",
+    "ice_spirit",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "electro_wizard",
+    "goblin_curse",
+    "magic_archer",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "electro_spirit",
+    "fireball",
+    "goblins",
+    "hog_rider",
+    "inferno_tower",
+    "princess",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bowler",
+    "cannon",
+    "electro_giant",
+    "knight",
+    "lightning",
+    "phoenix",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bats",
+    "bomb_tower",
+    "giant_snowball",
+    "ice_golem",
+    "miner",
+    "musketeer"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "furnace",
+    "giant_skeleton",
+    "goblin_curse",
+    "goblin_hut",
+    "graveyard",
+    "minions",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "electro_wizard",
+    "fireball",
+    "hunter",
+    "mini_pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "furnace",
+    "goblin_giant",
+    "goblin_machine",
+    "mini_pekka",
+    "minions",
+    "rage",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "boss_bandit",
+    "electro_wizard",
+    "magic_archer",
+    "mini_pekka",
+    "skeletons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "executioner",
+    "golden_knight",
+    "knight",
+    "minions",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "giant_snowball",
+    "ice_spirit",
+    "knight",
+    "mortar",
+    "skeletons",
+    "tesla",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "balloon",
+    "barbarians",
+    "lava_hound",
+    "mega_minion",
+    "tombstone",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fire_spirit",
+    "giant_snowball",
+    "guards",
+    "ice_spirit",
+    "knight",
+    "princess",
+    "rocket",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "knight",
+    "magic_archer",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "electro_wizard",
+    "elite_barbarians",
+    "freeze",
+    "skeleton_army",
+    "valkyrie",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "bowler",
+    "elite_barbarians",
+    "executioner",
+    "hog_rider",
+    "tesla",
+    "the_log",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "fireball",
+    "ice_wizard",
+    "knight",
+    "skeletons",
+    "tesla",
+    "the_log",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "firecracker",
+    "hog_rider",
+    "skeletons",
+    "the_log",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "berserker",
+    "elixir_collector",
+    "golden_knight",
+    "ice_golem",
+    "royal_ghost",
+    "skeletons",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "fireball",
+    "goblin_hut",
+    "knight",
+    "minions",
+    "skeleton_army",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "dart_goblin",
+    "fireball",
+    "goblin_gang",
+    "knight",
+    "minions",
+    "mortar",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "giant_snowball",
+    "goblin_barrel",
+    "goblin_gang",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "dark_prince",
+    "giant",
+    "goblinstein",
+    "prince",
+    "skeletons",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "clone",
+    "giant_skeleton",
+    "skeleton_army",
+    "skeleton_barrel",
+    "sparky",
+    "tesla",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "knight",
+    "minion_horde",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "giant_skeleton",
+    "goblin_cage",
+    "hog_rider",
+    "knight",
+    "monk",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "elixir_golem",
+    "firecracker",
+    "freeze",
+    "hog_rider",
+    "mega_knight",
+    "musketeer",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "electro_wizard",
+    "flying_machine",
+    "goblin_cage",
+    "royal_hogs",
+    "royal_recruits",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "fireball",
+    "goblin_gang",
+    "mighty_miner",
+    "musketeer",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "bowler",
+    "inferno_dragon",
+    "lightning",
+    "royal_giant",
+    "tombstone",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_healer",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "inferno_dragon",
+    "lumberjack",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bats",
+    "clone",
+    "flying_machine",
+    "giant_snowball",
+    "lava_hound",
+    "lumberjack",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "ice_spirit",
+    "minions",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "furnace",
+    "goblin_gang",
+    "hog_rider",
+    "minions",
+    "royal_ghost",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "boss_bandit",
+    "dark_prince",
+    "executioner",
+    "mini_pekka",
+    "skeletons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "royal_ghost",
+    "royal_giant",
+    "the_log",
+    "tombstone"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "battle_ram",
+    "cannon",
+    "mega_knight",
+    "musketeer",
+    "rascals",
+    "skeletons",
+    "suspicious_bush"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "executioner",
+    "hog_rider",
+    "musketeer",
+    "pekka",
+    "poison",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "electro_spirit",
+    "knight",
+    "princess",
+    "rocket",
+    "royal_delivery",
+    "tesla",
+    "x_bow"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "mini_pekka",
+    "princess",
+    "rascals",
+    "skeleton_barrel",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "golem",
+    "lumberjack",
+    "mini_pekka",
+    "night_witch",
+    "spirit_empress",
+    "tombstone",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "executioner",
+    "fireball",
+    "guards",
+    "hog_rider",
+    "mega_knight",
+    "prince",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "elite_barbarians",
+    "ice_spirit",
+    "knight",
+    "lightning",
+    "lumberjack",
+    "the_log",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_healer",
+    "freeze",
+    "heal_spirit",
+    "inferno_dragon",
+    "monk",
+    "rage",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "dark_prince",
+    "goblin_cage",
+    "golem",
+    "ice_wizard",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "bomber",
+    "cannon",
+    "earthquake",
+    "fire_spirit",
+    "goblins",
+    "royal_delivery",
+    "royal_hogs"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "golem",
+    "inferno_dragon",
+    "mini_pekka",
+    "minions",
+    "skeleton_king",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "freeze",
+    "golden_knight",
+    "heal_spirit",
+    "rascals",
+    "royal_ghost",
+    "royal_recruits",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "elixir_golem",
+    "night_witch",
+    "poison",
+    "skeleton_king",
+    "skeletons",
+    "void"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "cannon_cart",
+    "goblin_gang",
+    "miner",
+    "minions",
+    "mortar",
+    "rascals",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "cannon",
+    "earthquake",
+    "ice_golem",
+    "ice_spirit",
+    "royal_hogs",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "elixir_collector",
+    "goblin_hut",
+    "golem",
+    "mini_pekka",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "golden_knight",
+    "heal_spirit",
+    "hunter",
+    "royal_ghost",
+    "zap",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "battle_ram",
+    "guards",
+    "pekka",
+    "tornado",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "lumberjack",
+    "mini_pekka",
+    "skeleton_dragons",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "giant_snowball",
+    "guards",
+    "hog_rider",
+    "minions",
+    "the_log",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "executioner",
+    "fisherman",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "ice_wizard",
+    "lightning",
+    "minions",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "guards",
+    "mighty_miner",
+    "miner",
+    "poison",
+    "spear_goblins",
+    "tesla",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "elixir_collector",
+    "heal_spirit",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "royal_hogs",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "boss_bandit",
+    "executioner",
+    "giant_snowball",
+    "golden_knight",
+    "ram_rider",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon_cart",
+    "guards",
+    "minions",
+    "mortar",
+    "musketeer",
+    "poison",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "barbarian_barrel",
+    "bowler",
+    "ice_wizard",
+    "lightning",
+    "royal_giant",
+    "tombstone",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_barrel",
+    "knight",
+    "poison",
+    "prince",
+    "princess",
+    "rascals",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bats",
+    "dart_goblin",
+    "hog_rider",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "goblin_gang",
+    "hog_rider",
+    "inferno_tower",
+    "princess",
+    "rocket",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "earthquake",
+    "electro_spirit",
+    "firecracker",
+    "hog_rider",
+    "mighty_miner",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "firecracker",
+    "goblin_gang",
+    "lightning",
+    "mighty_miner",
+    "royal_recruits",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "dark_prince",
+    "heal_spirit",
+    "hunter",
+    "ice_golem",
+    "royal_ghost",
+    "the_log",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "guards",
+    "inferno_dragon",
+    "lava_hound",
+    "skeleton_dragons",
+    "valkyrie",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "golem",
+    "mini_pekka",
+    "night_witch",
+    "rocket",
+    "skeleton_army",
+    "tornado",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "baby_dragon",
+    "battle_healer",
+    "bomb_tower",
+    "electro_dragon",
+    "elixir_golem",
+    "guards",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "ice_spirit",
+    "miner",
+    "minions",
+    "poison",
+    "royal_ghost",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_curse",
+    "goblinstein",
+    "mini_pekka",
+    "mirror",
+    "pekka",
+    "rage",
+    "valkyrie",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_dragon",
+    "fisherman",
+    "golem",
+    "lightning",
+    "night_witch",
+    "skeleton_army",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_demolisher",
+    "goblin_drill",
+    "poison",
+    "skeletons",
+    "tesla"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "ice_spirit",
+    "miner",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "guards",
+    "inferno_tower",
+    "mega_knight",
+    "mini_pekka",
+    "minions",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "giant_skeleton",
+    "hunter",
+    "ice_golem",
+    "miner",
+    "minions",
+    "the_log",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "goblin_hut",
+    "ice_spirit",
+    "lightning",
+    "musketeer",
+    "royal_ghost",
+    "royal_hogs"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bomber",
+    "fireball",
+    "golem",
+    "mega_minion",
+    "mini_pekka",
+    "night_witch",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "electro_spirit",
+    "flying_machine",
+    "goblin_cage",
+    "royal_ghost",
+    "royal_hogs",
+    "royal_recruits",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "elite_barbarians",
+    "freeze",
+    "ice_spirit",
+    "lumberjack",
+    "monk",
+    "skeletons",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "battle_ram",
+    "boss_bandit",
+    "electro_wizard",
+    "guards",
+    "magic_archer",
+    "mini_pekka",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mini_pekka",
+    "royal_ghost",
+    "royal_giant",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "bats",
+    "mega_knight",
+    "miner",
+    "prince",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "elixir_collector",
+    "heal_spirit",
+    "hunter",
+    "monk",
+    "royal_ghost",
+    "royal_hogs",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mini_pekka",
+    "monk",
+    "royal_giant",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "dart_goblin",
+    "ice_spirit",
+    "royal_delivery",
+    "spear_goblins",
+    "suspicious_bush",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_dragon",
+    "elixir_collector",
+    "golem",
+    "ice_wizard",
+    "mini_pekka",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_wizard",
+    "golden_knight",
+    "lightning",
+    "magic_archer",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "goblin_hut",
+    "ice_spirit",
+    "miner",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "executioner",
+    "graveyard",
+    "pekka",
+    "poison",
+    "skeletons",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "dart_goblin",
+    "golden_knight",
+    "rascals",
+    "royal_delivery",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "dart_goblin",
+    "goblin_barrel",
+    "knight",
+    "prince",
+    "princess",
+    "rascals",
+    "rocket"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "goblinstein",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "skeletons",
+    "tesla",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "firecracker",
+    "goblin_machine",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "firecracker",
+    "mega_knight",
+    "rage",
+    "rocket",
+    "the_log",
+    "valkyrie",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "arrows",
+    "bowler",
+    "freeze",
+    "graveyard",
+    "knight",
+    "mega_minion",
+    "tombstone"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "executioner",
+    "giant_snowball",
+    "inferno_dragon",
+    "lightning",
+    "mega_knight",
+    "mini_pekka",
+    "ram_rider"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "cannon",
+    "earthquake",
+    "firecracker",
+    "hog_rider",
+    "ice_spirit",
+    "mighty_miner",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "lumberjack",
+    "mini_pekka",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "goblin_barrel",
+    "inferno_tower",
+    "musketeer",
+    "poison",
+    "prince",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "goblin_demolisher",
+    "ice_spirit",
+    "knight",
+    "rocket",
+    "royal_delivery",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "freeze",
+    "lava_hound",
+    "minion_horde",
+    "minions",
+    "skeleton_army",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "executioner",
+    "goblin_cage",
+    "golden_knight",
+    "golem",
+    "lightning",
+    "mini_pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "fireball",
+    "heal_spirit",
+    "mini_pekka",
+    "mother_witch",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "flying_machine",
+    "goblin_cage",
+    "golden_knight",
+    "hog_rider",
+    "ice_wizard",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "elixir_golem",
+    "monk",
+    "rage",
+    "skeleton_king",
+    "void",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bandit",
+    "goblin_gang",
+    "mega_knight",
+    "musketeer",
+    "prince",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "fireball",
+    "giant",
+    "goblin_barrel",
+    "hunter",
+    "lightning",
+    "mega_knight",
+    "skeleton_army",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "ice_golem",
+    "ice_spirit",
+    "miner",
+    "musketeer",
+    "poison",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "mini_pekka",
+    "royal_giant",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "battle_healer",
+    "mini_pekka",
+    "minions",
+    "monk",
+    "valkyrie",
+    "vines",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_hut",
+    "mother_witch",
+    "skeleton_army",
+    "skeleton_barrel",
+    "skeleton_king",
+    "vines",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "goblin_cage",
+    "guards",
+    "lava_hound",
+    "lightning",
+    "mega_minion",
+    "skeleton_dragons",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "earthquake",
+    "firecracker",
+    "hog_rider",
+    "ice_spirit",
+    "knight",
+    "skeletons",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "flying_machine",
+    "goblin_cage",
+    "goblin_gang",
+    "mother_witch",
+    "royal_hogs",
+    "royal_recruits"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "dart_goblin",
+    "ice_spirit",
+    "rascals",
+    "royal_ghost",
+    "skeleton_barrel",
+    "suspicious_bush",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "dart_goblin",
+    "goblin_gang",
+    "ice_spirit",
+    "mini_pekka",
+    "princess",
+    "skeleton_barrel",
+    "the_log",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "berserker",
+    "bomber",
+    "cannon",
+    "electro_giant",
+    "poison",
+    "prince",
+    "rascals",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "bats",
+    "fireball",
+    "knight",
+    "rage",
+    "skeletons",
+    "tesla",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "earthquake",
+    "giant_skeleton",
+    "guards",
+    "hog_rider",
+    "ice_spirit",
+    "the_log",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "giant",
+    "graveyard",
+    "minions",
+    "skeleton_army",
+    "skeleton_king",
+    "vines",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "executioner",
+    "goblin_machine",
+    "night_witch",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dart_goblin",
+    "goblin_barrel",
+    "ice_spirit",
+    "mini_pekka",
+    "princess",
+    "rocket",
+    "skeleton_army"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "fire_spirit",
+    "giant_snowball",
+    "goblin_drill",
+    "mighty_miner",
+    "musketeer",
+    "poison",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "goblin_barrel",
+    "ice_spirit",
+    "inferno_tower",
+    "knight",
+    "princess",
+    "rocket",
+    "skeleton_army",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "bomb_tower",
+    "dart_goblin",
+    "mighty_miner",
+    "poison",
+    "rascals",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarians",
+    "bomber",
+    "giant_snowball",
+    "goblin_drill",
+    "guards",
+    "vines",
+    "wall_breakers",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elite_barbarians",
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "ice_golem",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarians",
+    "bats",
+    "elixir_golem",
+    "fireball",
+    "night_witch",
+    "rage",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon_cart",
+    "furnace",
+    "guards",
+    "ice_wizard",
+    "lightning",
+    "mortar",
+    "skeleton_barrel",
+    "skeleton_king"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "dart_goblin",
+    "goblin_barrel",
+    "knight",
+    "rocket",
+    "skeleton_army",
+    "skeleton_barrel",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "boss_bandit",
+    "cannon_cart",
+    "electro_wizard",
+    "golden_knight",
+    "heal_spirit",
+    "hunter",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "executioner",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_ghost",
+    "spirit_empress",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "dark_prince",
+    "electro_wizard",
+    "fireball",
+    "goblin_barrel",
+    "ice_spirit",
+    "skeleton_army",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "cannon_cart",
+    "electro_wizard",
+    "fireball",
+    "golden_knight",
+    "mini_pekka",
+    "mother_witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "flying_machine",
+    "monk",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "void",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "guards",
+    "hunter",
+    "royal_ghost",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "dark_prince",
+    "goblin_curse",
+    "mega_knight",
+    "mini_pekka",
+    "minions",
+    "wall_breakers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bowler",
+    "giant",
+    "goblin_gang",
+    "miner",
+    "mother_witch",
+    "night_witch",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_wizard",
+    "golden_knight",
+    "hog_rider",
+    "prince",
+    "princess",
+    "valkyrie",
+    "wizard",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archers",
+    "ice_spirit",
+    "knight",
+    "mortar",
+    "rocket",
+    "skeletons",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_golem",
+    "minions",
+    "monk",
+    "rage",
+    "skeleton_army",
+    "skeleton_king",
+    "void",
+    "witch"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "guards",
+    "knight",
+    "little_prince",
+    "minions",
+    "mortar",
+    "skeleton_barrel"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "executioner",
+    "fire_spirit",
+    "hog_rider",
+    "rocket",
+    "the_log",
+    "tornado",
+    "valkyrie"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "electro_spirit",
+    "fireball",
+    "fisherman",
+    "hunter",
+    "monk",
+    "royal_ghost",
+    "royal_giant"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bats",
+    "goblin_gang",
+    "golem",
+    "lightning",
+    "night_witch",
+    "skeleton_king",
+    "skeletons"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "barbarian_barrel",
+    "giant_skeleton",
+    "mini_pekka",
+    "mother_witch",
+    "royal_ghost",
+    "royal_hogs",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "balloon",
+    "barbarians",
+    "inferno_dragon",
+    "lava_hound",
+    "miner",
+    "skeleton_dragons",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bandit",
+    "battle_ram",
+    "elixir_collector",
+    "golden_knight",
+    "heal_spirit",
+    "royal_ghost",
+    "three_musketeers",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "barbarian_barrel",
+    "fireball",
+    "fisherman",
+    "royal_giant",
+    "skeleton_army",
+    "skeleton_king",
+    "witch",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "cannon",
+    "executioner",
+    "goblin_drill",
+    "knight",
+    "poison",
+    "skeletons",
+    "the_log",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "boss_bandit",
+    "executioner",
+    "golden_knight",
+    "lightning",
+    "mini_pekka",
+    "tornado",
+    "zappies"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomber",
+    "dark_prince",
+    "giant",
+    "lightning",
+    "mega_minion",
+    "prince",
+    "rage",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "bomb_tower",
+    "ice_wizard",
+    "miner",
+    "rocket",
+    "skeletons",
+    "tornado",
+    "valkyrie",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "elixir_collector",
+    "giant_snowball",
+    "ice_golem",
+    "ice_spirit",
+    "miner",
+    "mini_pekka",
+    "the_log",
+    "three_musketeers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "archer_queen",
+    "arrows",
+    "battle_ram",
+    "goblin_demolisher",
+    "golden_knight",
+    "minions",
+    "pekka",
+    "royal_ghost"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "baby_dragon",
+    "bats",
+    "bowler",
+    "dark_prince",
+    "dart_goblin",
+    "goblin_gang",
+    "miner",
+    "wall_breakers"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "executioner",
+    "giant_skeleton",
+    "goblin_hut",
+    "mini_pekka",
+    "minions",
+    "ram_rider",
+    "vines",
+    "zap"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "electro_spirit",
+    "executioner",
+    "fisherman",
+    "mini_pekka",
+    "monk",
+    "rage",
+    "royal_giant",
+    "vines"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "balloon",
+    "barbarian_barrel",
+    "bats",
+    "giant_snowball",
+    "ice_golem",
+    "lumberjack",
+    "vines",
+    "wizard"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "arrows",
+    "bomber",
+    "electro_wizard",
+    "goblinstein",
+    "golden_knight",
+    "graveyard",
+    "pekka",
+    "tornado"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "earthquake",
+    "goblins",
+    "hunter",
+    "ice_golem",
+    "magic_archer",
+    "mini_pekka",
+    "royal_hogs",
+    "the_log"
+   ],
+   "count": 1
+  },
+  {
+   "cards": [
+    "battle_ram",
+    "electro_wizard",
+    "fireball",
+    "golden_knight",
+    "magic_archer",
+    "pekka",
+    "royal_ghost",
+    "zap"
+   ],
+   "count": 1
+  }
+ ]
+}

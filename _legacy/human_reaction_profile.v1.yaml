@@ -1,0 +1,41 @@
+# Human Physiological Latency and Action Realism Profile
+# Derived from Cochon123/clash-royale-action-clock-v1 and pro gameplay telemetry
+
+reaction_latency:
+  # Sudden bridge pressure (e.g. Battle Ram / Hog Rider dropped at bridge)
+  sudden_win_con_ms:
+    mean: 450
+    std: 85
+    min: 280
+    max: 850
+
+  # Hovering / premonition play (player holds card over arena waiting for predictable move)
+  hover_premonition_ms:
+    mean: 160
+    std: 40
+    min: 100
+    max: 260
+
+  # Standard reactive defense in own half
+  standard_defense_ms:
+    mean: 520
+    std: 90
+    min: 350
+    max: 950
+
+  # Passive cycling in the back at 10 elixir
+  passive_cycle_ms:
+    mean: 750
+    std: 150
+    min: 400
+    max: 1400
+
+motor_noise:
+  # Placement coordinate jitter (tiles)
+  spatial_jitter_sigma_tiles: 0.28
+  
+  # Accidental mis-tap / card selection delay
+  card_selection_delay_ms: 110
+  
+  # Probability of slightly dragging off-target under extreme pressure
+  panicked_drag_rate: 0.035

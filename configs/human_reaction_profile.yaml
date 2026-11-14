@@ -1,0 +1,42 @@
+# Human reaction profile for HumanDelayBuffer (schema v2).
+# All values in milliseconds of SIMULATION time.
+# Distributions are truncated normals: resampled until inside [min, max].
+#
+# Perception latency = time from a card appearing on screen until the AI's
+# policy is allowed to "see" it. It already includes vision + decision +
+# finger travel, so the resulting action is released without extra delay.
+
+default:
+  perception:
+    surprise:     {mean: 500, std: 40, min: 420, max: 580}   # unpredicted bridge threat
+    anticipated:  {mean: 320, std: 40, min: 240, max: 420}   # tracker/guesser said it was likely
+    routine:      {mean: 650, std: 120, min: 400, max: 1000} # play at the back of their side
+  hover_reflex:   {mean: 160, std: 20, min: 120, max: 200}   # pre-hovered card -> drop
+  apm_gap:        {mean: 240, std: 30, min: 180, max: 300}   # min gap between separate decisions
+  combo_gap_ms: 120            # gap between cards submitted together: one card can be selected at a time,
+                               # so a human "double drop" is two quick select+place sequences (~100-200 ms)
+  anticipation_threshold: 0.35 # P(card playable now) above which a play counts as anticipated
+  max_hold_ms: 1500            # due action that can't execute (not enough elixir) is dropped after this
+  max_hover_ms: 12000          # a hover plan expires after this if no explicit expiry is given
+
+# Persona overrides are merged on top of `default` (only list what changes).
+personas:
+  surgeon:
+    perception:
+      surprise: {mean: 470, std: 30, min: 420, max: 540}
+    apm_gap: {mean: 210, std: 20, min: 180, max: 260}
+  aggressor:
+    perception:
+      routine: {mean: 500, std: 80, min: 350, max: 800}
+  spell_cycler: {}
+  adaptive_counter: {}
+  # Not a persona for training against: useful for measuring how much the
+  # buffer costs the agent (run the same policy with and without it).
+  superhuman_debug:
+    perception:
+      surprise:    {mean: 0, std: 0, min: 0, max: 0}
+      anticipated: {mean: 0, std: 0, min: 0, max: 0}
+      routine:     {mean: 0, std: 0, min: 0, max: 0}
+    hover_reflex: {mean: 0, std: 0, min: 0, max: 0}
+    apm_gap:      {mean: 0, std: 0, min: 0, max: 0}
+    combo_gap_ms: 0

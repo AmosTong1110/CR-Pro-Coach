@@ -1,0 +1,205 @@
+{
+  "schema_version": 2,
+  "data_version": "2026.11-template",
+  "_doc": [
+    "Coordinates: tiles. Arena is 18 wide x 32 tall; y=0 is the side-0 (bottom) king tower edge.",
+    "Speeds in tiles/second (CR 'Medium' = 60 = 1.0 tile/s). Times in seconds in this file; the engine converts to integer ms.",
+    "stats_l11 = values at normalized card level 11 (tournament standard). Higher levels are derived by level_scaling unless an exact row exists in level_overrides.",
+    "verified=false means the numbers are placeholders typed from memory. Run sync_meta.py / check RoyaleAPI before trusting them for coaching."
+  ],
+
+  "level_scaling": {
+    "base_level": 11,
+    "supported_levels": [11, 12, 13, 14, 15, 16],
+    "presets": { "tournament_standard": 11, "max_level": 16 },
+    "default_growth_per_level": 0.10,
+    "rounding": "floor",
+    "scaled_fields": ["hitpoints", "damage", "crown_tower_damage", "death_damage", "shield_hitpoints", "spawn_damage"]
+  },
+
+  "rules": {
+    "start_elixir": 5,
+    "max_elixir": 10,
+    "ms_per_elixir": { "1": 2800, "2": 1400, "3": 933 },
+    "regulation_s": 180,
+    "overtime_s": 120,
+    "elixir_phases": [
+      { "from_s": 0,   "multiplier": 1 },
+      { "from_s": 120, "multiplier": 2 },
+      { "from_s": 180, "multiplier": 2 },
+      { "from_s": 240, "multiplier": 3 }
+    ],
+    "hand_size": 4,
+    "deck_size": 8,
+    "_verify": "Overtime length and the 3x phase start differ between ladder/tournament modes and have changed across seasons. Confirm for the mode you train for."
+  },
+
+  "towers": {
+    "princess_tower": {
+      "verified": false,
+      "stats_l11": { "hitpoints": 3052, "damage": 109 },
+      "attack": { "targets": ["ground", "air"], "range_tiles": 7.5, "hit_speed_s": 0.8 },
+      "footprint_tiles": [3, 3]
+    },
+    "king_tower": {
+      "verified": false,
+      "stats_l11": { "hitpoints": 4824, "damage": 109 },
+      "attack": { "targets": ["ground", "air"], "range_tiles": 7.0, "hit_speed_s": 1.0 },
+      "footprint_tiles": [4, 4],
+      "activation": ["princess_tower_destroyed", "king_tower_damaged"]
+    }
+  },
+
+  "cards": {
+    "knight": {
+      "name": "Knight",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": { "layer": "ground", "speed_tiles_s": 1.0 },
+      "attack": { "targets": ["ground"], "range_tiles": 1.2, "hit_speed_s": 1.2, "first_hit_s": 0.5, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 1766, "damage": 202 },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": {
+        "cycles_required": 2,
+        "mechanics": ["damage_reduction_while_not_attacking"],
+        "params": { "damage_reduction": 0.6 }
+      },
+      "hero": null
+    },
+
+    "hog_rider": {
+      "name": "Hog Rider",
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": { "layer": "ground", "speed_tiles_s": 2.0 },
+      "attack": { "targets": ["buildings"], "range_tiles": 0.8, "hit_speed_s": 1.6, "first_hit_s": 0.6, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 1696, "damage": 318 },
+      "level_overrides": {},
+      "mechanics": ["building_targeting", "river_jump"],
+      "evolution": null,
+      "hero": null
+    },
+
+    "musketeer": {
+      "name": "Musketeer",
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": { "layer": "ground", "speed_tiles_s": 1.0 },
+      "attack": { "targets": ["ground", "air"], "range_tiles": 6.0, "hit_speed_s": 1.0, "first_hit_s": 0.5, "splash_radius_tiles": 0.0, "projectile_speed_tiles_s": 16.7 },
+      "stats_l11": { "hitpoints": 720, "damage": 217 },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": null,
+      "hero": null
+    },
+
+    "cannon": {
+      "name": "Cannon",
+      "type": "building",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [2, 2],
+      "attack": { "targets": ["ground"], "range_tiles": 5.5, "hit_speed_s": 0.9, "first_hit_s": 0.4, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 824, "damage": 212 },
+      "level_overrides": {},
+      "mechanics": ["decaying_building", "pulls_building_targeters"],
+      "evolution": null,
+      "hero": null
+    },
+
+    "fireball": {
+      "name": "Fireball",
+      "type": "spell",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "spell": { "radius_tiles": 2.5, "travel_speed_tiles_s": 10.0, "knockback": true },
+      "stats_l11": { "damage": 689, "crown_tower_damage": 207 },
+      "level_overrides": {},
+      "mechanics": ["knockback", "reduced_tower_damage"],
+      "evolution": null,
+      "hero": null
+    },
+
+    "the_log": {
+      "name": "The Log",
+      "type": "spell",
+      "rarity": "legendary",
+      "elixir": 2,
+      "verified": false,
+      "spell": { "rolling_range_tiles": 10.1, "width_tiles": 3.9, "travel_speed_tiles_s": 6.0, "knockback": true, "hits": ["ground"] },
+      "stats_l11": { "damage": 290, "crown_tower_damage": 58 },
+      "level_overrides": {},
+      "mechanics": ["rolling_spell", "knockback", "ground_only", "reduced_tower_damage"],
+      "evolution": null,
+      "hero": null
+    },
+
+    "skeletons": {
+      "name": "Skeletons",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 3,
+      "movement": { "layer": "ground", "speed_tiles_s": 1.5 },
+      "attack": { "targets": ["ground"], "range_tiles": 0.5, "hit_speed_s": 1.0, "first_hit_s": 0.5, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 81, "damage": 81 },
+      "level_overrides": {},
+      "mechanics": ["swarm"],
+      "evolution": null,
+      "hero": null
+    },
+
+    "archers": {
+      "name": "Archers",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 2,
+      "movement": { "layer": "ground", "speed_tiles_s": 1.0 },
+      "attack": { "targets": ["ground", "air"], "range_tiles": 5.0, "hit_speed_s": 0.9, "first_hit_s": 0.4, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 304, "damage": 107 },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": null,
+      "hero": null
+    },
+
+    "minions": {
+      "name": "Minions",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 3,
+      "movement": { "layer": "air", "speed_tiles_s": 1.5 },
+      "attack": { "targets": ["ground", "air"], "range_tiles": 2.0, "hit_speed_s": 1.0, "first_hit_s": 0.4, "splash_radius_tiles": 0.0 },
+      "stats_l11": { "hitpoints": 230, "damage": 107 },
+      "level_overrides": {},
+      "mechanics": ["air_unit"],
+      "evolution": null,
+      "hero": null
+    }
+  }
+}

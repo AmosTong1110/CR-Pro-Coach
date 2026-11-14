@@ -1,0 +1,506 @@
+{
+  "schema_version": 3,
+  "data_version": "2026.11-gamedata-2023.10",
+  "_doc": [
+    "Coordinates: tiles. Arena is 18 wide x 32 tall; y=0 is the side-0 (bottom) king tower edge.",
+    "Speeds in tiles/second (game speed 60 = 1.0 tile/s). Times in seconds here; the engine converts to integer ms.",
+    "base_stats = stats at the rarity's first level, exactly as stored in the game files. stat(L) = floor(base * multiplier_pct[L-1-rarity_offset] / 100). Verified exact on all 4,945 per-level values in the RoyaleAPI data.",
+    "Cards are filled by `python -m backend_engine.simulator.sync_meta`. data_as_of shows how old the balance numbers are; verified=true only after checking the live game.",
+    "Hero/Champion abilities (Aug 2026 patch): single-use, no cooldown, except Boss Bandit. Schema: ability = {name, elixir, uses: 1, cooldown_s: null}."
+  ],
+  "level_scaling": {
+    "base_level": 11,
+    "supported_levels": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "presets": {
+      "tournament_standard": 11,
+      "max_level": 16
+    },
+    "multiplier_pct": [
+      100,
+      110,
+      121,
+      133,
+      146,
+      160,
+      176,
+      193,
+      212,
+      233,
+      256,
+      281,
+      309,
+      339,
+      372,
+      409,
+      450,
+      495,
+      545,
+      600
+    ],
+    "rarity_offset": {
+      "common": 0,
+      "rare": 2,
+      "epic": 5,
+      "legendary": 8,
+      "champion": 10,
+      "hero": null
+    },
+    "scaled_fields": [
+      "hitpoints",
+      "damage",
+      "crown_tower_damage",
+      "death_damage",
+      "shield_hitpoints",
+      "spawn_damage"
+    ],
+    "_source": "RoyaleAPI cr-api-data rarities.json power_level_multiplier (game files); hero offset unknown"
+  },
+  "rules": {
+    "start_elixir": 5,
+    "max_elixir": 10,
+    "ms_per_elixir": {
+      "1": 2800,
+      "2": 1400,
+      "3": 933
+    },
+    "regulation_s": 180,
+    "overtime_s": 120,
+    "elixir_phases": [
+      {
+        "from_s": 0,
+        "multiplier": 1
+      },
+      {
+        "from_s": 120,
+        "multiplier": 2
+      },
+      {
+        "from_s": 180,
+        "multiplier": 2
+      },
+      {
+        "from_s": 240,
+        "multiplier": 3
+      }
+    ],
+    "hand_size": 4,
+    "deck_size": 8,
+    "_sources": [
+      "Supercell 2019-11 release notes: overtime 2 min, x3 elixir in its last minute",
+      "Supercell support '1v1 Battle': x1 first 2 min, x2 third minute, x2 then x3 in overtime"
+    ],
+    "verified": true
+  },
+  "towers": {
+    "princess_tower": {
+      "verified": false,
+      "stats_l11": {
+        "hitpoints": 3052,
+        "damage": 109
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 7.5,
+        "hit_speed_s": 0.8
+      },
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "rarity": "common",
+      "_note": "Towers scale with King Tower level; approximated from L11 values with the common table (not exact)."
+    },
+    "king_tower": {
+      "verified": false,
+      "stats_l11": {
+        "hitpoints": 4824,
+        "damage": 109
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 7.0,
+        "hit_speed_s": 1.0
+      },
+      "footprint_tiles": [
+        4,
+        4
+      ],
+      "activation": [
+        "princess_tower_destroyed",
+        "king_tower_damaged"
+      ],
+      "rarity": "common",
+      "_note": "Towers scale with King Tower level; approximated from L11 values with the common table (not exact)."
+    }
+  },
+  "cards": {
+    "knight": {
+      "name": "Knight",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 1.2,
+        "hit_speed_s": 1.2,
+        "first_hit_s": 0.7,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": {
+        "cycles_required": 2,
+        "mechanics": [
+          "damage_reduction_while_not_attacking"
+        ],
+        "params": {
+          "damage_reduction": 0.6
+        }
+      },
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "Knight"
+      },
+      "collision_radius_tiles": 0.5,
+      "base_stats": {
+        "hitpoints": 690,
+        "damage": 79
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Knight",
+      "data_as_of": "2023-10-18"
+    },
+    "hog_rider": {
+      "name": "Hog Rider",
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "range_tiles": 0.8,
+        "hit_speed_s": 1.6,
+        "first_hit_s": 1.0,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 9.5
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "building_targeting",
+        "river_jump"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "HogRider"
+      },
+      "collision_radius_tiles": 0.6,
+      "base_stats": {
+        "hitpoints": 800,
+        "damage": 150
+      },
+      "data_source": "royaleapi-cr-api-data:troop/HogRider",
+      "data_as_of": "2023-10-18"
+    },
+    "musketeer": {
+      "name": "Musketeer",
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 6.0,
+        "hit_speed_s": 1.0,
+        "first_hit_s": 0.2,
+        "splash_radius_tiles": 0.0,
+        "projectile_speed_tiles_s": 16.666666666666668,
+        "sight_tiles": 6.0
+      },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "Musketeer"
+      },
+      "collision_radius_tiles": 0.5,
+      "base_stats": {
+        "hitpoints": 340,
+        "damage": 103
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Musketeer",
+      "data_as_of": "2023-10-18"
+    },
+    "cannon": {
+      "name": "Cannon",
+      "type": "building",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [
+        2,
+        2
+      ],
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 5.5,
+        "hit_speed_s": 0.9,
+        "first_hit_s": 0.0,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5,
+        "projectile_speed_tiles_s": 16.666666666666668
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "decaying_building",
+        "pulls_building_targeters"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "building",
+        "name": "Cannon"
+      },
+      "collision_radius_tiles": 0.6,
+      "base_stats": {
+        "hitpoints": 322,
+        "damage": 83
+      },
+      "data_source": "royaleapi-cr-api-data:building/Cannon",
+      "data_as_of": "2023-10-18"
+    },
+    "fireball": {
+      "name": "Fireball",
+      "type": "spell",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "spell": {
+        "radius_tiles": 2.5,
+        "travel_speed_tiles_s": 10.0,
+        "knockback": true
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "knockback",
+        "reduced_tower_damage"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "projectile",
+        "name": "FireballSpell"
+      },
+      "crown_tower_damage_pct": -70,
+      "base_stats": {
+        "damage": 325
+      },
+      "data_source": "royaleapi-cr-api-data:projectile/FireballSpell",
+      "data_as_of": "2023-10-18"
+    },
+    "the_log": {
+      "name": "The Log",
+      "type": "spell",
+      "rarity": "legendary",
+      "elixir": 2,
+      "verified": false,
+      "spell": {
+        "rolling_range_tiles": 10.1,
+        "width_tiles": 3.9,
+        "travel_speed_tiles_s": 3.3333333333333335,
+        "knockback": true,
+        "hits": [
+          "ground"
+        ]
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "rolling_spell",
+        "knockback",
+        "ground_only",
+        "reduced_tower_damage"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "projectile",
+        "name": "LogProjectileRolling"
+      },
+      "crown_tower_damage_pct": -80,
+      "base_stats": {
+        "damage": 240
+      },
+      "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling",
+      "data_as_of": "2023-10-18"
+    },
+    "skeletons": {
+      "name": "Skeletons",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 3,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.5,
+        "hit_speed_s": 1.0,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "swarm"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "Skeletons"
+      },
+      "collision_radius_tiles": 0.5,
+      "base_stats": {
+        "hitpoints": 32,
+        "damage": 32
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Skeletons",
+      "data_as_of": "2023-10-18"
+    },
+    "archers": {
+      "name": "Archers",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 2,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 5.0,
+        "hit_speed_s": 0.9,
+        "first_hit_s": 0.4,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5,
+        "projectile_speed_tiles_s": 10.0
+      },
+      "level_overrides": {},
+      "mechanics": [],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "Archer"
+      },
+      "collision_radius_tiles": 0.5,
+      "base_stats": {
+        "hitpoints": 119,
+        "damage": 42
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Archer",
+      "data_as_of": "2023-10-18"
+    },
+    "minions": {
+      "name": "Minions",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "count": 3,
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 1.6,
+        "hit_speed_s": 1.0,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5,
+        "projectile_speed_tiles_s": 16.666666666666668
+      },
+      "level_overrides": {},
+      "mechanics": [
+        "air_unit"
+      ],
+      "evolution": null,
+      "hero": null,
+      "source_ref": {
+        "section": "troop",
+        "name": "Minions"
+      },
+      "collision_radius_tiles": 0.5,
+      "base_stats": {
+        "hitpoints": 90,
+        "damage": 46
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Minions",
+      "data_as_of": "2023-10-18"
+    }
+  }
+}
