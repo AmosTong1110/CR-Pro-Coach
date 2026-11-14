@@ -14,6 +14,11 @@ Rules
   * Re-identification: a unit that disappears briefly (occluded by a spell, the detector
     blinked) and comes back near where it vanished revives its old track instead of
     being counted as a second play.
+  * Cycle rule (the game's own rule, the strongest filter): a card can only be played again
+    after `hand_size` other plays. A 'new' unit of a card that can't be back in hand yet is
+    a duplicate of the previous play (lost track in a crowd). Conversely, if the card *is*
+    back in hand and a unit reappears after a gap >= reborn_gap_ms, it is a fresh copy
+    (e.g. a new Cannon on the tile where the old one just expired).
   * The event time is when the unit was *first* seen, not when it was confirmed.
 """
 from __future__ import annotations
@@ -58,6 +63,13 @@ class PlayTracker:
     reid_ms: int = 600
     reid_radius: float = 2.5
     hand_size: int = 4
+    reborn_gap_ms: int = 800
+    lifetimes_ms: Dict[str, int] = field(default_factory=dict)   # buildings: card -> lifetime
+    lifetime_margin_ms: int = 200
+    # units that other cards also produce: card -> parent cards (Skeletons <- Graveyard, Witch, ...)
+    spawned_by: Dict[str, List[str]] = field(default_factory=dict)
+    spawn_radius: float = 7.0
+    spawn_window_ms: int = 15_000
 
     def __post_init__(self) -> None:
         self.tracks: List[_Track] = []
@@ -66,6 +78,7 @@ class PlayTracker:
         self._tid = 0
         self._eid = 1
         self.suppressed = 0   # duplicates rejected by the cycle rule (diagnostics)
+        self.spawns = 0       # units attributed to a spawner card instead of counted as plays
 
     def update(self, t_ms: int, detections: Sequence[TileDetection]) -> List[PublicDeployEvent]:
         # 1) match detections to live tracks (greedy by distance, deterministic)
@@ -73,6 +86,8 @@ class PlayTracker:
         for di, (card, side, x, y) in enumerate(detections):
             for tr in self.tracks:
                 if tr.card == card and tr.side == side:
+                    if self._reborn(tr, t_ms):
+                        continue   # long gap + card back in hand: a fresh copy, not the old unit
                     d = math.hypot(tr.x - x, tr.y - y)
                     if d <= self.match_radius:
                         pairs.append((d, di, tr.tid))
@@ -112,6 +127,15 @@ class PlayTracker:
         self.tracks = alive
         self.lost = [tr for tr in self.lost if t_ms - tr.last_ms <= self.reid_ms]
 
+        # 3b) a decaying building still visible after its lifetime must be a new copy on the
+        #     same tile (players re-place a Cannon the moment the old one expires)
+        for tr in self.tracks:
+            life = self.lifetimes_ms.get(tr.card)
+            if (life and tr.play is not None and tr.last_ms == t_ms
+                    and t_ms - tr.first_ms >= life + self.lifetime_margin_ms
+                    and self._cycle_impossible(tr) is None):
+                tr.first_ms, tr.play = t_ms - self.lifetime_margin_ms, None
+
         # 4) confirmed new tracks -> plays
         new_events = []
         for tr in sorted(self.tracks, key=lambda t: (t.first_ms, t.tid)):
@@ -121,6 +145,11 @@ class PlayTracker:
             if play is not None:
                 play.units += 1
                 tr.play = self.plays.index(play)
+                continue
+            parent = self._spawn_parent(tr)
+            if parent is not None:  # e.g. a skeleton next to a live Witch / fresh Graveyard
+                tr.play = parent
+                self.spawns += 1
                 continue
             dup = self._cycle_impossible(tr)
             if dup is not None:   # can't be a new play: the card is still cycling -> a duplicate unit
@@ -135,6 +164,26 @@ class PlayTracker:
             tr.play = len(self.plays) - 1
             new_events.append(ev)
         return new_events
+
+    def _spawn_parent(self, tr: _Track) -> Optional[int]:
+        parents = set(self.spawned_by.get(tr.card, ()))
+        if not parents:
+            return None
+        for other in self.tracks:   # a live spawner nearby (Witch, Tombstone, Goblin Hut, ...)
+            if (other.card in parents and other.side == tr.side and other.play is not None
+                    and math.hypot(other.x - tr.x, other.y - tr.y) <= self.spawn_radius):
+                return other.play
+        for i in range(len(self.plays) - 1, -1, -1):   # a recent spawner play (Graveyard, Barrel, ...)
+            ev = self.plays[i].event
+            if tr.first_ms - ev.t_ms > self.spawn_window_ms:
+                break
+            if (ev.card_id in parents and ev.side == tr.side
+                    and math.hypot(ev.tile.x - tr.x, ev.tile.y - tr.y) <= self.spawn_radius):
+                return i
+        return None
+
+    def _reborn(self, tr: _Track, t_ms: int) -> bool:
+        return t_ms - tr.last_ms >= self.reborn_gap_ms and self._cycle_impossible(tr) is None
 
     def _cycle_impossible(self, tr: _Track) -> Optional[int]:
         """Clash Royale cycle rule: after playing a card, `hand_size` other cards must be played
@@ -154,7 +203,8 @@ class PlayTracker:
     def _reidentify(self, card: str, side: int, x: float, y: float, t_ms: int) -> Optional[_Track]:
         best, best_d = None, self.reid_radius
         for tr in self.lost:
-            if tr.card == card and tr.side == side and t_ms - tr.last_ms <= self.reid_ms:
+            if tr.card == card and tr.side == side and t_ms - tr.last_ms <= self.reid_ms \
+                    and not self._reborn(tr, t_ms):
                 d = math.hypot(tr.x - x, tr.y - y)
                 if d <= best_d:
                     best, best_d = tr, d

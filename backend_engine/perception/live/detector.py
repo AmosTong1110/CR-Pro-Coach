@@ -34,6 +34,7 @@ class Detection:
     side: Optional[int]          # 0 = you (bottom), 1 = opponent, None = unknown
     box: Tuple[float, float, float, float]   # x1, y1, x2, y2 in frame pixels
     conf: float
+    evolved: bool = False
 
     @property
     def foot(self) -> Tuple[float, float]:
@@ -43,7 +44,7 @@ class Detection:
 
 
 class Detector(Protocol):
-    def detect(self, frame: np.ndarray) -> List[Detection]: ...
+    def detect(self, frame: np.ndarray, calibration=None) -> List[Detection]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -128,8 +129,12 @@ class YoloOnnxDetector:
         cm = json.loads(Path(class_map_path).read_text(encoding="utf-8"))
         self.size = int(cm.get("input_size", 640))
         self.side_mode = cm.get("side_mode", "class")
-        self.classes: Dict[int, Tuple[Optional[str], Optional[int]]] = {
-            int(c["index"]): (c.get("card"), c.get("side")) for c in cm["classes"]}
+        self.classes: Dict[int, Tuple[Optional[str], Optional[int], bool]] = {
+            int(c["index"]): (c.get("card"), c.get("side"), bool(c.get("evolved"))) for c in cm["classes"]}
+        # models trained on a fixed arena crop (e.g. 568x896): crop the calibrated arena first
+        self.arena_crop: Optional[Tuple[int, int]] = tuple(cm["arena_crop"]) if cm.get("arena_crop") else None
+        self.units_per_play: Dict[str, int] = cm.get("units_per_play", {})
+        self.spawned_by: Dict[str, List[str]] = cm.get("spawned_by", {})
         self.conf_thres, self.iou_thres = conf_thres, iou_thres
         if session is None:
             import onnxruntime as ort  # pip install onnxruntime
@@ -140,16 +145,33 @@ class YoloOnnxDetector:
         self.session = session
         self.input_name = session.get_inputs()[0].name
 
-    def detect(self, frame: np.ndarray) -> List[Detection]:
-        img, scale, pad = letterbox(frame, self.size)
+    def _arena_view(self, frame: np.ndarray, calibration) -> Tuple[np.ndarray, Tuple[float, float, float, float]]:
+        """Crop the calibrated arena and resize to the model's crop size.
+        Returns (image, (offset_x, offset_y, scale_x, scale_y)) to map boxes back to frame pixels."""
+        from PIL import Image
+
+        h, w = frame.shape[:2]
+        l, t, r, b = calibration._scaled(w, h)
+        l, t = max(0, int(round(l))), max(0, int(round(t)))
+        r, b = min(w, int(round(r))), min(h, int(round(b)))
+        cw, ch = self.arena_crop
+        img = np.asarray(Image.fromarray(frame[t:b, l:r]).resize((cw, ch), Image.BILINEAR))
+        return img, (l, t, (r - l) / cw, (b - t) / ch)
+
+    def detect(self, frame: np.ndarray, calibration=None) -> List[Detection]:
+        view, (ox, oy, sx, sy) = frame, (0.0, 0.0, 1.0, 1.0)
+        if self.arena_crop and calibration is not None:
+            view, (ox, oy, sx, sy) = self._arena_view(frame, calibration)
+        img, scale, pad = letterbox(view, self.size)
         x = img.astype(np.float32).transpose(2, 0, 1)[None] / 255.0
         out = self.session.run(None, {self.input_name: x})[0]
         dets = []
         for c, conf, box in yolo_postprocess(out, scale, pad, self.conf_thres, self.iou_thres):
-            card, side = self.classes.get(c, (None, None))
+            card, side, evolved = self.classes.get(c, (None, None, False))
             if card is None:
                 continue
+            fbox = (ox + box[0] * sx, oy + box[1] * sy, ox + box[2] * sx, oy + box[3] * sy)
             if side is None and self.side_mode == "color":
-                side = side_by_color(frame, box)
-            dets.append(Detection(card, side, tuple(float(v) for v in box), conf))
+                side = side_by_color(frame, fbox)
+            dets.append(Detection(card, side, tuple(float(v) for v in fbox), conf, evolved))
         return dets
