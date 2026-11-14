@@ -25,10 +25,10 @@ HUMAN, AI = 0, 1
 
 # Scripted stand-ins for the four coach personas until the trained policy exists.
 PERSONAS: Dict[str, dict] = {
-    "surgeon":    {"label": "完美运营大师 The Surgeon",       "aggression": 0.3, "profile": "surgeon"},
-    "aggressor":  {"label": "极致换路莽夫 The Aggressor",     "aggression": 0.95, "profile": "aggressor"},
-    "spell_cycler": {"label": "自闭法术斩杀流 Spell-Cycler", "aggression": 0.2, "profile": "spell_cycler"},
-    "adaptive_counter": {"label": "自适应克制者 Adaptive",   "aggression": 0.5, "profile": "adaptive_counter"},
+    "surgeon":    {"label": "The Surgeon (Control/Macro)",       "aggression": 0.3, "profile": "surgeon"},
+    "aggressor":  {"label": "The Aggressor (Dual-Lane Pressure)", "aggression": 0.95, "profile": "aggressor"},
+    "spell_cycler": {"label": "Spell-Cycler (Turtle/Chip)",       "aggression": 0.2, "profile": "spell_cycler"},
+    "adaptive_counter": {"label": "Adaptive Counter",             "aggression": 0.5, "profile": "adaptive_counter"},
 }
 
 
@@ -321,9 +321,9 @@ class GameSession:
         s = max(0, (left + 999) // 1000)
         mult = m.multiplier()
         if m.t_ms >= m.regulation_ms:
-            phase = f"加时 Overtime x{mult}"
+            phase = f"Overtime x{mult}"
         else:
-            phase = f"x{mult} 圣水" if mult > 1 else ""
+            phase = f"x{mult} Elixir" if mult > 1 else ""
         return f"{s // 60}:{s % 60:02d}", phase
 
     def elixir_cost(self, card_id: str) -> int:

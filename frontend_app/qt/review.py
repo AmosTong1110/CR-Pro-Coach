@@ -58,7 +58,7 @@ class WinRateGraph(QWidget):
         f.setPixelSize(10)
         p.setFont(f)
         # phase bands: x2 from 2:00, overtime from 3:00, x3 from 4:00
-        for t0, label in ((120_000, "x2"), (180_000, "加时"), (240_000, "x3")):
+        for t0, label in ((120_000, "x2"), (180_000, "OT"), (240_000, "x3")):
             if t0 < self.end_ms:
                 x = self._pt(t0, 0).x()
                 p.setPen(QPen(QColor(255, 255, 255, 40), 1, Qt.DashLine))
@@ -75,7 +75,7 @@ class WinRateGraph(QWidget):
             p.drawText(QRectF(self._pt(t, 0).x() - 20, r.bottom() + 3, 40, 14), Qt.AlignCenter, mmss(t))
         if not self.review or not self.review.curve:
             p.setPen(QColor(180, 180, 180))
-            p.drawText(r, Qt.AlignCenter, "对局结束或点击「分析」后生成胜率曲线 · Win-rate graph appears after analysis")
+            p.drawText(r, Qt.AlignCenter, "Win-rate graph appears after match ends or clicking 'Analyze'")
             p.end()
             return
         pts = [self._pt(t, v) for t, v in self.review.curve]
@@ -140,14 +140,14 @@ class ReviewPanel(QWidget):
         self.list = QListWidget()
         self.list.setStyleSheet("font-size:12px;")
         self.list.currentRowChanged.connect(lambda i: i >= 0 and self.select(i, from_list=True))
-        self.summary = QLabel("复盘 Post-match coach")
+        self.summary = QLabel("Post-match Coach Review")
         self.summary.setStyleSheet("font-weight:bold;")
         self.detail = QLabel()
         self.detail.setWordWrap(True)
         self.detail.setStyleSheet("font-size:12px;")
-        self.analyze_btn = QPushButton("分析 Analyze (R)")
+        self.analyze_btn = QPushButton("Analyze (R)")
         self.analyze_btn.clicked.connect(on_analyze)
-        self.take_btn = QPushButton("▶ 从此处接管 Take over from here")
+        self.take_btn = QPushButton("▶ Take Over from Here")
         self.take_btn.setEnabled(False)
         self.take_btn.clicked.connect(on_take_over)
         self.progress = QProgressBar()
@@ -176,12 +176,12 @@ class ReviewPanel(QWidget):
         self.take_btn.setEnabled(False)
         self.detail.setText("")
         if review is None:
-            self.summary.setText("复盘 Post-match coach")
+            self.summary.setText("Post-match Coach Review")
             self.list.blockSignals(False)
             return
         c = review.counts()
         self.summary.setText(
-            f"准确度 Accuracy {review.accuracy:.0f}  ·  !! {c['brilliant']}  ★ {c['best']}  "
+            f"Accuracy {review.accuracy:.0f}%  ·  !! {c['brilliant']}  ★ {c['best']}  "
             f"?! {c['inaccuracy']}  ? {c['mistake']}  ?? {c['blunder']}")
         for mv in review.moves:
             it = QListWidgetItem(f"{mmss(mv.t_ms)}  {self.names(mv.actual.card_id)}  {mv.symbol or '·'}  "
@@ -207,16 +207,16 @@ class ReviewPanel(QWidget):
 
 def describe(mv: MoveReview, names: Callable[[str], str]) -> str:
     a = mv.actual
-    lines = [f"<b>{mmss(mv.t_ms)} 你出 {names(a.card_id)} @ ({a.x:.1f}, {a.y:.1f})</b> — "
+    lines = [f"<b>{mmss(mv.t_ms)} Played {names(a.card_id)} @ ({a.x:.1f}, {a.y:.1f})</b> — "
              f"<span style='color:{LABEL_COLOR[mv.label].name()}'>{mv.label_text} {mv.symbol}</span>",
-             f"胜率 Win prob: 出牌前 {mv.v_before:.0%} → 你的打法 {mv.v_actual:.0%} · 最佳 {mv.v_best:.0%}"]
+             f"Win prob: Before play {mv.v_before:.0%} → Actual {mv.v_actual:.0%} · Best {mv.v_best:.0%}"]
     if mv.best.is_wait:
-        lines.append("<span style='color:#5ad15a'>最佳：等待，这里不该出牌（保留圣水/手牌）</span>")
+        lines.append("<span style='color:#5ad15a'>Best: Wait — do not play here (preserve elixir/cycle)</span>")
     elif mv.loss > 0.01:
         b = mv.best
-        lines.append(f"<span style='color:#5ad15a'>推荐：{names(b.card_id)} @ ({b.x:.1f}, {b.y:.1f})</span>"
-                     f"（绿色虚影）· 你的落点为红色虚影")
+        lines.append(f"<span style='color:#5ad15a'>Recommended: {names(b.card_id)} @ ({b.x:.1f}, {b.y:.1f})</span> "
+                     f"(green ghost) · Your placement in red")
     if mv.loss > 0.01 and not mv.best.is_wait and mv.v_wait > mv.v_actual + 0.03:
-        lines.append(f"就算什么都不出也更好（{mv.v_wait:.0%}）")
-    lines.append(f"<span style='color:#888'>比较了 {mv.n_candidates} 种选择，各推演 8 秒</span>")
+        lines.append(f"Even waiting would be better ({mv.v_wait:.0%})")
+    lines.append(f"<span style='color:#888'>Evaluated {mv.n_candidates} candidates rolled out 8s</span>")
     return "<br>".join(lines)

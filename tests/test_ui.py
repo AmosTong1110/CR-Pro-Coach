@@ -75,7 +75,7 @@ def test_reconfigure_restarts(s):
 def test_clock_phases(s):
     assert s.clock() == ("3:00", "")
     s.match.t_ms = 125_000
-    assert s.clock()[1] == "x2 圣水"
+    assert s.clock()[1] == "x2 Elixir"
     s.match.t_ms = 250_000
     assert s.clock()[0] == "0:50" and "x3" in s.clock()[1]
 

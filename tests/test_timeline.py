@@ -132,7 +132,7 @@ def test_window_rewind_countdown_and_take_over():
     slot = next(i for i, c in enumerate(st.hand) if w.session.db.cards[c]["type"] != "spell")
     w.on_hand_slot(slot)
     w.on_tile(9.5, 8.5)
-    assert "倒计时" in w.status.text()
+    assert "countdown" in w.status.text().lower()
     for _ in range(COUNTDOWN_MS // 50):
         w.on_timer()
     assert w.running and w.board.overlay_text is None and w.session.match.t_ms == 20_000

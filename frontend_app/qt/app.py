@@ -27,17 +27,17 @@ from frontend_app.qt.review import ReviewPanel, mmss as _mmss
 from frontend_app.qt.session import AI, HUMAN, PERSONAS, GameSession, LogEntry
 
 REASONS = {
-    "not_enough_elixir": "圣水不足 Not enough elixir",
-    "enemy_half": "不能下在对方半场 Can't deploy on enemy side",
-    "river": "不能下在河里 Can't deploy in the river",
-    "blocked_by_structure": "被建筑挡住 Blocked by a building",
-    "out_of_bounds": "超出场地 Out of bounds",
-    "not_in_hand": "这张牌不在手里 Card not in hand",
-    "match_over": "对局已结束 Match is over",
+    "not_enough_elixir": "Not enough elixir",
+    "enemy_half": "Can't deploy on enemy side",
+    "river": "Can't deploy in the river",
+    "blocked_by_structure": "Blocked by a building",
+    "out_of_bounds": "Out of bounds",
+    "not_in_hand": "Card not in hand",
+    "match_over": "Match is over",
 }
-LATENCY_CN = {
-    LatencyClass.SURPRISE: "突袭", LatencyClass.ANTICIPATED: "预判",
-    LatencyClass.ROUTINE: "常规", LatencyClass.HOVER_REFLEX: "悬停秒解",
+LATENCY_NAMES = {
+    LatencyClass.SURPRISE: "Surprise", LatencyClass.ANTICIPATED: "Anticipated",
+    LatencyClass.ROUTINE: "Routine", LatencyClass.HOVER_REFLEX: "Hover reflex",
 }
 SPEEDS = [("1x", 1), ("2x", 2), ("4x", 4), ("8x", 8)]
 COUNTDOWN_MS = 3000
@@ -115,8 +115,8 @@ class HandBar(QWidget):
     def refresh(self, hand: List[str], next_card: str, names, costs, elixir: float,
                 selected: Optional[str], evo_ready: set) -> None:
         for b, c in zip(self.buttons, hand):
-            evo = " ★觉醒" if c in evo_ready else ""
-            b.setText(f"{names[c]}{evo}\n{costs[c]} 圣水")
+            evo = " ★Evo" if c in evo_ready else ""
+            b.setText(f"{names[c]}{evo}\n{costs[c]} Elixir")
             b.setChecked(c == selected)
             afford = costs[c] <= elixir + 1e-9
             b.setStyleSheet(
@@ -124,7 +124,7 @@ class HandBar(QWidget):
                 f"background:{'#2b4f86' if afford else '#3a3a3a'}; color:{'white' if afford else '#999'};"
                 "border:2px solid #1b2f50;}"
                 "QPushButton:checked{border:3px solid #ffd400;}")
-        self.next_label.setText(f"下一张 Next\n{names[next_card]}")
+        self.next_label.setText(f"Next\n{names[next_card]}")
         self.elixir.set_value(elixir)
 
 
@@ -132,13 +132,13 @@ class HandBar(QWidget):
 class DeckDialog(QDialog):
     def __init__(self, session: GameSession, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("卡组构建 Deck Builder")
+        self.setWindowTitle("Deck Builder")
         self.session = session
         db = session.db
         lay = QHBoxLayout(self)
         self.lists, self.evos = [], []
-        for side, title, deck, evo in ((HUMAN, "你的卡组 Your deck", session.cfg.player_deck, session.cfg.player_evo),
-                                       (AI, "AI 卡组 AI deck", session.cfg.ai_deck, session.cfg.ai_evo)):
+        for side, title, deck, evo in ((HUMAN, "Your Deck", session.cfg.player_deck, session.cfg.player_evo),
+                                       (AI, "AI Deck", session.cfg.ai_deck, session.cfg.ai_evo)):
             box = QGroupBox(title)
             v = QVBoxLayout(box)
             lw = QListWidget()
@@ -150,10 +150,10 @@ class DeckDialog(QDialog):
                 lw.addItem(it)
             v.addWidget(lw)
             evo_box = QComboBox()
-            evo_box.addItem("无觉醒 No evolution", None)
+            evo_box.addItem("No evolution", None)
             for cid, c in db.cards.items():
                 if c.get("evolution"):
-                    evo_box.addItem(f"觉醒 {c['name']}", cid)
+                    evo_box.addItem(f"Evo {c['name']}", cid)
                     if cid in evo:
                         evo_box.setCurrentIndex(evo_box.count() - 1)
             v.addWidget(evo_box)
@@ -173,11 +173,11 @@ class DeckDialog(QDialog):
         for i in (0, 1):
             deck = self._chosen(i)
             if len(deck) != 8:
-                QMessageBox.warning(self, "卡组", f"每个卡组需要 8 张牌（现在 {len(deck)} 张）\nEach deck needs exactly 8 cards.")
+                QMessageBox.warning(self, "Deck", f"Each deck needs exactly 8 cards (currently {len(deck)}).\nEach deck needs exactly 8 cards.")
                 return
             evo = self.evos[i].currentData()
             if evo and evo not in deck:
-                QMessageBox.warning(self, "卡组", "觉醒卡必须在卡组里 Evolution card must be in the deck.")
+                QMessageBox.warning(self, "Deck", "Evolution card must be in the deck.")
                 return
         self.accept()
 
@@ -191,16 +191,16 @@ class CounterPanel(QGroupBox):
     """Opponent elixir + cycle counter, with a quiz mode that hides it so you practise counting."""
 
     def __init__(self, session: GameSession, on_guess, parent=None):
-        super().__init__("对手算水 Elixir counter", parent)
+        super().__init__("Elixir Counter", parent)
         self.session = session
         lay = QVBoxLayout(self)
         top = QHBoxLayout()
         self.mode = QComboBox()
-        self.mode.addItem("显示 Show", "show")
-        self.mode.addItem("训练 Quiz（隐藏，按 E 估算）", "quiz")
+        self.mode.addItem("Show", "show")
+        self.mode.addItem("Quiz (hidden, press E to guess)", "quiz")
         self.mode.currentIndexChanged.connect(lambda _: self.refresh())
         top.addWidget(self.mode, 1)
-        self.guess_btn = QPushButton("估算 Guess (E)")
+        self.guess_btn = QPushButton("Guess (E)")
         self.guess_btn.clicked.connect(on_guess)
         top.addWidget(self.guess_btn)
         lay.addLayout(top)
@@ -230,38 +230,38 @@ class CounterPanel(QGroupBox):
         s = self.session
         names = {cid: c["name"] for cid, c in s.db.cards.items()}
         n, mae, within = s.quiz_stats()
-        self.stats.setText(f"训练记录 {n} 次 · 平均误差 {mae:.2f} · 0.5 内 {within:.0%}" if n else "训练记录：还没有")
+        self.stats.setText(f"Quiz stats: {n} tries · MAE {mae:.2f} · Within 0.5: {within:.0%}" if n else "Quiz stats: No attempts yet")
         if self.quiz_mode:
-            self.value.setText("对手 ≈ ???")
+            self.value.setText("AI ≈ ???")
             self.adv.setText("")
-            self.cycle.setText("自己数：对手出过什么、哪张牌下一张回手？")
+            self.cycle.setText("Track yourself: what did AI play, and what card returns next?")
             return
         e = s.opp_estimate()
-        self.value.setText(f"对手 ≈ {e.point:.1f}")
+        self.value.setText(f"AI ≈ {e.point:.1f}")
         adv = s.elixir_advantage()
         if abs(adv) < 0.5:
-            self.adv.setText("持平 even")
+            self.adv.setText("Even")
             self.adv.setStyleSheet("font-size:13px; font-weight:bold; color:#bbb;")
         else:
-            self.adv.setText(f"你{'领先' if adv > 0 else '落后'} {adv:+.1f}")
+            self.adv.setText(f"{'Advantage' if adv > 0 else 'Deficit'} {adv:+.1f}")
             self.adv.setStyleSheet(f"font-size:13px; font-weight:bold; color:{'#4cd964' if adv > 0 else '#ff6b5e'};")
         q = [names[c] if c else "?" for c in e.queue]
         hand = [names[c] for c in e.known_in_hand] + ["?"] * e.unknown_hand_slots
-        lines = [f"手牌 In hand: {' · '.join(hand)}",
-                 f"回手顺序 Returns next: ▶ {' → '.join(q)}"]
+        lines = [f"In hand: {' · '.join(hand)}",
+                 f"Returns next: ▶ {' → '.join(q)}"]
         evo = [f"{names[c]} {k}/{s.db.cards[c]['evolution']['cycles_required']}"
                for c, k in e.evo_progress.items()]
         if evo:
-            lines.append("觉醒充能(若为觉醒卡): " + ", ".join(evo))
+            lines.append("Evo cycles: " + ", ".join(evo))
         if e.leaked > 0.05:
-            lines.append(f"对手已溢出 {e.leaked:.1f} 圣水")
+            lines.append(f"AI leaked {e.leaked:.1f} elixir")
         g = s.opp_deck_guess()
         if g is not None and g.card_probs:
             pretty = lambda c: names.get(c, c.replace("_", " ").title())  # noqa: E731
-            lines.append("可能还带 Likely: " + " · ".join(f"{pretty(c)} {p:.0%}" for c, p in g.top(4)))
+            lines.append("Likely cards: " + " · ".join(f"{pretty(c)} {p:.0%}" for c, p in g.top(4)))
             if g.likely_decks and g.likely_decks[0][1] >= 0.3 and len(g.revealed) >= 2 and g.matching_weight >= 5:
                 deck, p = g.likely_decks[0]
-                lines.append(f"最像的卡组 ({p:.0%}): " + ", ".join(pretty(c) for c in deck))
+                lines.append(f"Most likely deck ({p:.0%}): " + ", ".join(pretty(c) for c in deck))
         self.cycle.setText("\n".join(lines))
 
 
@@ -269,7 +269,7 @@ class CounterPanel(QGroupBox):
 class MainWindow(QMainWindow):
     def __init__(self, session: Optional[GameSession] = None):
         super().__init__()
-        self.setWindowTitle("CR Bot — 1v1 特训场")
+        self.setWindowTitle("CR Bot — 1v1 Sparring Arena")
         self.session = session or GameSession()
         self.running = False
         self.speed = 1
@@ -283,13 +283,13 @@ class MainWindow(QMainWindow):
 
         tl = QHBoxLayout()
         self.rew_btn = QPushButton("⏪ 10s (U)")
-        self.rew_btn.clicked.connect(lambda: self.jump(self.session.rewind(10), "后退 10 秒"))
+        self.rew_btn.clicked.connect(lambda: self.jump(self.session.rewind(10), "Rewind 10s"))
         self.fwd_btn = QPushButton("10s ⏩ (F)")
-        self.fwd_btn.clicked.connect(lambda: self.jump(self.session.forward(10), "前进 10 秒"))
+        self.fwd_btn.clicked.connect(lambda: self.jump(self.session.forward(10), "Forward 10s"))
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setSingleStep(1000)
         self.slider.setPageStep(10_000)
-        self.slider.sliderReleased.connect(lambda: self.jump(self.session.seek(self.slider.value()), "跳转"))
+        self.slider.sliderReleased.connect(lambda: self.jump(self.session.seek(self.slider.value()), "Seek"))
         self.slider_label = QLabel()
         self.slider_label.setFixedWidth(40)
         for w in (self.rew_btn, self.slider, self.slider_label, self.fwd_btn):
@@ -310,13 +310,13 @@ class MainWindow(QMainWindow):
         for w in (self.clock, self.phase, self.crowns):
             right.addWidget(w)
 
-        controls = QGroupBox("对局 Match")
+        controls = QGroupBox("Match")
         form = QFormLayout(controls)
-        self.start_btn = QPushButton("开始 Start (Space)")
+        self.start_btn = QPushButton("Start (Space)")
         self.start_btn.clicked.connect(self.toggle_run)
-        new_btn = QPushButton("新对局 New match (N)")
+        new_btn = QPushButton("New Match (N)")
         new_btn.clicked.connect(self.new_match)
-        deck_btn = QPushButton("卡组 Deck builder…")
+        deck_btn = QPushButton("Deck Builder…")
         deck_btn.clicked.connect(self.edit_decks)
         self.speed_box = QComboBox()
         for label, v in SPEEDS:
@@ -328,23 +328,23 @@ class MainWindow(QMainWindow):
         self.persona_box.setCurrentIndex(list(PERSONAS).index(self.session.cfg.persona))
         self.persona_box.currentIndexChanged.connect(lambda _: self.restart(persona=self.persona_box.currentData()))
         lv = QHBoxLayout()
-        self.lv11, self.lv16 = QRadioButton("Level 11 锦标赛"), QRadioButton("Level 16 满级")
+        self.lv11, self.lv16 = QRadioButton("Level 11 (Tournament)"), QRadioButton("Level 16 (Max)")
         (self.lv16 if self.session.cfg.level == 16 else self.lv11).setChecked(True)
         self.lv11.toggled.connect(lambda on: on and self.restart(level=11))
         self.lv16.toggled.connect(lambda on: on and self.restart(level=16))
         lv.addWidget(self.lv11)
         lv.addWidget(self.lv16)
-        self.vision = QCheckBox("标出 AI 还没看到的单位 (黄色虚线)")
+        self.vision = QCheckBox("Highlight units unseen by AI (yellow dashed)")
         self.vision.setChecked(True)
         self.vision.toggled.connect(self._toggle_vision)
         form.addRow(self.start_btn)
         form.addRow(new_btn)
         form.addRow(deck_btn)
-        review_btn = QPushButton("复盘 Review (R)")
+        review_btn = QPushButton("Review (R)")
         review_btn.clicked.connect(self.run_review)
         form.addRow(review_btn)
-        form.addRow("速度 Speed", self.speed_box)
-        form.addRow("AI 人格", self.persona_box)
+        form.addRow("Speed", self.speed_box)
+        form.addRow("AI Persona", self.persona_box)
         form.addRow(lv)
         form.addRow(self.vision)
         right.addWidget(controls)
@@ -352,7 +352,7 @@ class MainWindow(QMainWindow):
         self.counter = CounterPanel(self.session, self.quiz_guess)
         right.addWidget(self.counter)
 
-        right.addWidget(QLabel("出牌记录 Play log · 双击 = 从这步之前接管重打"))
+        right.addWidget(QLabel("Play log · Double-click to take over from before that move"))
         self.log_list = QListWidget()
         self.log_list.setStyleSheet("font-size:12px;")
         self.log_list.itemDoubleClicked.connect(self.take_over)
@@ -361,7 +361,7 @@ class MainWindow(QMainWindow):
         self.status.setWordWrap(True)
         self.status.setStyleSheet("color:#ffb347;")
         right.addWidget(self.status)
-        note = QLabel("AI 当前是规则脚本基线（RL 模型训练后替换）。\nCard data: game files as of 2023-10.")
+        note = QLabel("AI currently runs scripted baseline heuristics (RL model replaces this).\nCard data: game files as of 2023-10.")
         note.setStyleSheet("color:#888; font-size:10px;")
         right.addWidget(note)
 
@@ -378,7 +378,7 @@ class MainWindow(QMainWindow):
         names = lambda c: self.session.db.cards.get(c, {}).get("name", c)  # noqa: E731
         self.review_panel = ReviewPanel(names, self.run_review, self.take_over_review)
         self.review_panel.moveSelected.connect(self.show_review_move)
-        self.review_dock = QDockWidget("复盘 Post-match coach · 胜率曲线 Win-rate graph", self)
+        self.review_dock = QDockWidget("Post-match Coach Review · Win-rate Graph", self)
         self.review_dock.setWidget(self.review_panel)
         self.review_dock.setAllowedAreas(Qt.BottomDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.review_dock)
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.on_timer)
         self.timer.start()
         self.refresh()
-        self.flash("按 Space 开始 · Press Space to start")
+        self.flash("Press Space to start")
 
     # -- loop --------------------------------------------------------------
     def on_timer(self) -> None:
@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
                 self.board.overlay_text = None
                 self.board.ghosts, self.board.banner = [], None
                 self.running = True
-                self.start_btn.setText("暂停 Pause (Space)")
+                self.start_btn.setText("Pause (Space)")
             else:
                 self.board.overlay_text = str(-(-self.countdown_ms // 1000))
             self.board.update()
@@ -421,7 +421,7 @@ class MainWindow(QMainWindow):
         self.add_log(self.session.tick(self.speed))
         if self.session.result is not None:
             self.running = False
-            self.start_btn.setText("开始 Start (Space)")
+            self.start_btn.setText("Start (Space)")
             self.refresh()
             self.run_review()  # auto post-match coach
             return
@@ -434,18 +434,18 @@ class MainWindow(QMainWindow):
             return
         if not any(e.side == HUMAN for e in self.session.log):
             self.review_dock.show()
-            self.flash("还没有你的出牌可以分析 · Play some cards first")
+            self.flash("Play some cards first before analyzing")
             return
         self.analyzing = True
         self.running = False
         self._stop_countdown()
-        self.start_btn.setText("继续 Resume (Space)")
+        self.start_btn.setText("Resume (Space)")
         self.review_dock.show()
         panel = self.review_panel
         panel.progress.setVisible(True)
         panel.analyze_btn.setEnabled(False)
         self.centralWidget().setEnabled(False)
-        self.flash("分析中… 每一步推演几十种打法 · Analysing")
+        self.flash("Analyzing… simulating candidate moves 8s ahead")
 
         def progress(done: int, total: int) -> None:
             panel.progress.setMaximum(max(total, 1))
@@ -460,17 +460,17 @@ class MainWindow(QMainWindow):
             panel.analyze_btn.setEnabled(True)
             self.analyzing = False
         panel.set_review(review, max(self.session.match.t_ms, review.curve[-1][0] if review.curve else 0))
-        self.flash(f"复盘完成：准确度 {review.accuracy:.0f} · 点曲线上的标记或列表查看每一步")
+        self.flash(f"Review complete: Accuracy {review.accuracy:.0f}% · Click markers or list items to inspect moves")
 
     def show_review_move(self, i: int) -> None:
         review = self.review_panel.review
         mv = review.moves[i]
         if self.session.restore_before_event(mv.event_id) is None:
-            self.flash("这一步已不在当前时间线上，请重新分析 · Move no longer on this timeline")
+            self.flash("Move is no longer on this timeline; please re-analyze")
             return
         self._stop_countdown()
         self.running = False
-        self.start_btn.setText("继续 Resume (Space)")
+        self.start_btn.setText("Resume (Space)")
         self.log_list.clear()
         self.add_log([])
         self.select(None)
@@ -479,41 +479,41 @@ class MainWindow(QMainWindow):
         if not b.is_wait and (b.card_id, b.x, b.y) != (a.card_id, a.x, a.y):
             ghosts.append((b.card_id, b.x, b.y, "best"))
         self.board.ghosts = ghosts
-        tip = "最佳：等待" if b.is_wait else ("这步就是最佳" if mv.loss <= 0.01 else "红=你的落点 · 绿=推荐")
+        tip = "Best: Wait" if b.is_wait else ("Already best move" if mv.loss <= 0.01 else "Red = Your play · Green = Recommended")
         self.board.banner = f"{_mmss(mv.t_ms)}  {mv.label_text} {mv.symbol}  ·  {tip}"
         self.refresh()
 
     def take_over_review(self) -> None:
-        self.jump(self.session.match.t_ms, "从此处接管")
+        self.jump(self.session.match.t_ms, "Take over from here")
 
     def toggle_run(self) -> None:
         if self.countdown_ms > 0:  # Space during the countdown: stay paused instead
             self._stop_countdown()
             self.running = False
-            self.start_btn.setText("继续 Resume (Space)")
+            self.start_btn.setText("Resume (Space)")
             return
         if self.session.result is not None:
             return
         self.running = not self.running
-        self.start_btn.setText("暂停 Pause (Space)" if self.running else "继续 Resume (Space)")
+        self.start_btn.setText("Pause (Space)" if self.running else "Resume (Space)")
         self.flash("")
 
     # -- match setup ---------------------------------------------------------
     def restart(self, **changes) -> None:
         self.session.reconfigure(**changes)
         self._reset_view()
-        self.flash("已开新局（设置已更改）· New match with new settings")
+        self.flash("New match started with updated settings")
 
     def new_match(self) -> None:
         self.session.new_match()
         self._reset_view()
-        self.flash("新对局 · Press Space to start")
+        self.flash("New match · Press Space to start")
 
     # -- timeline -----------------------------------------------------------
     def jump(self, restored: Optional[int], what: str) -> None:
         """After a rewind/forward/take-over: rebuild the view, then count 3-2-1 and resume."""
         if restored is None:
-            self.flash("没有可跳转的时间点 · Nothing to jump to")
+            self.flash("Nothing to jump to")
             self.refresh()
             return
         self.running = False
@@ -522,15 +522,15 @@ class MainWindow(QMainWindow):
         self.select(None)
         self.countdown_ms = COUNTDOWN_MS
         self.board.overlay_text = "3"
-        self.flash(f"{what} → {mmss(restored)} · 3 秒后继续（Space 保持暂停）")
+        self.flash(f"{what} → {mmss(restored)} · Countdown 3s (Space to stay paused)")
         self.refresh()
 
     def take_over(self, item: QListWidgetItem) -> None:
         i = self.log_list.row(item)
         e = self.session.log[i]
-        who = "你" if e.side == HUMAN else "AI"
+        who = "You" if e.side == HUMAN else "AI"
         name = self.session.db.cards[e.card_id]["name"]
-        self.jump(self.session.take_over_before(i), f"接管：{who} 出 {name} 之前")
+        self.jump(self.session.take_over_before(i), f"Take over: Before {who} plays {name}")
 
     def _stop_countdown(self) -> None:
         self.countdown_ms = 0
@@ -542,7 +542,7 @@ class MainWindow(QMainWindow):
         self.board.ghosts, self.board.banner = [], None
         self.review_panel.set_review(None, 0)
         self.running = False
-        self.start_btn.setText("开始 Start (Space)")
+        self.start_btn.setText("Start (Space)")
         self.log_list.clear()
         self.select(None)
         self.refresh()
@@ -557,15 +557,15 @@ class MainWindow(QMainWindow):
         was_running = self.running
         self.running = False
         if guess is None or isinstance(guess, bool):
-            guess, ok = QInputDialog.getDouble(self, "算水训练 Elixir quiz",
-                                               "对手现在有多少圣水？ How much elixir does the AI have?",
+            guess, ok = QInputDialog.getDouble(self, "Elixir Quiz",
+                                               "How much elixir does the AI have right now?",
                                                5.0, 0.0, 10.0, 1)
             if not ok:
                 self.running = was_running
                 return
         r = self.session.quiz_guess(guess)
-        verdict = "完美" if r.error <= 0.3 else "接近" if r.error <= 1.0 else "差距较大"
-        self.flash(f"真实 {r.truth:.1f} · 你猜 {r.guess:.1f} · 误差 {r.error:.1f}（{verdict}）")
+        verdict = "Perfect" if r.error <= 0.3 else "Close" if r.error <= 1.0 else "Large gap"
+        self.flash(f"Actual {r.truth:.1f} · Your guess {r.guess:.1f} · Error {r.error:.1f} ({verdict})")
         self.running = was_running
         self.refresh()
 
@@ -588,12 +588,12 @@ class MainWindow(QMainWindow):
         if not self.selected:
             return
         if self.countdown_ms > 0:
-            self.flash("倒计时中，可以先瞄准，倒数结束再下 · Wait for the countdown")
+            self.flash("Countdown in progress: wait for countdown to end before dropping card")
             return
         res = self.session.play(self.selected, x, y)
         if res.ok and self.review_panel.review is not None:
-            self.review_panel.summary.setText(self.review_panel.summary.text().split("  ·  已偏离")[0]
-                                              + "  ·  已偏离原对局，按 R 重新分析")
+            self.review_panel.summary.setText(self.review_panel.summary.text().split("  ·  Diverged")[0]
+                                              + "  ·  Diverged from original match, press R to re-analyze")
         if res.ok:
             self.flash("")
             self.select(None)
@@ -609,12 +609,12 @@ class MainWindow(QMainWindow):
         shown = self.log_list.count()
         names = {cid: c["name"] for cid, c in self.session.db.cards.items()}
         for e in self.session.log[shown:]:
-            who = "你" if e.side == HUMAN else "AI"
-            evo = " ★觉醒" if e.evolved else ""
+            who = "You" if e.side == HUMAN else "AI"
+            evo = " ★Evo" if e.evolved else ""
             text = f"{mmss(e.t_ms)}  {who}  {names[e.card_id]}{evo}  ({e.x:.1f}, {e.y:.1f})"
             if e.ai_latency:
                 cls, ms = e.ai_latency
-                text += f"\n        → AI {ms / 1000:.2f}s 后察觉（{LATENCY_CN.get(cls, cls.value)}）"
+                text += f"\n        → AI noticed after {ms / 1000:.2f}s ({LATENCY_NAMES.get(cls, cls.value)})"
             it = QListWidgetItem(text)
             it.setForeground(QColor("#7fb2ff") if e.side == HUMAN else QColor("#ff8a80"))
             self.log_list.addItem(it)
@@ -627,7 +627,7 @@ class MainWindow(QMainWindow):
         clock, phase = s.clock()
         self.clock.setText(clock)
         self.phase.setText(phase)
-        self.crowns.setText(f"👑 你 {st.crowns}  :  {m.sides[AI].crowns} AI")
+        self.crowns.setText(f"👑 You {st.crowns}  :  {m.sides[AI].crowns} AI")
         names = {cid: c["name"] for cid, c in s.db.cards.items()}
         costs = {cid: c["elixir"] for cid, c in s.db.cards.items()}
         evo_ready = {c for c in st.evo_cards

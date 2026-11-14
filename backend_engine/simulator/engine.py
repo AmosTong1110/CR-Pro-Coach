@@ -8,7 +8,7 @@ Guarantees
   * The only information about a play that leaves the engine is PublicDeployEvent.
     observation(side, is_visible) applies fog of war for the opponent's units.
 
-Not modelled yet (tracked for later milestones): unit collision/pushing, projectiles
+Not modelled yet (tracked for later milestones): projectiles
 (hits are instant), knockback, stun/slow/freeze, death spawns, champion/hero abilities,
 evolution effects (evolution charge is tracked, effects are not).
 """
@@ -27,7 +27,9 @@ from backend_engine.simulator.card_db import CardDB
 
 TROOP_SIGHT = 5.5
 UNIT_RADIUS = 0.5
-THREAT_DEPTH = 4.0  # a troop deployed within this many tiles of the river counts as a threat
+THREAT_DEPTH = 4.0          # a troop deployed within this many tiles of the river counts as a threat
+COLLISION_STIFFNESS = 0.5   # fraction of the overlap resolved per tick (soft, like the game)
+MAX_PUSH_PER_TICK = 0.25    # tiles
 
 
 # ---------------------------------------------------------------------------
@@ -62,6 +64,7 @@ class Unit:
     active: bool = True            # king tower starts inactive
     source_event_id: Optional[int] = None
     evolved: bool = False
+    mass: float = 0.0              # push weight; 0 = immovable (towers, buildings)
 
     @property
     def building_only(self) -> bool:
@@ -123,6 +126,7 @@ class MatchConfig:
     evo_cards: Tuple[Tuple[str, ...], Tuple[str, ...]] = ((), ())
     seed: int = 0
     shuffle: bool = True
+    collisions: bool = True
 
 
 @dataclass(frozen=True)
@@ -314,6 +318,7 @@ class Match:
                 deploy_ms=int(card.get("deploy_time_s", 1.0) * 1000),
                 cooldown_ms=int(atk.get("first_hit_s", 0.5) * 1000),
                 decay_per_tick=decay, source_event_id=eid, evolved=evolved,
+                mass=0.0 if kind == "building" else float(card.get("mass") or 1),
             )
             self.units[u.uid] = u
 
@@ -378,6 +383,8 @@ class Match:
                 u.cooldown_ms = max(u.cooldown_ms, u.first_hit_ms)
                 self._move(u, tgt, dt)
 
+        if self.cfg.collisions:
+            self._resolve_collisions()
         self._resolve_deaths()
         self.t_ms += dt
         self._check_end()
@@ -463,6 +470,62 @@ class Match:
                 rs.hit.add(e.uid)
                 self._deal(e, rs.tower_damage if e.kind == "tower" else rs.damage)
         rs.y, rs.remaining = y1, rs.remaining - adv
+
+    def _resolve_collisions(self) -> None:
+        """Soft circle collision. Same-layer bodies that overlap are pushed apart; the lighter
+        one moves more (game-data mass). Towers/buildings never move. Ground units are not
+        pushed into the river (except jumpers). Sweep-and-prune on x keeps it ~O(n log n)."""
+        bodies = sorted((u for u in self.units.values() if u.hp > 0), key=lambda u: (u.x, u.uid))
+        if len(bodies) < 2:
+            return
+        max_r = max(u.radius for u in bodies)
+        push: Dict[int, List[float]] = {}
+        for i, a in enumerate(bodies):
+            for b in bodies[i + 1:]:
+                if b.x - a.x >= a.radius + max_r:
+                    break
+                if a.layer != b.layer or (a.mass == 0 and b.mass == 0):
+                    continue
+                dx, dy = b.x - a.x, b.y - a.y
+                r = a.radius + b.radius
+                d2 = dx * dx + dy * dy
+                if d2 >= r * r:
+                    continue
+                d = math.sqrt(d2)
+                if d < 1e-6:  # exactly stacked: split along a direction fixed by the uids
+                    ang = ((min(a.uid, b.uid) * 0.6180339887) % 1.0) * 2 * math.pi
+                    nx, ny, d = math.cos(ang), math.sin(ang), 0.0
+                else:
+                    nx, ny = dx / d, dy / d
+                overlap = (r - d) * COLLISION_STIFFNESS
+                ma, mb = a.mass, b.mass
+                if ma == 0:
+                    sa, sb = 0.0, 1.0
+                elif mb == 0:
+                    sa, sb = 1.0, 0.0
+                else:
+                    sa, sb = mb / (ma + mb), ma / (ma + mb)
+                pa = push.setdefault(a.uid, [0.0, 0.0])
+                pb = push.setdefault(b.uid, [0.0, 0.0])
+                pa[0] -= nx * overlap * sa
+                pa[1] -= ny * overlap * sa
+                pb[0] += nx * overlap * sb
+                pb[1] += ny * overlap * sb
+        for uid in sorted(push):
+            u = self.units[uid]
+            px, py = push[uid]
+            n = math.hypot(px, py)
+            if n > MAX_PUSH_PER_TICK:
+                px, py = px * MAX_PUSH_PER_TICK / n, py * MAX_PUSH_PER_TICK / n
+            ox, oy = u.x, u.y
+            nx_, ny_ = min(max(ox + px, 0.0), G.W - 0.01), min(max(oy + py, 0.0), G.H - 0.01)
+            if u.layer == "ground" and not u.river_jump and G.region(ny_) == "river" and not G.on_bridge(nx_):
+                if G.region(oy) == "river":       # was on the bridge: slide along it, don't fall off
+                    bx = min(G.BRIDGE_X, key=lambda b: abs(b - ox))
+                    nx_ = min(max(nx_, bx - G.BRIDGE_HALF_W), bx + G.BRIDGE_HALF_W)
+                else:                              # was on a bank: stay on it
+                    ny_ = oy
+            u.x, u.y = nx_, ny_
 
     def _resolve_deaths(self) -> None:
         for uid in sorted(self.units):

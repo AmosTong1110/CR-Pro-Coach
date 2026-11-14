@@ -36,12 +36,12 @@ BEST_EPS = 0.01
 BRILLIANT_GAIN = 0.12
 
 LABELS = {
-    "brilliant":  ("!!", "妙手 Brilliant"),
-    "best":       ("★", "最佳 Best"),
-    "good":       ("", "好棋 Good"),
-    "inaccuracy": ("?!", "缓手 Inaccuracy"),
-    "mistake":    ("?", "失误 Mistake"),
-    "blunder":    ("??", "大错 Blunder"),
+    "brilliant":  ("!!", "Brilliant"),
+    "best":       ("★", "Best"),
+    "good":       ("", "Good"),
+    "inaccuracy": ("?!", "Inaccuracy"),
+    "mistake":    ("?", "Mistake"),
+    "blunder":    ("??", "Blunder"),
 }
 
 TROOP_SPOTS = [(3.5, 13.5), (14.5, 13.5), (3.5, 9.5), (14.5, 9.5), (3.5, 4.5), (14.5, 4.5), (9.5, 9.5), (8.5, 5.5)]

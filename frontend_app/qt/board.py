@@ -109,8 +109,8 @@ class BoardWidget(QWidget):
         p.end()
 
     def _paint_ghosts(self, p: QPainter, ts: float) -> None:
-        styles = {"actual": (QColor(235, 70, 70, 120), QColor("#ff8a80"), "你"),
-                  "best": (QColor(60, 220, 100, 120), QColor("#b9f6ca"), "推荐")}
+        styles = {"actual": (QColor(235, 70, 70, 120), QColor("#ff8a80"), "You"),
+                  "best": (QColor(60, 220, 100, 120), QColor("#b9f6ca"), "Best")}
         for card_id, x, y, kind in self.ghosts:
             fill, edge, tag = styles[kind]
             card = self.session.db.cards[card_id]
@@ -285,11 +285,11 @@ class BoardWidget(QWidget):
             return
         p.fillRect(self.rect(), QColor(0, 0, 0, 120))
         if r.winner is None:
-            text, col = "平局 Draw", QColor("#dddddd")
+            text, col = "Draw", QColor("#dddddd")
         elif r.winner == HUMAN:
-            text, col = "胜利 Victory", QColor("#ffd400")
+            text, col = "Victory", QColor("#ffd400")
         else:
-            text, col = "失败 Defeat", QColor("#ff6b5e")
+            text, col = "Defeat", QColor("#ff6b5e")
         f = QFont()
         f.setPixelSize(max(24, self.width() // 10))
         f.setBold(True)
@@ -299,6 +299,6 @@ class BoardWidget(QWidget):
         f.setPixelSize(max(14, self.width() // 26))
         p.setFont(f)
         p.setPen(QColor("white"))
-        reason = {"king_destroyed": "三冠 3 crowns", "crowns": "冠数领先 more crowns",
-                  "tiebreaker": "塔血判定 lowest tower HP", "draw": ""}[r.reason]
+        reason = {"king_destroyed": "3 Crowns", "crowns": "Crown lead",
+                  "tiebreaker": "Lowest tower HP", "draw": ""}[r.reason]
         p.drawText(self.rect().adjusted(0, 40, 0, 40), Qt.AlignCenter, f"{r.crowns[0]} : {r.crowns[1]}   {reason}")

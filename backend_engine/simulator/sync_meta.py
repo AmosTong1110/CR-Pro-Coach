@@ -77,6 +77,7 @@ def build_card(card: Dict[str, Any], src: SourceIndex, as_of: str) -> Dict[str, 
             atk["projectile_speed_tiles_s"] = proj["speed"] / SPEED_UNIT
         out["deploy_time_s"] = (body.get("deploy_time") or 1000) / MS
         out["collision_radius_tiles"] = (body.get("collision_radius") or 500) / MS
+        out["mass"] = body.get("mass") or 0   # push weight; 0 = immovable (buildings)
         if ref["section"] == "troop":
             out["count"] = max(1, rec.get("summon_number") or 1)
             out.setdefault("movement", {})["speed_tiles_s"] = body["speed"] / SPEED_UNIT

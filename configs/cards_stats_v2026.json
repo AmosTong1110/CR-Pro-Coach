@@ -191,7 +191,8 @@
         "damage": 79
       },
       "data_source": "royaleapi-cr-api-data:troop/Knight",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 6
     },
     "hog_rider": {
       "name": "Hog Rider",
@@ -232,7 +233,8 @@
         "damage": 150
       },
       "data_source": "royaleapi-cr-api-data:troop/HogRider",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 4
     },
     "musketeer": {
       "name": "Musketeer",
@@ -272,7 +274,8 @@
         "damage": 103
       },
       "data_source": "royaleapi-cr-api-data:troop/Musketeer",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 5
     },
     "cannon": {
       "name": "Cannon",
@@ -314,7 +317,8 @@
         "damage": 83
       },
       "data_source": "royaleapi-cr-api-data:building/Cannon",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 0
     },
     "fireball": {
       "name": "Fireball",
@@ -418,7 +422,8 @@
         "damage": 32
       },
       "data_source": "royaleapi-cr-api-data:troop/Skeletons",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 1
     },
     "archers": {
       "name": "Archers",
@@ -458,7 +463,8 @@
         "damage": 42
       },
       "data_source": "royaleapi-cr-api-data:troop/Archer",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 3
     },
     "minions": {
       "name": "Minions",
@@ -500,7 +506,8 @@
         "damage": 46
       },
       "data_source": "royaleapi-cr-api-data:troop/Minions",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "mass": 2
     }
   }
 }
