@@ -342,3 +342,37 @@ def test_build_class_map(tmp_path):
     assert cards == {"archer": "archers", "archer-evolution": "archers", "golemite": None, "queen-tower": None,
                      "hog-rider": "hog_rider", "the-log": "the_log", "skeleton": "skeletons", "mystery-card": None}
     assert data["classes"][1]["evolved"] and data["arena_crop"] == [568, 896]
+
+
+def test_side_inferred_from_deploy_position():
+    tr = PlayTracker(COSTS, spells=frozenset({"fireball"}))
+    t, events = 0, []
+    for k in range(4):   # opponent knight deployed on their half, walks across the river
+        events += tr.update(t, [("knight", None, 9, 20 - 1.5 * k)])
+        t += 100
+    for k in range(3):   # your hog on your half
+        events += tr.update(t, [("hog_rider", None, 3.5, 12)])
+        t += 100
+    for k in range(3):   # a fireball landing on your half: most likely the opponent's
+        events += tr.update(t, [("fireball", None, 4, 8)])
+        t += 100
+    assert [(e.card_id, e.side) for e in events] == [("knight", OPP), ("hog_rider", 0), ("fireball", OPP)]
+    assert sum(1 for tr_ in tr.tracks if tr_.card == "knight") == 1   # same track after crossing the river
+
+
+SUDHISH = ROOT / "pretrained_weights" / "sudhishneel_v8" / "v8_best.onnx"
+
+
+@pytest.mark.skipif(not SUDHISH.exists() or not (ROOT / "configs" / "detector_class_map.json").exists(),
+                    reason="SudhishNeel ONNX model not installed")
+def test_real_model_runs_through_companion():
+    pytest.importorskip("onnxruntime")
+    det = YoloOnnxDetector(SUDHISH, ROOT / "configs" / "detector_class_map.json")
+    assert det.arena_crop == (568, 896) and len(det.classes) == 174
+    cal = ArenaCalibration.from_corners(608, 1300, (20, 140), (588, 1036))
+    frame = np.full((1300, 608, 3), 30, np.uint8)       # empty screen: the model must not crash
+    assert isinstance(det.detect(frame, cal), list)
+    comp = LiveCompanion.create(detector=det, calibration=cal)
+    comp.start_match(wall=0.0)
+    comp.process_frame(frame, wall=1.0)
+    assert comp.state(1.0).t_ms == 1000

@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 from backend_engine.contracts import PublicDeployEvent, TilePos
 
-TileDetection = Tuple[str, int, float, float]  # card_id, side, x, y (tiles)
+TileDetection = Tuple[str, Optional[int], float, float]  # card_id, side (None = unknown), x, y (tiles)
 
 
 @dataclass
@@ -70,6 +70,9 @@ class PlayTracker:
     spawned_by: Dict[str, List[str]] = field(default_factory=dict)
     spawn_radius: float = 7.0
     spawn_window_ms: int = 15_000
+    spells: frozenset = frozenset()           # card ids that are spells (side can't come from position)
+    river_y0: float = 15.0
+    river_y1: float = 17.0
 
     def __post_init__(self) -> None:
         self.tracks: List[_Track] = []
@@ -85,7 +88,7 @@ class PlayTracker:
         pairs = []
         for di, (card, side, x, y) in enumerate(detections):
             for tr in self.tracks:
-                if tr.card == card and tr.side == side:
+                if tr.card == card and (side is None or tr.side == side):
                     if self._reborn(tr, t_ms):
                         continue   # long gap + card back in hand: a fresh copy, not the old unit
                     d = math.hypot(tr.x - x, tr.y - y)
@@ -107,6 +110,10 @@ class PlayTracker:
         for di, (card, side, x, y) in enumerate(detections):
             if di in used_d:
                 continue
+            if side is None:
+                side = self._side_from_position(card, y)
+                if side is None:
+                    continue   # first seen on the river: wait until it is clearly on one half
             revived = self._reidentify(card, side, x, y, t_ms)
             if revived is not None:
                 revived.x, revived.y, revived.last_ms = x, y, t_ms
@@ -164,6 +171,19 @@ class PlayTracker:
             tr.play = len(self.plays) - 1
             new_events.append(ev)
         return new_events
+
+    def _side_from_position(self, card: str, y: float) -> Optional[int]:
+        """Owner of a unit whose colour we couldn't read: troops and buildings can only be
+        deployed on their owner's half, so where a unit first appears tells whose it is.
+        Spells can land anywhere; heuristic: a spell is aimed at the enemy, so one landing on
+        your half was most likely the opponent's (and vice versa). Less certain than for troops."""
+        if card in self.spells:
+            return 1 if y < (self.river_y0 + self.river_y1) / 2 else 0
+        if y >= self.river_y1:
+            return 1
+        if y < self.river_y0:
+            return 0
+        return None
 
     def _spawn_parent(self, tr: _Track) -> Optional[int]:
         parents = set(self.spawned_by.get(tr.card, ()))
