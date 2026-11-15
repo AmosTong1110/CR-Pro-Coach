@@ -1,12 +1,14 @@
 """Timed status effects on units: one place for the engine to ask "can this unit move / attack / be targeted?".
 
-Effects are tags in `Unit.status` (tag -> remaining ms). Nothing in the current 9-card set applies them; batch 1
-cards (Zap, Ice Spirit, Freeze, Royal Ghost, ...) will.
+Effects are tags in `Unit.status` (tag -> remaining ms). Appliers: Zap (area spell `apply_status`), Ice Spirit
+(`suicide` + freeze), Electro Spirit (`suicide` chain + stun), Ice Golem (`death_damage` + slow). Royal Ghost's
+invisibility is still to come.
 """
 from __future__ import annotations
 
 STUN, FREEZE, SLOW, ROOT, INVISIBLE = "stun", "freeze", "slow", "root", "invisible"
-SLOW_FACTOR = 0.65      # unverified placeholder; per-card params override it when cards arrive
+SLOW_FACTOR = 0.65      # game buff IceWizardSlowDown: speed and hit speed -35% (2023-10 data); duration is per card
+SLOW_PCT = 65           # same factor in integer percent, for attack-timer arithmetic
 
 
 def apply(u, tag: str, ms: int) -> None:
@@ -40,3 +42,8 @@ def targetable(u) -> bool:
 
 def speed_factor(u) -> float:
     return SLOW_FACTOR if SLOW in u.status else 1.0
+
+
+def cooldown_dt(u, dt: int) -> int:
+    """How much the attack timer advances this tick: slowed units attack 35% slower (integer ms)."""
+    return dt * SLOW_PCT // 100 if SLOW in u.status else dt

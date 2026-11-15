@@ -108,6 +108,10 @@ def test_main_window_offscreen():
     app = QApplication.instance() or QApplication([])
     w = MainWindow(GameSession(cfg=SessionConfig(seed=4)))
     w.show()
+    w.on_hand_slot(0)
+    assert w.selected is None                 # setup: the hand is locked until you press Start
+    w.start_match()
+    assert w.mode == "live" and w.running
     st = w.session.match.sides[HUMAN]
     slot = next(i for i, c in enumerate(st.hand) if w.session.db.cards[c]["type"] != "spell")
     card = st.hand[slot]
@@ -118,7 +122,6 @@ def test_main_window_offscreen():
     st.elixir = 10
     w.on_tile(9.5, 8.5)
     assert w.selected is None and w.log_list.count() == 1
-    w.toggle_run()
     w.speed = 8
     for _ in range(20):
         w.on_timer()

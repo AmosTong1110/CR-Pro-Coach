@@ -18,77 +18,34 @@ from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtCore import QSize, Qt, QUrl
-from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QPalette, QShortcut
+from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QFileDialog, QFormLayout, QFrame,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
-    QMessageBox, QPushButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QMessageBox, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout,
+    QWidget,
 )
 
 from backend_engine.meta.archetypes import avg_elixir, fmt_avg, pretty
 from backend_engine.meta.recommend import coverage, meta_info, recommend
+from backend_engine.simulator.engine import ENGINE_VERSION
 from backend_engine.simulator.match_runner import DEFAULT_DECK
 from backend_engine.storage import default_data_dir
 from backend_engine.storage.match_store import MatchMeta, MatchStore, MatchStoreError
 from backend_engine.storage.profile import Profile, load_profile, save_profile
-from frontend_app.qt.app import SPEEDS, MainWindow
-from frontend_app.qt.review import WinRateGraph, mmss
-from backend_engine.simulator.engine import ENGINE_VERSION
+from frontend_app.qt.app import SPEEDS, MainWindow, avg_cost, deck_label
+from frontend_app.qt.review import LABEL_COLOR, WinRateGraph, grade_chips_html, mmss
 from frontend_app.qt.session import PERSONAS, GameSession, ReplayMismatch, SessionConfig
+from frontend_app.qt.theme import C, STYLE, cls, dark_palette  # noqa: F401  (C/STYLE/dark_palette re-exported)
+from frontend_app.qt.widgets import DeckView, StatTile, card_frame, deck_costs, deck_names
 
-# -- CRbot palette (own identity: charcoal + teal / violet) -------------------
-C = {
-    "bg": "#15171c", "panel": "#1d2027", "panel2": "#252932", "line": "#2f3440",
-    "text": "#e6e8ec", "muted": "#8a909c", "teal": "#2ec4b6", "violet": "#8b5cf6",
-    "win": "#3ddc97", "loss": "#ff6b6b", "draw": "#c9ced8",
-}
-STYLE = f"""
-QWidget#ShellRoot, QStackedWidget#Pages, QWidget.page {{ background:{C['bg']}; color:{C['text']}; }}
-QWidget#Sidebar {{ background:{C['panel']}; border-right:1px solid {C['line']}; }}
-QLabel#Brand {{ color:{C['text']}; font-size:22px; font-weight:800; padding:18px 16px 2px 18px; }}
-QLabel#BrandSub {{ color:{C['teal']}; font-size:11px; padding:0 16px 14px 18px; letter-spacing:1px; }}
-QPushButton.nav {{ text-align:left; padding:10px 16px; margin:2px 10px; border:none; border-radius:8px;
-                   color:{C['muted']}; font-size:14px; background:transparent; }}
-QPushButton.nav:hover {{ background:{C['panel2']}; color:{C['text']}; }}
-QPushButton.nav:checked {{ background:{C['panel2']}; color:{C['text']}; border-left:3px solid {C['teal']}; }}
-QLabel.h1 {{ font-size:22px; font-weight:700; color:{C['text']}; }}
-QLabel.sub {{ font-size:12px; color:{C['muted']}; }}
-QPushButton.primary {{ background:{C['teal']}; color:#0b1f1d; border:none; border-radius:7px;
-                       padding:7px 14px; font-weight:700; }}
-QPushButton.primary:disabled {{ background:{C['line']}; color:{C['muted']}; }}
-QPushButton.ghost {{ background:transparent; color:{C['text']}; border:1px solid {C['line']}; border-radius:7px;
-                     padding:7px 14px; }}
-QPushButton.ghost:hover {{ border-color:{C['violet']}; }}
-QPushButton.ghost:disabled {{ color:{C['muted']}; border-color:{C['panel2']}; }}
-QPushButton.danger {{ background:transparent; color:{C['loss']}; border:1px solid {C['line']}; border-radius:7px;
-                      padding:7px 14px; }}
-"""
-
-def dark_palette() -> QPalette:
-    """CRbot palette for all standard widgets (Fight page, dialogs, lists), so nothing is dark-on-dark."""
-    p = QPalette()
-    roles = {
-        QPalette.Window: C["bg"], QPalette.WindowText: C["text"], QPalette.Base: C["panel"],
-        QPalette.AlternateBase: C["panel2"], QPalette.Text: C["text"], QPalette.Button: C["panel2"],
-        QPalette.ButtonText: C["text"], QPalette.ToolTipBase: C["panel2"], QPalette.ToolTipText: C["text"],
-        QPalette.Highlight: C["teal"], QPalette.HighlightedText: "#0b1f1d", QPalette.PlaceholderText: C["muted"],
-        QPalette.Link: C["teal"], QPalette.BrightText: C["loss"],
-    }
-    for role, col in roles.items():
-        p.setColor(role, QColor(col))
-    for role in (QPalette.WindowText, QPalette.Text, QPalette.ButtonText):
-        p.setColor(QPalette.Disabled, role, QColor(C["muted"]))
-    return p
-
+# Palette + stylesheet live in theme.py (shared with the Fight page and dialogs); re-exported here.
 
 NAV = (("fight", "⚔️   Fight"), ("analysis", "📈   Analysis"), ("decks", "🃏   Decks"), ("account", "👤   Account"))
 OUTCOME_TEXT = {"win": "Win", "loss": "Loss", "draw": "Draw", None: "Unfinished"}
 
 
-def _cls(w: QWidget, name: str) -> QWidget:
-    """Attach a stylesheet class (QSS `.name`) to a widget."""
-    w.setProperty("class", name)
-    return w
+_cls = cls
 
 
 def _label(text: str, cls: str = "", wrap: bool = False) -> QLabel:
@@ -113,75 +70,200 @@ def _when(iso: str) -> str:
         return iso
 
 
+def match_title(m: MatchMeta) -> str:
+    """'CRbot Starter vs Hog 2.6 Cycle': preset names where the deck is a preset, else the archetype."""
+    return f"{deck_label(m.player_deck, m.player_evo)} vs {deck_label(m.opp_deck, m.opp_evo)}"
+
+
 def deck_text(deck, evo=()) -> str:
     return ", ".join(("Evo " if c in evo else "") + pretty(c) for c in deck)
 
 
 # ---------------------------------------------------------------------------
+class MatchRow(QWidget):
+    """One saved match in the Analysis list: outcome stripe, result, when, title, length and accuracy."""
+
+    def __init__(self, m: MatchMeta):
+        super().__init__()
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)      # the list handles clicks and selection
+        col = C[m.outcome] if m.outcome else C["muted"]
+        h = QHBoxLayout(self)
+        h.setContentsMargins(8, 8, 10, 8)
+        h.setSpacing(10)
+        bar = QFrame()
+        bar.setFixedWidth(4)
+        bar.setStyleSheet(f"background:{col}; border-radius:2px;")
+        h.addWidget(bar)
+        v = QVBoxLayout()
+        v.setSpacing(2)
+        top = QHBoxLayout()
+        res = QLabel(f"{OUTCOME_TEXT[m.outcome]}  {m.crowns[0]}–{m.crowns[1]}")
+        res.setStyleSheet(f"color:{col}; font-weight:800; font-size:13px; background:transparent;")
+        when = QLabel(_when(m.created))
+        when.setStyleSheet(f"color:{C['muted']}; font-size:11px; background:transparent;")
+        top.addWidget(res)
+        top.addStretch(1)
+        top.addWidget(when)
+        title = QLabel(match_title(m))
+        title.setStyleSheet(f"color:{C['text']}; font-size:12px; background:transparent;")
+        acc = f"accuracy {m.accuracy:.0f}%" if m.accuracy is not None else "not analyzed"
+        sub = QLabel(f"{mmss(m.duration_ms)}  ·  {m.n_plays} plays  ·  {acc}")
+        sub.setStyleSheet(f"color:{C['muted']}; font-size:11px; background:transparent;")
+        v.addLayout(top)
+        v.addWidget(title)
+        v.addWidget(sub)
+        h.addLayout(v, 1)
+
+
 class AnalysisPage(QWidget):
-    """Saved matches (newest first) and a summary of the selected one."""
+    """Saved matches (newest first) on the left; the selected match on the right: summary, decks, win-rate graph
+    with a time slider, and Open review (at the chosen moment) / Analyze / Delete."""
 
     def __init__(self, shell: "CRbotWindow"):
         super().__init__()
         self.shell = shell
         self.metas: List[MatchMeta] = []
+        self.review = None
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 20, 24, 20)
+        root.setSpacing(14)
+
         head = QHBoxLayout()
         head.addWidget(_label("Analysis", "h1"))
         head.addStretch(1)
         self.filter = QComboBox()
-        for label, mode in (("All matches", None), ("Practice", "practice"), ("Recordings", "recording"),
-                            ("Drills", "drill")):
-            self.filter.addItem(label, mode)
+        for text, mode in (("All matches", None), ("Practice", "practice"), ("Recordings", "recording"),
+                           ("Drills", "drill")):
+            self.filter.addItem(text, mode)
         self.filter.currentIndexChanged.connect(lambda _: self.reload())
         head.addWidget(self.filter)
         root.addLayout(head)
-        self.stats = _label("", "sub")
+
+        tiles = QHBoxLayout()
+        tiles.setSpacing(12)
+        self.t_matches, self.t_winrate = StatTile("matches"), StatTile("win rate")
+        self.t_record, self.t_acc = StatTile("wins · losses · draws"), StatTile("average accuracy")
+        for t in (self.t_matches, self.t_winrate, self.t_record, self.t_acc):
+            tiles.addWidget(t, 1)
+        root.addLayout(tiles)
+        self.stats = _label("", "sub")          # one-line summary (kept for tests / screen readers)
+        self.stats.setVisible(False)
         root.addWidget(self.stats)
 
         body = QHBoxLayout()
+        body.setSpacing(16)
+        left = QVBoxLayout()
+        left.setSpacing(6)
+        left.addWidget(_label("SAVED MATCHES", "section"))
         self.list = QListWidget()
-        self.list.setMinimumWidth(320)
+        self.list.setFixedWidth(330)
         self.list.setSpacing(2)
-        self.list.setStyleSheet(f"QListWidget{{background:{C['panel']}; border:1px solid {C['line']};"
-                                f"border-radius:8px;}}"
-                                f"QListWidget::item{{padding:8px;}}"
-                                f"QListWidget::item:selected{{background:{C['panel2']}; color:{C['text']};}}")
+        self.list.setStyleSheet("QListWidget::item{padding:0px;}")
         self.list.currentRowChanged.connect(self.show_match)
         self.list.itemDoubleClicked.connect(lambda _: self.open_selected())
-        body.addWidget(self.list, 2)
+        left.addWidget(self.list, 1)
+        body.addLayout(left)
 
-        detail = QVBoxLayout()
+        # -- detail (scrolls instead of squeezing on small windows) --
+        inner = QWidget()
+        dv = QVBoxLayout(inner)
+        dv.setContentsMargins(0, 0, 4, 0)
+        dv.setSpacing(12)
+
+        self.head_card = card_frame(spacing=8, margins=16)
+        hl = self.head_card.layout()
+        tr = QHBoxLayout()
         self.title = _label("", "h1", wrap=True)
+        self.badge = QLabel()
+        tr.addWidget(self.title, 1)
+        tr.addWidget(self.badge, 0, Qt.AlignTop)
+        hl.addLayout(tr)
         self.info = _label("", "sub", wrap=True)
         self.info.setTextFormat(Qt.RichText)
-        self.graph = WinRateGraph()
-        self.graph.setMinimumHeight(180)
+        hl.addWidget(self.info)
+        self.deck_titles, self.deck_views = {}, {}
+        for side in ("you", "ai"):
+            t = QLabel()
+            t.setTextFormat(Qt.RichText)
+            dvw = DeckView()
+            hl.addWidget(t)
+            hl.addWidget(dvw)
+            self.deck_titles[side], self.deck_views[side] = t, dvw
+        dv.addWidget(self.head_card)
+
+        self.graph_card = card_frame(spacing=8, margins=14)
+        gl = self.graph_card.layout()
+        gl.addWidget(_label("WIN CHANCE OVER TIME", "section"))
         self.grades = QLabel()
+        self.grades.setTextFormat(Qt.RichText)
         self.grades.setWordWrap(True)
         self.grades.setStyleSheet("font-size:13px;")
+        gl.addWidget(self.grades)
+        self.graph = WinRateGraph()
+        self.graph.setFixedHeight(220)
+        self.graph.empty_text = "Not analyzed yet. Press Analyze to grade every play."
+        self.graph.timeClicked.connect(lambda t: self.slider.setValue(t))
+        self.graph.moveClicked.connect(self._move_clicked)
+        gl.addWidget(self.graph)
+        sr = QHBoxLayout()
+        sr.addWidget(_label("Jump to", "sub"))
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setSingleStep(1000)
+        self.slider.setPageStep(10_000)
+        self.slider.setToolTip("Pick the moment to open the review at (or click the graph)")
+        self.slider.valueChanged.connect(self._time_changed)
+        sr.addWidget(self.slider, 1)
+        self.time_label = _label("0:00", "sub")
+        self.time_label.setMinimumWidth(80)
+        self.time_label.setAlignment(Qt.AlignCenter)
+        sr.addWidget(self.time_label)
+        gl.addLayout(sr)
+        self.moment = QLabel()
+        self.moment.setTextFormat(Qt.RichText)
+        self.moment.setWordWrap(True)
+        self.moment.setStyleSheet("font-size:12px;")
+        gl.addWidget(self.moment)
+        dv.addWidget(self.graph_card)
+
         btns = QHBoxLayout()
-        self.open_btn = _cls(QPushButton("Open review in Fight"), "primary")
-        self.open_btn.clicked.connect(self.open_selected)
+        self.open_btn = _cls(QPushButton("▶  Open review"), "primary")
+        self.open_btn.setToolTip("Open this match in Fight with the coach review, at the chosen moment")
+        self.open_btn.clicked.connect(lambda: self.open_selected())
         self.analyze_btn = _cls(QPushButton("Analyze"), "ghost")
         self.analyze_btn.clicked.connect(lambda: self.open_selected(analyze=True))
         self.delete_btn = _cls(QPushButton("Delete"), "danger")
         self.delete_btn.clicked.connect(self.delete_selected)
-        for b in (self.open_btn, self.analyze_btn):
-            btns.addWidget(b)
+        btns.addWidget(self.open_btn)
+        btns.addWidget(self.analyze_btn)
         btns.addStretch(1)
         btns.addWidget(self.delete_btn)
-        self.empty = _label("No saved matches yet. Play a match in Fight: it is saved automatically when it "
-                            "ends or when you start a new one.", "sub", wrap=True)
-        for w in (self.title, self.info, self.graph, self.grades):
-            detail.addWidget(w)
-        detail.addLayout(btns)
-        detail.addWidget(self.empty)
-        detail.addStretch(1)
-        dw = QWidget()
-        dw.setLayout(detail)
-        body.addWidget(dw, 3)
+        dv.addLayout(btns)
+        self.notice = _label("", "sub", wrap=True)
+        self.notice.setStyleSheet(f"color:{C['warn']}; font-size:12px;")
+        dv.addWidget(self.notice)
+        self.foot = _label("", "muted", wrap=True)
+        dv.addWidget(self.foot)
+        dv.addStretch(1)
+
+        self.detail = QScrollArea()
+        self.detail.setWidgetResizable(True)
+        self.detail.setFrameShape(QFrame.NoFrame)
+        self.detail.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.detail.setWidget(inner)
+
+        self.empty = card_frame(spacing=10, margins=24)
+        self.empty.layout().addWidget(_label("No saved matches yet", "h2"))
+        self.empty.layout().addWidget(_label("Play a match in Fight: it is saved automatically when it ends or "
+                                             "when you start a new one.", "sub", wrap=True))
+        go = _cls(QPushButton("Go to Fight"), "primary")
+        go.clicked.connect(lambda: self.shell.show_page("fight"))
+        self.empty.layout().addWidget(go, 0, Qt.AlignLeft)
+        self.empty.layout().addStretch(1)
+
+        right = QVBoxLayout()
+        right.addWidget(self.detail, 1)
+        right.addWidget(self.empty, 1)
+        body.addLayout(right, 1)
         root.addLayout(body, 1)
 
     # ------------------------------------------------------------------
@@ -190,18 +272,23 @@ class AnalysisPage(QWidget):
         self.list.blockSignals(True)
         self.list.clear()
         for m in self.metas:
-            acc = f"Acc {m.accuracy:.0f}%" if m.accuracy is not None else "Not analyzed"
-            line2 = (f"{OUTCOME_TEXT[m.outcome]} {m.crowns[0]}–{m.crowns[1]}  ·  {mmss(m.duration_ms)}  ·  "
-                     f"{acc}  ·  {_when(m.created)}")
-            it = QListWidgetItem(f"{m.title}\n{line2}")
+            it = QListWidgetItem()
             it.setData(Qt.UserRole, m.match_id)
-            it.setForeground(QColor(C[m.outcome] if m.outcome else C["text"]))
+            row = MatchRow(m)
+            it.setSizeHint(row.sizeHint())
             self.list.addItem(it)
+            self.list.setItemWidget(it, row)
         self.list.blockSignals(False)
         w = sum(m.outcome == "win" for m in self.metas)
         l_ = sum(m.outcome == "loss" for m in self.metas)
         d = sum(m.outcome == "draw" for m in self.metas)
+        decided = w + l_ + d
         accs = [m.accuracy for m in self.metas if m.accuracy is not None]
+        self.t_matches.set(str(len(self.metas)))
+        self.t_winrate.set(f"{w / decided:.0%}" if decided else "—",
+                           C["win"] if decided and w >= l_ else (C["loss"] if decided else None))
+        self.t_record.set(f"{w} · {l_} · {d}")
+        self.t_acc.set(f"{sum(accs) / len(accs):.0f}%" if accs else "—")
         self.stats.setText(f"{len(self.metas)} matches  ·  {w}W {l_}L {d}D"
                            + (f"  ·  average accuracy {sum(accs) / len(accs):.0f}%" if accs else ""))
         row = 0
@@ -218,44 +305,90 @@ class AnalysisPage(QWidget):
     def show_match(self, i: int) -> None:
         m = self.metas[i] if 0 <= i < len(self.metas) else None
         has = m is not None
-        for w in (self.title, self.info, self.graph, self.grades, self.open_btn, self.analyze_btn, self.delete_btn):
-            w.setVisible(has)
+        self.detail.setVisible(has)
         self.empty.setVisible(not has)
         if not has:
             return
-        self.title.setText(m.title)
+        self.title.setText(match_title(m))
+        col = C[m.outcome] if m.outcome else C["muted"]
+        self.badge.setText(f"  {OUTCOME_TEXT[m.outcome]}  {m.crowns[0]}–{m.crowns[1]}  ")
+        self.badge.setStyleSheet(f"color:#0b1f1d; background:{col}; border-radius:6px; padding:4px 6px;"
+                                 "font-weight:800; font-size:13px;")
         persona = PERSONAS.get(m.persona or "", {}).get("label", m.persona or "—")
-        res = OUTCOME_TEXT[m.outcome] + (f" ({m.reason.replace('_', ' ')})" if m.reason else "")
-        self.info.setText(
-            f"<b>{res}</b> · crowns {m.crowns[0]}–{m.crowns[1]} · {mmss(m.duration_ms)} · level {m.level} · "
-            f"{m.mode} · {_when(m.created)}<br>"
-            f"<span style='color:{C['teal']}'>You</span>: {deck_text(m.player_deck, m.player_evo)}<br>"
-            f"<span style='color:{C['violet']}'>AI</span> ({persona}): {deck_text(m.opp_deck, m.opp_evo)}<br>"
-            f"{m.n_plays} plays · card data {m.data_version or 'unknown'} · id {m.match_id}")
+        why = f" ({m.reason.replace('_', ' ')})" if m.reason else ""
+        self.info.setText(f"{_when(m.created)} · {mmss(m.duration_ms)}{why} · level {m.level} · "
+                          f"AI: {persona} · {m.n_plays} plays")
+        db = self.shell.fight.session.db.cards
+        names, costs = deck_names(db), deck_costs(db)
+        for side, deck, evo, who, c in (("you", m.player_deck, m.player_evo, "YOU", C["you"]),
+                                        ("ai", m.opp_deck, m.opp_evo, "AI", C["ai"])):
+            self.deck_titles[side].setText(f"<span style='color:{c}; font-weight:800'>{who}</span>&nbsp;&nbsp;"
+                                           f"{deck_label(deck, evo)}&nbsp;<span style='color:{C['muted']}'>· "
+                                           f"{avg_cost(deck, costs)} avg</span>")
+            self.deck_views[side].set_deck(deck, evo, names, costs)
         review = None
         try:
             review = self.shell.store.load_review(m.match_id)
         except MatchStoreError:
             pass
+        self.review = review
         self.graph.set_review(review, m.duration_ms)
         if review is not None:
-            c = review.counts()
-            self.grades.setText(f"Accuracy {review.accuracy:.0f}%   !! {c['brilliant']}   ★ {c['best']}   "
-                                f"Good {c['good']}   ?! {c['inaccuracy']}   ? {c['mistake']}   ?? {c['blunder']}")
+            self.grades.setText(f"<b>Accuracy {review.accuracy:.0f}%</b>&nbsp;&nbsp;&nbsp;&nbsp;"
+                                f"{grade_chips_html(review)}")
         else:
-            self.grades.setText("Not analyzed yet. Press Analyze to grade every play.")
+            self.grades.setText(f"<span style='color:{C['muted']}'>Not analyzed yet</span>")
         self.analyze_btn.setText("Re-analyze" if review is not None else "Analyze")
+        self.slider.blockSignals(True)
+        self.slider.setRange(0, max(m.duration_ms, 1000))
+        self.slider.setValue(m.duration_ms)
+        self.slider.blockSignals(False)
+        self._time_changed(self.slider.value())
         replayable = m.mode == "practice" and m.engine_version == ENGINE_VERSION
         self.open_btn.setEnabled(replayable)
         self.analyze_btn.setEnabled(replayable)
-        if m.engine_version != ENGINE_VERSION:
-            self.grades.setText(self.grades.text() + f"   ·   Made with an older engine (v{m.engine_version}): "
-                                "summary and saved review only, it can't be replayed.")
+        self.slider.setEnabled(replayable)
+        self.notice.setText("" if m.engine_version == ENGINE_VERSION else
+                            f"Made with an older engine (v{m.engine_version}): summary and saved review only, "
+                            "it can't be replayed.")
+        self.notice.setVisible(bool(self.notice.text()))
+        self.foot.setText(f"card data {m.data_version or 'unknown'} · id {m.match_id}")
+
+    def _move_clicked(self, i: int) -> None:
+        if self.review and 0 <= i < len(self.review.moves):
+            self.graph.selected = i
+            self.slider.setValue(self.review.moves[i].t_ms)
+
+    def _time_changed(self, t: int) -> None:
+        m = self.selected()
+        end = m.duration_ms if m else 0
+        self.graph.set_cursor(t)
+        self.time_label.setText(f"{mmss(t)} / {mmss(end)}")
+        at_end = t >= end
+        self.open_btn.setText("▶  Open review" if at_end else f"▶  Open review at {mmss(t)}")
+        mv = None
+        if self.review is not None and self.review.moves:
+            near = min(self.review.moves, key=lambda x: abs(x.t_ms - t))
+            mv = near if abs(near.t_ms - t) <= 1500 else None
+        if mv is not None:
+            col = LABEL_COLOR[mv.label].name()
+            name = self.shell.fight.session.db.cards.get(mv.actual.card_id, {}).get("name", mv.actual.card_id)
+            self.moment.setText(f"{mmss(mv.t_ms)} · your {name} — <span style='color:{col}; font-weight:700'>"
+                                f"{mv.label_text} {mv.symbol}</span> (−{mv.loss * 100:.0f}% win chance)")
+        else:
+            self.moment.setText(f"<span style='color:{C['muted']}'>Drag the slider or click the graph to choose "
+                                "where the review opens. Click a dot to open at that play.</span>")
+        if self.graph.selected is not None and self.review is not None and (
+                self.graph.selected >= len(self.review.moves) or self.review.moves[self.graph.selected].t_ms != t):
+            self.graph.selected = None
+            self.graph.update()
 
     def open_selected(self, analyze: bool = False) -> None:
         m = self.selected()
-        if m is not None:
-            self.shell.open_match(m.match_id, analyze=analyze)
+        if m is None:
+            return
+        t = self.slider.value()
+        self.shell.open_match(m.match_id, analyze=analyze, at_ms=t if t < m.duration_ms else None)
 
     def delete_selected(self) -> None:
         m = self.selected()
@@ -506,6 +639,9 @@ class CRbotWindow(QMainWindow):
         self.fight.matchEnded.connect(lambda: self.save_current())
         self.fight.reviewReady.connect(lambda: self.save_current())
         self.fight.aboutToReset.connect(lambda: self.save_current())
+        self.fight.busyChanged.connect(self._fight_busy)
+        self.fight.modeChanged.connect(lambda _m: self._sync_sidebar())
+        self._pending_page: Optional[str] = None
         self._fight_shortcuts = self.fight.findChildren(QShortcut)
 
         self.pages = QStackedWidget()
@@ -521,7 +657,7 @@ class CRbotWindow(QMainWindow):
                 w.setAttribute(Qt.WA_StyledBackground, True)
             self.page_index[key] = self.pages.addWidget(w)
 
-        side = QWidget()
+        side = self.sidebar = QWidget()
         side.setObjectName("Sidebar")
         side.setAttribute(Qt.WA_StyledBackground, True)
         side.setFixedWidth(190)
@@ -565,7 +701,7 @@ class CRbotWindow(QMainWindow):
         self.setCentralWidget(root)
         self.setPalette(dark_palette())
         self.setStyleSheet(STYLE)
-        self.resize(QSize(1180, 920))
+        self.resize(self._fit_size(QSize(1200, 900)))
         self.apply_profile(self.profile, persist=False)
         self.show_page("fight")
 
@@ -574,10 +710,33 @@ class CRbotWindow(QMainWindow):
         i = self.pages.currentIndex()
         return next(k for k, v in self.page_index.items() if v == i)
 
+    @staticmethod
+    def _fit_size(want: QSize) -> QSize:
+        """The preferred size, shrunk to the screen (a 13" laptop is ~800 px tall) so nothing gets squeezed."""
+        screen = QApplication.primaryScreen()
+        if screen is None:
+            return want
+        avail = screen.availableGeometry()
+        return QSize(max(900, min(want.width(), avail.width() - 40)), max(640, min(want.height(), avail.height() - 40)))
+
+    def _sync_sidebar(self) -> None:
+        """During a live match the window is just the match: no Fight / Analysis / Decks / Account list."""
+        live = self.current_page() == "fight" and self.fight.mode == "live"
+        self.sidebar.setVisible(not live)
+
+    def _fight_busy(self, busy: bool) -> None:
+        """Analysis done or stopped: go to the page you asked for while it was running."""
+        if not busy and self._pending_page:
+            key, self._pending_page = self._pending_page, None
+            self.show_page(key)
+
     def show_page(self, key: str) -> None:
-        if key != "fight" and self.fight.running:
-            self.fight.toggle_run()             # pause: never let a match run unseen
-            self.fight.flash("Paused while you were away · Space to resume")
+        if self.fight.analyzing and key != "fight":
+            self._pending_page = key            # never locked out: stop the analysis, then go there
+            self.fight.cancel_analysis()
+            return
+        if key != "fight":
+            self.fight.pause_for_away()         # never let a match run unseen
         for sc in self._fight_shortcuts:        # fight hotkeys (Space, 1-4, N, …) only on the Fight page
             sc.setEnabled(key == "fight")
         if key == "analysis":
@@ -587,6 +746,9 @@ class CRbotWindow(QMainWindow):
             self.account.refresh_freshness()
         self.nav_buttons[key].setChecked(True)
         self.pages.setCurrentIndex(self.page_index[key])
+        if key == "fight":
+            self.fight.resume_after_away()      # 3-2-1, then the match continues
+        self._sync_sidebar()
 
     # -- profile ---------------------------------------------------------------
     def apply_profile(self, p: Profile, persist: bool) -> None:
@@ -594,7 +756,7 @@ class CRbotWindow(QMainWindow):
         if persist:
             save_profile(p, self.data_dir)
         self.fight.auto_review = p.auto_review
-        self.fight.speed_box.setCurrentIndex(max(0, self.fight.speed_box.findData(p.default_speed)))
+        self.fight.speed = p.default_speed
 
     def db_cards(self):
         return self.fight.session.db.cards
@@ -610,8 +772,9 @@ class CRbotWindow(QMainWindow):
         self.store.save(meta, record, review)
         return meta.match_id
 
-    def open_match(self, match_id: str, analyze: bool = False) -> bool:
-        """Rebuild a saved match in the Fight page, with its review (or analyze it now)."""
+    def open_match(self, match_id: str, analyze: bool = False, at_ms: Optional[int] = None) -> bool:
+        """Rebuild a saved match in the Fight page, with its review (or analyze it now). `at_ms` opens the
+        review at that moment (or at the play made then)."""
         try:
             meta = self.store.load_meta(match_id)
             record = self.store.load_record(match_id)
@@ -640,7 +803,9 @@ class CRbotWindow(QMainWindow):
         if analyze or review is None:
             self.fight.run_review()            # reviewReady -> save_current stores review.json
         else:
-            self.fight.flash(f"Opened {meta.title} · click a move to see it, or Take over from there")
+            self.fight.flash(f"Opened {meta.title} · click a play or drag the timeline, then Take over")
+        if at_ms is not None:
+            self.fight.review_goto(at_ms)
         return True
 
     def fight_with(self, deck, as_ai: bool = False) -> None:
@@ -657,6 +822,7 @@ class CRbotWindow(QMainWindow):
         self.fight.edit_decks()
 
     def closeEvent(self, e) -> None:
+        self.fight.cancel_analysis()
         try:
             self.save_current()
         finally:
@@ -668,6 +834,7 @@ def main() -> None:
     app.setStyle("Fusion")
     app.setApplicationName("CRbot")
     app.setPalette(dark_palette())          # dialogs (deck builder, quiz) get it too
+    app.setStyleSheet(STYLE)
     w = CRbotWindow()
     w.show()
     sys.exit(app.exec())

@@ -115,6 +115,8 @@ class CardDB:
     def __init__(self, raw: Dict[str, Any]):
         if raw.get("schema_version") in SUPPORTED_SCHEMAS and isinstance(raw.get("cards"), dict):
             raw = {**raw, "cards": {cid: normalise_card(c) for cid, c in raw["cards"].items()}}
+        if isinstance(raw.get("tokens"), dict):
+            raw = {**raw, "tokens": {tid: normalise_card(c) for tid, c in raw["tokens"].items()}}
         self.raw = raw
         self._validate()
         sc = raw["level_scaling"]
@@ -124,6 +126,9 @@ class CardDB:
         self.rarity_offset: Dict[str, Optional[int]] = dict(sc["rarity_offset"])
         self.scaled_fields = set(sc["scaled_fields"])
         self.cards: Dict[str, Dict[str, Any]] = raw["cards"]
+        # tokens: units a card spawns (Barbarian from the Barbarian Barrel). They are never in a deck, so they live
+        # apart from `cards`; `entry()` finds either. A token's `rarity` is its parent card's (for level scaling).
+        self.tokens: Dict[str, Dict[str, Any]] = raw.get("tokens", {})
         self.towers: Dict[str, Dict[str, Any]] = raw.get("towers", {})
         self.rules: Dict[str, Any] = raw["rules"]
 
@@ -144,7 +149,10 @@ class CardDB:
             raise CardDataError(f"unsupported schema_version {r['schema_version']} (want {SCHEMA_VERSION})")
         known = known_kinds()
         offsets = r["level_scaling"].get("rarity_offset", {})
-        for cid, c in r["cards"].items():
+        clash = set(r["cards"]) & set(r.get("tokens", {}))
+        if clash:
+            raise CardDataError(f"token ids clash with card ids: {sorted(clash)}")
+        for cid, c in [*r["cards"].items(), *r.get("tokens", {}).items()]:
             for key in ("name", "type", "rarity", "elixir"):
                 if key not in c:
                     raise CardDataError(f"card '{cid}' missing '{key}'")
@@ -166,6 +174,10 @@ class CardDB:
             for v in c["variants"]:
                 if v not in VARIANTS[1:]:
                     raise CardDataError(f"card '{cid}' has unknown variant '{v}'")
+            for m in c["mechanics"]:
+                tok = m["params"].get("token") if m["kind"] == "spawn_on_end" else None
+                if m["kind"] == "spawn_on_end" and tok not in r.get("tokens", {}):
+                    raise CardDataError(f"card '{cid}' spawns unknown token '{tok}'")
 
     def _index(self, rarity: str, level: int) -> int:
         """根据卡牌稀有度 (普通/稀有/史诗/传奇/英雄) 换算出在乘数表中的索引位置"""
@@ -208,11 +220,16 @@ class CardDB:
             out["crown_tower_damage"] = int(math.floor(out["damage"] * (100 + pct) / 100 + 0.5))
         return out, exact or bool(overrides) and set(overrides) >= set(src)
 
+    def entry(self, card_id: str) -> Dict[str, Any]:
+        """The data record of a card or a token (KeyError if neither)."""
+        c = self.cards.get(card_id) or self.tokens.get(card_id)
+        if c is None:
+            raise KeyError(f"unknown card '{card_id}'")
+        return c
+
     def stats(self, card_id: str, level: int = 11, variant: str = "base") -> ResolvedCardStats:
         """获取指定卡牌在特定等级 (默认 11 级) 下的完整属性结构体 (variant 的 stat_mods 为百分比)"""
-        if card_id not in self.cards:
-            raise KeyError(f"unknown card '{card_id}'")
-        c = self.cards[card_id]
+        c = self.entry(card_id)
         stats, exact = self._scale(c, level)
         v = self.variant(card_id, variant) if variant != "base" else None
         for k, pct in ((v or {}).get("stat_mods") or {}).items():
@@ -245,7 +262,7 @@ class CardDB:
         """The variant block ("evo" / "hero") of a card, or None if the card has no such variant."""
         if variant == "base":
             return {}
-        return self.cards[card_id]["variants"].get(variant)
+        return self.entry(card_id)["variants"].get(variant)
 
     def has_variant(self, card_id: str, variant: str) -> bool:
         return card_id in self.cards and bool(self.variant(card_id, variant))
@@ -262,7 +279,7 @@ class CardDB:
     def mechanics_for(self, card_id: str, variant: str = "base") -> List[Dict[str, Any]]:
         """Explicit mechanics (base + variant) plus ones derived from stats, deduplicated by kind:
         `splash` (attack splash radius > 0), `decay` (building lifetime), spell kind (area / rolling)."""
-        c = self.cards[card_id]
+        c = self.entry(card_id)
         lst = list(c["mechanics"])
         if variant != "base":
             lst += list((self.variant(card_id, variant) or {}).get("mechanics", []))

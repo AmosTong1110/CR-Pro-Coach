@@ -672,6 +672,763 @@
         "evo": null,
         "hero": null
       }
+    },
+    "zap": {
+      "name": "Zap",
+      "internal_name": "Zap",
+      "game_id": 28000008,
+      "aliases": {
+        "display": "Zap",
+        "hf": "zap",
+        "royaleapi": "zap",
+        "detector": [
+          "zap"
+        ]
+      },
+      "type": "spell",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "apply_status",
+          "params": {
+            "tag": "stun",
+            "ms": 500
+          }
+        },
+        {
+          "kind": "reduced_tower_damage",
+          "params": {}
+        }
+      ],
+      "source_ref": {
+        "section": "spell",
+        "name": "Zap"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "crown_tower_damage_pct": -70,
+      "spell": {
+        "radius_tiles": 2.5
+      },
+      "base_stats": {
+        "damage": 75
+      },
+      "data_source": "royaleapi-cr-api-data:spell/Zap",
+      "data_as_of": "2023-10-18"
+    },
+    "ice_spirit": {
+      "name": "Ice Spirit",
+      "internal_name": "IceSpirits",
+      "game_id": 26000030,
+      "aliases": {
+        "display": "Ice Spirit",
+        "hf": "ice_spirit",
+        "royaleapi": "ice-spirit",
+        "detector": [
+          "ice-spirit",
+          "ice-spirit-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "suicide",
+          "params": {
+            "status": {
+              "tag": "freeze",
+              "ms": 1200
+            }
+          }
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "IceSpirits"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 0.3,
+        "first_hit_s": 0.1,
+        "range_tiles": 2.5,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 1.5
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.4,
+      "mass": 1,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 90,
+        "damage": 43
+      },
+      "data_source": "royaleapi-cr-api-data:troop/IceSpirits",
+      "data_as_of": "2023-10-18"
+    },
+    "fire_spirit": {
+      "name": "Fire Spirit",
+      "internal_name": "FireSpirits",
+      "game_id": 26000031,
+      "aliases": {
+        "display": "Fire Spirit",
+        "hf": "fire_spirit",
+        "royaleapi": "fire-spirit",
+        "detector": [
+          "fire-spirit"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "suicide",
+          "params": {}
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "FireSpirits"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 0.3,
+        "first_hit_s": 0.1,
+        "range_tiles": 2.0,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 2.3
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.4,
+      "mass": 1,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 90,
+        "damage": 81
+      },
+      "data_source": "royaleapi-cr-api-data:troop/FireSpirits",
+      "data_as_of": "2023-10-18"
+    },
+    "electro_spirit": {
+      "name": "Electro Spirit",
+      "internal_name": "ElectroSpirit",
+      "game_id": 26000084,
+      "aliases": {
+        "display": "Electro Spirit",
+        "hf": "electro_spirit",
+        "royaleapi": "electro-spirit",
+        "detector": [
+          "electro-spirit"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "suicide",
+          "params": {
+            "status": {
+              "tag": "stun",
+              "ms": 500
+            },
+            "chain": {
+              "count": 9,
+              "radius_tiles": 4.0,
+              "_note": "count = total units hit including the first; whether the game counts the first is unverified"
+            }
+          }
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "ElectroSpirit"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 0.3,
+        "first_hit_s": 0.1,
+        "range_tiles": 2.5,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 0.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.4,
+      "mass": 1,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 90,
+        "damage": 39
+      },
+      "data_source": "royaleapi-cr-api-data:troop/ElectroSpirit",
+      "data_as_of": "2023-10-18"
+    },
+    "ice_golem": {
+      "name": "Ice Golem",
+      "internal_name": "IceGolemite",
+      "game_id": 26000038,
+      "aliases": {
+        "display": "Ice Golem",
+        "hf": "ice_golem",
+        "royaleapi": "ice-golem",
+        "detector": [
+          "ice-golem"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "death_damage",
+          "params": {
+            "radius_tiles": 2.0,
+            "status": {
+              "tag": "slow",
+              "ms": 2000,
+              "_source": "assumed: the 2023-10 data has no death-slow duration; check in game"
+            }
+          }
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "IceGolemite"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 0.75
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "hit_speed_s": 2.5,
+        "first_hit_s": 1.5,
+        "range_tiles": 0.75,
+        "sight_tiles": 7.0,
+        "splash_radius_tiles": 0.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.7,
+      "mass": 6,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 565,
+        "damage": 40,
+        "death_damage": 40
+      },
+      "data_source": "royaleapi-cr-api-data:troop/IceGolemite",
+      "data_as_of": "2023-10-18"
+    },
+    "mini_pekka": {
+      "name": "Mini P.E.K.K.A",
+      "internal_name": "MiniPekka",
+      "game_id": 26000018,
+      "aliases": {
+        "display": "Mini P.E.K.K.A",
+        "hf": "mini_pekka",
+        "royaleapi": "mini-pekka",
+        "detector": [
+          "mini-pekka"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [],
+      "source_ref": {
+        "section": "troop",
+        "name": "MiniPekka"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.6,
+        "first_hit_s": 1.1,
+        "range_tiles": 0.8,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 0.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.45,
+      "mass": 4,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 642,
+        "damage": 340
+      },
+      "data_source": "royaleapi-cr-api-data:troop/MiniPekka",
+      "data_as_of": "2023-10-18"
+    },
+    "valkyrie": {
+      "name": "Valkyrie",
+      "internal_name": "Valkyrie",
+      "game_id": 26000011,
+      "aliases": {
+        "display": "Valkyrie",
+        "hf": "valkyrie",
+        "royaleapi": "valkyrie",
+        "detector": [
+          "valkyrie",
+          "valkyrie-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "splash",
+          "params": {
+            "center": "self"
+          }
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "Valkyrie"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.5,
+        "first_hit_s": 1.4,
+        "range_tiles": 1.2,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 2.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 5,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 900,
+        "damage": 126
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Valkyrie",
+      "data_as_of": "2023-10-18"
+    },
+    "skeleton_army": {
+      "name": "Skeleton Army",
+      "internal_name": "SkeletonArmy",
+      "game_id": 26000012,
+      "aliases": {
+        "display": "Skeleton Army",
+        "hf": "skeleton_army",
+        "royaleapi": "skeleton-army",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "swarm",
+          "params": {}
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "SkeletonArmy"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.0,
+        "first_hit_s": 0.5,
+        "range_tiles": 0.5,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 0.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 1,
+      "count": 15,
+      "base_stats": {
+        "hitpoints": 32,
+        "damage": 32
+      },
+      "data_source": "royaleapi-cr-api-data:troop/SkeletonArmy",
+      "data_as_of": "2023-10-18"
+    },
+    "dart_goblin": {
+      "name": "Dart Goblin",
+      "internal_name": "BlowdartGoblin",
+      "game_id": 26000040,
+      "aliases": {
+        "display": "Dart Goblin",
+        "hf": "dart_goblin",
+        "royaleapi": "dart-goblin",
+        "detector": [
+          "dart-goblin",
+          "dart-goblin-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [],
+      "source_ref": {
+        "section": "troop",
+        "name": "BlowdartGoblin"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 0.7,
+        "first_hit_s": 0.35,
+        "range_tiles": 6.5,
+        "sight_tiles": 7.5,
+        "splash_radius_tiles": 0.0,
+        "projectile_speed_tiles_s": 13.333333333333334
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 3,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 123,
+        "damage": 62
+      },
+      "data_source": "royaleapi-cr-api-data:troop/BlowdartGoblin",
+      "data_as_of": "2023-10-18"
+    },
+    "rocket": {
+      "name": "Rocket",
+      "internal_name": "Rocket",
+      "game_id": 28000003,
+      "aliases": {
+        "display": "Rocket",
+        "hf": "rocket",
+        "royaleapi": "rocket",
+        "detector": [
+          "rocket"
+        ]
+      },
+      "type": "spell",
+      "rarity": "rare",
+      "elixir": 6,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "knockback",
+          "params": {
+            "distance_tiles": 1.8
+          }
+        },
+        {
+          "kind": "reduced_tower_damage",
+          "params": {}
+        }
+      ],
+      "source_ref": {
+        "section": "projectile",
+        "name": "RocketSpell"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "crown_tower_damage_pct": -75,
+      "spell": {
+        "travel_speed_tiles_s": 5.833333333333333,
+        "radius_tiles": 2.0
+      },
+      "base_stats": {
+        "damage": 700
+      },
+      "data_source": "royaleapi-cr-api-data:projectile/RocketSpell",
+      "data_as_of": "2023-10-18"
+    },
+    "barbarian_barrel": {
+      "name": "Barbarian Barrel",
+      "internal_name": "BarbLog",
+      "game_id": 28000015,
+      "aliases": {
+        "display": "Barbarian Barrel",
+        "hf": "barbarian_barrel",
+        "royaleapi": "barbarian-barrel",
+        "detector": [
+          "barbarian-barrel"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "spawn_on_end",
+          "params": {
+            "token": "barbarian",
+            "deploy_ms": 500
+          }
+        },
+        {
+          "kind": "ground_only",
+          "params": {}
+        }
+      ],
+      "source_ref": {
+        "section": "projectile",
+        "name": "BarbLogProjectileRolling"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "spell": {
+        "travel_speed_tiles_s": 3.3333333333333335,
+        "rolling_range_tiles": 4.5,
+        "width_tiles": 2.6
+      },
+      "base_stats": {
+        "damage": 151
+      },
+      "data_source": "royaleapi-cr-api-data:projectile/BarbLogProjectileRolling",
+      "data_as_of": "2023-10-18"
+    },
+    "royal_ghost": {
+      "name": "Royal Ghost",
+      "internal_name": "Ghost",
+      "game_id": 26000050,
+      "aliases": {
+        "display": "Royal Ghost",
+        "hf": "royal_ghost",
+        "royaleapi": "royal-ghost",
+        "detector": [
+          "royal-ghost",
+          "royal-ghost-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "invisible_when_idle",
+          "params": {
+            "delay_ms": 1800
+          }
+        }
+      ],
+      "source_ref": {
+        "section": "troop",
+        "name": "Ghost"
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.8,
+        "first_hit_s": 1.2,
+        "range_tiles": 1.2,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.6,
+      "mass": 3,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 1000,
+        "damage": 216
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Ghost",
+      "data_as_of": "2023-10-18"
+    },
+    "tornado": {
+      "name": "Tornado",
+      "internal_name": "Tornado",
+      "game_id": 28000012,
+      "aliases": {
+        "display": "Tornado",
+        "hf": "tornado",
+        "royaleapi": "tornado",
+        "detector": [
+          "tornado"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {},
+      "mechanics": [
+        {
+          "kind": "pull_spell",
+          "params": {}
+        },
+        {
+          "kind": "reduced_tower_damage",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "spell": {
+        "radius_tiles": 5.5,
+        "duration_ms": 1050,
+        "hit_every_ms": 500,
+        "pull_speed_tiles_s": 3.6,
+        "_pull_source": "assumed: attract_percentage 360 / 100; the 2023-10 data has no pull speed in tiles/s, check in game"
+      },
+      "base_stats": {
+        "damage": 53
+      },
+      "data_source": "royaleapi-cr-api-data:spell/Tornado+character_buff/Tornado",
+      "data_as_of": "2023-10-18",
+      "crown_tower_damage_pct": -83
+    }
+  },
+  "tokens": {
+    "barbarian": {
+      "name": "Barbarian",
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {},
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.3,
+        "first_hit_s": 0.9,
+        "range_tiles": 0.7,
+        "sight_tiles": 5.5,
+        "splash_radius_tiles": 0.0
+      },
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 4,
+      "count": 1,
+      "base_stats": {
+        "hitpoints": 262,
+        "damage": 75
+      },
+      "data_source": "royaleapi-cr-api-data:troop/Barbarians",
+      "data_as_of": "2023-10-18"
     }
   }
 }

@@ -199,7 +199,7 @@ def shell(tmp_path):
 
 def test_shell_pages_and_pause(shell):
     assert shell.current_page() == "fight"
-    shell.fight.toggle_run()
+    shell.fight.start_match()
     assert shell.fight.running
     shell.show_page("decks")
     assert not shell.fight.running and shell.current_page() == "decks"
@@ -227,13 +227,25 @@ def test_shell_saves_and_reopens_match(shell):
     assert f.review_panel.review is not None and f.log_list.count() == len(f.session.log)
     f.review_panel.select(0)                               # ghosts for the first graded move
     assert f.board.ghosts
+    assert f.mode == "review" and f.review_panel.isVisible()
+    # Analysis "Open review at 0:03": opens the review at that moment
+    shell.show_page("analysis")
+    assert shell.open_match(metas[0].match_id, at_ms=3000)
+    assert f.mode == "review" and f.session.match.t_ms == 3000 and not f.board.ghosts
+    move_t = f.review_panel.review.moves[0].t_ms           # a time with a graded play selects that play
+    assert shell.open_match(metas[0].match_id, at_ms=move_t)
+    assert f.session.match.t_ms == move_t and f.board.ghosts and f.review_panel.graph.selected == 0
 
 
 def test_shell_decks_and_account(shell, tmp_path):
     d = shell.decks
     assert d.rows[0][0] == "CRbot starter" and d.use_btn.isEnabled()
-    d.table.selectRow(1)
-    assert not d.use_btn.isEnabled()                      # real meta decks need cards we don't simulate yet
+    ready = next(i for i, r in enumerate(d.rows) if i and not r[4])      # r[4] = missing cards
+    blocked = next(i for i, r in enumerate(d.rows) if i and r[4])
+    d.table.selectRow(blocked)
+    assert not d.use_btn.isEnabled()                      # decks that need cards we don't simulate yet stay locked
+    d.table.selectRow(ready)
+    assert d.use_btn.isEnabled() and d.rows[ready][0] == "Hog 2.6"      # batch 1 made the most common deck playable
     d.table.selectRow(0)
     d.use(as_ai=True)
     assert shell.current_page() == "fight" and shell.fight.session.cfg.ai_deck == tuple(d.rows[0][1])
@@ -257,4 +269,26 @@ def test_old_engine_match_is_summary_only(shell):
     meta.engine_version = ENGINE_VERSION - 1
     shell.store.save(meta, shell.store.load_record(mid))
     shell.show_page("analysis")
-    assert not shell.analysis.open_btn.isEnabled() and "older engine" in shell.analysis.grades.text()
+    assert not shell.analysis.open_btn.isEnabled() and "older engine" in shell.analysis.notice.text()
+
+
+def test_sidebar_hidden_while_live_and_analysis_never_locked(shell):
+    f = shell.fight
+    assert shell.sidebar.isVisible()                       # setup: navigation visible
+    f.start_match()
+    assert not shell.sidebar.isVisible()                   # live: only the match
+    assert f.stop_btn.isVisible()
+    f.stop_btn.click()                                     # instant stop -> result screen, sidebar back
+    assert f.mode == "ended" and not f.running and shell.sidebar.isVisible() and not f.stop_btn.isVisible()
+    f.new_match()
+    assert f.mode == "setup"
+    f.start_match()
+    shell.show_page("analysis")                            # e.g. Ctrl+2: pauses, sidebar returns on that page
+    assert shell.sidebar.isVisible() and shell.current_page() == "analysis" and not f.running
+    shell.show_page("fight")
+    f.analyzing = True                                     # clicking Analysis during analysis stops it, then opens
+    shell.nav_buttons["analysis"].click()
+    assert f._cancel and shell._pending_page == "analysis"
+    f.analyzing = False
+    f.busyChanged.emit(False)
+    assert shell.current_page() == "analysis"

@@ -164,13 +164,42 @@ def test_cycle_rule_blocks_impossible_replay_and_allows_after_four_plays():
             t += 100
         return out
     assert len(show("knight", 3.5, 20)) == 1
-    t += 3000                                         # knight track expires
-    assert show("knight", 14.5, 20) == []             # can't be back in hand yet
+    t += 1500                                         # knight track expires (1.2 s), still within dup_window_ms
+    assert show("knight", 14.5, 20) == []             # can't be back in hand yet: a duplicate of the first play
     for c in ("hog_rider", "cannon", "fireball", "the_log"):
         t += 2000
         assert len(show(c, 9, 24)) == 1
     t += 3000
     assert len(show("knight", 14.5, 20)) == 1         # 4 plays later: legal again
+
+
+def test_cycle_rule_is_overridden_when_the_old_play_cannot_own_the_unit():
+    tr = PlayTracker(COSTS)
+    t = 0
+    for _ in range(3):
+        tr.update(t, [("knight", OPP, 3.5, 20)])
+        t += 100
+    t += 6000                                         # far beyond dup_window_ms: an earlier play must have been missed
+    out = []
+    for _ in range(3):
+        out += tr.update(t, [("knight", OPP, 14.5, 20)])
+        t += 100
+    assert len(out) == 1 and tr.cycle_overrides == 1
+
+
+def test_unit_dropped_where_the_old_one_died_is_a_new_play():
+    tr = PlayTracker(COSTS, speeds={"knight": 1.0})
+    t = 0
+    for _ in range(4):                                # a knight is seen, then dies (no detections for 300 ms)
+        tr.update(t, [("knight", OPP, 3.5, 16.4)])
+        t += 100
+    t += 300
+    out = []
+    for _ in range(3):                                # 200 ms later a knight appears 1.5 tiles away: not the same unit
+        out += tr.update(t, [("knight", OPP, 4.5, 17.5)])
+        t += 100
+    assert len(out) == 1 or tr.suppressed == 1        # new track either way (the cycle rule may still call it a duplicate)
+    assert len([k for k in tr.tracks if k.card == "knight"]) == 2
 
 
 def test_building_replaced_on_same_tile_after_lifetime():

@@ -67,7 +67,7 @@ def features(m: Match, side: int = 0) -> List[float]:
     for u in m.units.values():
         if u.kind == "tower" or u.hp <= 0:
             continue
-        card = m.db.cards.get(u.card_id, {})
+        card = m.db.cards.get(u.card_id) or m.db.tokens.get(u.card_id, {})   # tokens are worth their parent card
         value = card.get("elixir", 0) / max(1, card.get("count", 1)) * (u.hp / u.max_hp)
         k = 0 if u.side == me else 1
         board[k] += value

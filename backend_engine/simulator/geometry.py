@@ -88,7 +88,8 @@ def in_bounds(x: float, y: float) -> bool:
 
 def dist(ax: float, ay: float, bx: float, by: float) -> float:
     """计算两点间的欧几里得距离 (Euclidean Distance)"""
-    return math.hypot(ax - bx, ay - by)
+    dx, dy = ax - bx, ay - by
+    return math.sqrt(dx * dx + dy * dy)   # sqrt is correctly rounded (IEEE 754); hypot is not portable
 
 
 def on_bridge(x: float) -> bool:
