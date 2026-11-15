@@ -41,3 +41,9 @@ pretrained_weights/*.onnx
 pretrained_weights/*.pth
 !pretrained_weights/README.md
 !pretrained_weights/download_weights.py
+
+# Personal app data: saved matches, local profile (player tag). Never commit.
+user_data/
+
+# Detector weights (licence: personal use only, do not redistribute)
+pretrained_weights/**/*.onnx
