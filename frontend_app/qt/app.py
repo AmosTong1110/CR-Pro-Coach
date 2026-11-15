@@ -17,10 +17,9 @@
 """
 from __future__ import annotations
 
-import sys
 from typing import List, Optional
 
-from PySide6.QtCore import QRectF, Qt, QTimer
+from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QShortcut
 from PySide6.QtWidgets import (
     QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout,
@@ -344,8 +343,14 @@ class MainWindow(QMainWindow):
     - 出牌历史日志 (Play log)，支持双击任意出牌瞬间接管对局
     - 赛后教练复盘底部悬浮坞 (ReviewPanel QDockWidget)
     """
+    # Inside the CRbot shell this window is the Fight page; the shell listens to these signals to save matches.
+    matchEnded = Signal()       # the match reached a result
+    reviewReady = Signal()      # a coach review finished
+    aboutToReset = Signal()     # the current match is about to be replaced (new match, new settings, reopen)
+
     def __init__(self, session: Optional[GameSession] = None):
         super().__init__()
+        self.auto_review = True
         self.setWindowTitle("CR Bot — 1v1 Sparring Arena")
         self.session = session or GameSession()
         self.running = False
@@ -517,7 +522,9 @@ class MainWindow(QMainWindow):
             self.running = False
             self.start_btn.setText("Start (Space)")
             self.refresh()
-            self.run_review()
+            self.matchEnded.emit()
+            if self.auto_review:
+                self.run_review()
             return
         self.board.refresh_legal()
         self.refresh()
@@ -561,6 +568,7 @@ class MainWindow(QMainWindow):
             self.analyzing = False
         panel.set_review(review, max(self.session.match.t_ms, review.curve[-1][0] if review.curve else 0))
         self.flash(f"Review complete: Accuracy {review.accuracy:.0f}% · Click markers or list items to inspect moves")
+        self.reviewReady.emit()
 
     def show_review_move(self, i: int) -> None:
         """在棋盘上展示第 i 手出牌的红绿虚影对比 (Red = Actual, Green = Best)"""
@@ -606,12 +614,14 @@ class MainWindow(QMainWindow):
     # -- 对局配置与管理 (Match Setup) ---------------------------------------
     def restart(self, **changes) -> None:
         """应用新参数重开对局"""
+        self.aboutToReset.emit()
         self.session.reconfigure(**changes)
         self._reset_view()
         self.flash("New match started with updated settings")
 
     def new_match(self) -> None:
         """重置并开启全新对局"""
+        self.aboutToReset.emit()
         self.session.new_match()
         self._reset_view()
         self.flash("New match · Press Space to start")
@@ -657,6 +667,27 @@ class MainWindow(QMainWindow):
         self.start_btn.setText("Start (Space)")
         self.log_list.clear()
         self.select(None)
+        self.refresh()
+
+    def set_session(self, session: GameSession) -> None:
+        """Show another session (e.g. a match reopened from Analysis), with its review if it has one."""
+        self.aboutToReset.emit()
+        self.session = session
+        self.board.session = session
+        self.counter.session = session
+        self._reset_view()
+        self.add_log([])
+        self.persona_box.blockSignals(True)
+        self.persona_box.setCurrentIndex(list(PERSONAS).index(session.cfg.persona))
+        self.persona_box.blockSignals(False)
+        for rb, on in ((self.lv11, session.cfg.level != 16), (self.lv16, session.cfg.level == 16)):
+            rb.blockSignals(True)
+            rb.setChecked(on)
+            rb.blockSignals(False)
+        if session.review is not None:
+            end = max(session.match.t_ms, session.review.curve[-1][0] if session.review.curve else 0)
+            self.review_panel.set_review(session.review, end)
+            self.review_dock.show()
         self.refresh()
 
     def edit_decks(self) -> None:
@@ -766,12 +797,9 @@ class MainWindow(QMainWindow):
 
 
 def main() -> None:
-    """应用程序入口点：设置 Fusion 样式并启动 Qt 事件循环"""
-    app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    w = MainWindow()
-    w.show()
-    sys.exit(app.exec())
+    """Entry point: the CRbot shell (Fight / Analysis / Decks / Account) with this arena as the Fight page."""
+    from frontend_app.qt.shell import main as shell_main
+    shell_main()
 
 
 if __name__ == "__main__":

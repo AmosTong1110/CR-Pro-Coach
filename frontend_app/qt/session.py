@@ -9,18 +9,23 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from backend_engine.brain.coach_analyzer import Candidate, CoachAnalyzer, MatchReview
 from backend_engine.brain.human_delay_buffer import HumanDelayBuffer, ReactionProfile
 from backend_engine.brain.scripted_bot import ScriptedBot
 from backend_engine.contracts import ElixirEstimate, LatencyClass
+from backend_engine.meta.archetypes import archetype_name
 from backend_engine.perception.bayesian_deck_guesser import DeckGuess, default_guesser
 from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.engine import Match, MatchConfig, MatchResult, PlayResult, Unit
 from backend_engine.simulator.match_runner import DEFAULT_DECK, MatchRunner
+from backend_engine.storage.match_store import (
+    MatchMeta, MatchRecord, actions_from_events, new_match_id, outcome_of,
+)
 
 HUMAN, AI = 0, 1
 
@@ -124,6 +129,9 @@ class GameSession:
         self.redo: List[Checkpoint] = []           # 快退后保存在前方的未来快照 (在你重新下牌改变历史前有效)
         self.pre_play: Dict[int, Checkpoint] = {}  # 玩家每次下牌前一瞬间的精准状态快照映射表
         self.review: Optional[MatchReview] = None
+        self.match_id: Optional[str] = None        # assigned on first save
+        self.loaded_from: Optional[str] = None     # set when reopened from the match store
+        self.started_at = datetime.now()
         self._checkpoint()
 
     # -- 时间线控制：撤销、快进与接管重打 ------------------------------------
@@ -313,6 +321,8 @@ class GameSession:
         before = self._capture()
         res = self.runner.human_play(card_id, x, y, side=HUMAN)
         if res.ok:
+            if self.loaded_from is not None:  # playing on a reopened match: a new branch, saved separately
+                self.match_id, self.loaded_from, self.started_at = None, None, datetime.now()
             self.redo.clear()  # 改变了历史走向，旧的未来废弃
             self.pre_play[res.event.event_id] = before
             if not self.timeline or self.timeline[-1].t_ms < before.t_ms:
@@ -358,133 +368,96 @@ class GameSession:
     def elixir_cost(self, card_id: str) -> int:
         """查询某张卡牌的圣水费用"""
         return self.db.cards[card_id]["elixir"]
-        self.seek(cp.t_ms)
-        if self.match.t_ms != cp.t_ms or any(ev.event_id == event_id for ev in self.match.events):
-            self._restore(cp)  # same-tick combos: the timeline holds the state before the first card
-        return self.match.t_ms
 
-    # -- post-match coach ----------------------------------------------------
-    def fork(self, cp: Checkpoint) -> Tuple[Match, MatchRunner]:
-        """Independent copy of the game at a checkpoint (for analysis; never touches the live match)."""
+    # -- saving and reopening (match store) -------------------------------------
+    def has_human_plays(self) -> bool:
+        """True if you played at least one card on the furthest known timeline."""
+        return any(e.side == HUMAN for e in self._furthest_match().events)
+
+    def _furthest_match(self) -> Match:
+        """The match at the furthest point reached on this branch (after a rewind, that is the redo end)."""
+        if not self.redo:
+            return self.match
         m = Match(self.match.cfg, self.db)
-        m.restore(cp.match)
-        buf = HumanDelayBuffer(self.ai_buffer.profile, side=AI, seed=0)
-        buf.restore(cp.ai_buffer)
-        r = MatchRunner(m, {HUMAN: None, AI: ScriptedBot(self.db, AI, PERSONAS[self.cfg.persona]["aggression"])},
-                        {AI: buf})
-        r._delivered = cp.delivered
-        for s, snap in cp.ai_trackers.items():
-            r.trackers[s].restore(snap)
-        return m, r
+        m.restore(self.redo[-1].match)
+        return m
 
-    def analyze(self, progress=None, horizon_ms: int = 8000) -> MatchReview:
-        """Win-rate curve + grade each of your plays on the current branch."""
-        analyzer = CoachAnalyzer(self.fork, horizon_ms=horizon_ms)
-        plays = []
-        for ev in self.match.events:
-            if ev.side == HUMAN and ev.event_id in self.pre_play:
-                plays.append((self.pre_play[ev.event_id], Candidate(ev.card_id, ev.tile.x, ev.tile.y), ev.event_id))
-        timeline = [cp for cp in self.timeline if cp.t_ms <= self.match.t_ms]
-        self.review = analyzer.review_match(timeline, plays, final_match=self.match, progress=progress)
-        return self.review
+    def review_is_current(self) -> bool:
+        """True if the stored review describes plays that are all still on the furthest timeline."""
+        if self.review is None:
+            return False
+        mine = {(e.event_id, e.t_ms, e.card_id) for e in self._furthest_match().events if e.side == HUMAN}
+        return all((mv.event_id, mv.t_ms, mv.actual.card_id) in mine for mv in self.review.moves)
 
-    # -- elixir counter training -------------------------------------------
-    def opp_estimate(self) -> ElixirEstimate:
-        return self.opp_tracker.estimate(self.match.t_ms)
+    def config_dict(self) -> dict:
+        c = self.cfg
+        return {"player_deck": list(c.player_deck), "ai_deck": list(c.ai_deck), "level": c.level,
+                "persona": c.persona, "player_evo": list(c.player_evo), "ai_evo": list(c.ai_evo),
+                "seed": self.seed}
 
-    def opp_deck_guess(self) -> Optional[DeckGuess]:
-        g = default_guesser()
-        return g.guess(self.opp_estimate().known_cards) if g else None
+    def to_record(self, mode: str = "practice") -> Tuple[MatchMeta, MatchRecord]:
+        """Summary + rebuildable record of this match (furthest point of the current branch)."""
+        if self.match_id is None:
+            self.match_id = new_match_id(mode, self.seed, self.started_at)
+        m = self._furthest_match()
+        c = self.cfg
+        res = m.result
+        record = MatchRecord(self.config_dict(), actions_from_events(m.events), m.t_ms, m.state_hash())
+        meta = MatchMeta(
+            match_id=self.match_id, mode=mode, created=self.started_at.isoformat(timespec="seconds"),
+            duration_ms=m.t_ms, outcome=outcome_of(res.winner if res else None, res is not None, HUMAN),
+            crowns=(m.sides[HUMAN].crowns, m.sides[AI].crowns), reason=res.reason if res else None,
+            player_deck=tuple(c.player_deck), opp_deck=tuple(c.ai_deck),
+            player_evo=tuple(c.player_evo), opp_evo=tuple(c.ai_evo), level=c.level, persona=c.persona,
+            player_archetype=archetype_name(c.player_deck, c.player_evo),
+            opp_archetype=archetype_name(c.ai_deck, c.ai_evo),
+            n_plays=sum(e.side == HUMAN for e in m.events),
+            data_version=str(self.db.raw.get("data_version", "")),
+        )
+        return meta, record
 
-    def elixir_advantage(self) -> float:
-        """Your elixir minus the AI's (counted from public plays)."""
-        return self.match.sides[HUMAN].elixir - self.opp_estimate().point
+    @classmethod
+    def rebuild(cls, record: MatchRecord, db: Optional[CardDB] = None, progress=None) -> "GameSession":
+        """Replay a saved match tick-for-tick (same seed, your plays at the same ticks; the AI re-decides
+        identically). Raises ReplayMismatch if the result differs, e.g. after a card-data change."""
+        c = record.config
+        cfg = SessionConfig(tuple(c["player_deck"]), tuple(c["ai_deck"]), int(c["level"]), c["persona"],
+                            tuple(c.get("player_evo", ())), tuple(c.get("ai_evo", ())), int(c["seed"]))
+        s = cls(db, cfg)
+        mine = sorted(record.human_actions(HUMAN), key=lambda a: (a.t_ms, a.event_id))
+        total = max(record.final_t_ms, 1)
+        last_report = -10_000
 
-    def quiz_guess(self, guess: float) -> QuizResult:
-        truth = self.match.sides[AI].elixir
-        r = QuizResult(self.match.t_ms, guess, truth, abs(guess - truth))
-        self.quiz.append(r)
-        return r
+        def advance_to(t: int) -> None:
+            nonlocal last_report
+            while s.match.t_ms < t and s.match.result is None:
+                s.tick(1)
+                if progress and s.match.t_ms - last_report >= 5000:
+                    last_report = s.match.t_ms
+                    progress(s.match.t_ms, total)
 
-    def quiz_stats(self) -> Tuple[int, float, float]:
-        """(attempts, mean abs error, share within 0.5 elixir)."""
-        if not self.quiz:
-            return 0, 0.0, 0.0
-        n = len(self.quiz)
-        return n, sum(q.error for q in self.quiz) / n, sum(q.error <= 0.5 for q in self.quiz) / n
+        for a in mine:
+            advance_to(a.t_ms)
+            if s.match.t_ms != a.t_ms:
+                raise ReplayMismatch(f"match ended before your play at {a.t_ms} ms")
+            res = s.play(a.card_id, a.x, a.y)
+            if not res.ok:
+                raise ReplayMismatch(f"play {a.card_id} at {a.t_ms} ms rejected: {res.reason}")
+        advance_to(record.final_t_ms)
+        if s.match.t_ms != record.final_t_ms or s.match.state_hash() != record.final_hash:
+            raise ReplayMismatch("rebuilt match differs from the saved one")
+        return s
 
-    def reconfigure(self, **changes) -> None:
-        self.new_match(replace(self.cfg, **changes))
-
-    # -- time --------------------------------------------------------------
-    def tick(self, n: int = 1) -> List[LogEntry]:
-        for _ in range(n):
-            if self.match.result is not None:
-                break
-            if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:
-                self._checkpoint()
-            self.runner.tick()
-        if self.match.result is not None:
-            self._checkpoint()  # so "rewind" from the result screen works
-        return self._collect_log()
-
-    def _collect_log(self) -> List[LogEntry]:
-        new = []
-        for ev in self.match.events[self._logged:]:
-            self.opp_tracker.observe(ev)
-            lat =self.ai_buffer.latency_of(ev.event_id) if ev.side == HUMAN else None
-            new.append(LogEntry(ev.t_ms, ev.side, ev.card_id, ev.tile.x, ev.tile.y, ev.is_evolved, lat, ev.event_id))
-        self._logged = len(self.match.events)
-        self.log.extend(new)
-        return new
-
-    # -- player input ------------------------------------------------------
-    def play(self, card_id: str, x: float, y: float) -> PlayResult:
-        if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:
-            self._checkpoint()  # this second's checkpoint must be the state *before* your play
-        before = self._capture()
-        res = self.runner.human_play(card_id, x, y, side=HUMAN)
-        if res.ok:
-            self.redo.clear()  # you changed history: the old future no longer exists
-            self.pre_play[res.event.event_id] = before   # exact state for review / take over
-            if not self.timeline or self.timeline[-1].t_ms < before.t_ms:
-                self.timeline.append(before)
-        self.runner.deliver_events()  # AI's reaction clock starts at the moment of the play
-        self._collect_log()
-        return res
-
-    def legal_tiles(self, card_id: str) -> List[Tuple[float, float]]:
-        """Tile centres where the card could be dropped right now, ignoring elixir."""
-        st = self.match.sides[HUMAN]
-        if card_id not in st.hand:
-            return []
-        saved = st.elixir
-        st.elixir = 10.0  # show the area even while saving up elixir
+    def mark_loaded(self, meta: MatchMeta, review: Optional[MatchReview]) -> None:
+        """After rebuild(): remember where it came from; a new play on it saves as a new match."""
+        self.match_id = meta.match_id
+        self.loaded_from = meta.match_id
+        self.review = review
         try:
-            return [(x + 0.5, y + 0.5) for y in range(int(G.H)) for x in range(int(G.W))
-                    if self.match.check_play(HUMAN, card_id, x + 0.5, y + 0.5) is None]
-        finally:
-            st.elixir = saved
+            self.started_at = datetime.fromisoformat(meta.created)
+        except ValueError:
+            pass
 
-    # -- queries for the view ---------------------------------------------
-    @property
-    def result(self) -> Optional[MatchResult]:
-        return self.match.result
 
-    def ai_has_seen(self, u: Unit) -> bool:
-        return u.side == AI or u.source_event_id is None or self.ai_buffer.is_visible(u.source_event_id)
-
-    def clock(self) -> Tuple[str, str]:
-        """('2:41', 'x2 Elixir' / 'Overtime x3' / '')."""
-        m = self.match
-        left = (m.regulation_ms if m.t_ms < m.regulation_ms else m.end_ms) - m.t_ms
-        s = max(0, (left + 999) // 1000)
-        mult = m.multiplier()
-        if m.t_ms >= m.regulation_ms:
-            phase = f"Overtime x{mult}"
-        else:
-            phase = f"x{mult} Elixir" if mult > 1 else ""
-        return f"{s // 60}:{s % 60:02d}", phase
-
-    def elixir_cost(self, card_id: str) -> int:
-        return self.db.cards[card_id]["elixir"]
+class ReplayMismatch(Exception):
+    pass

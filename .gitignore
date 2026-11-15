@@ -23,6 +23,9 @@ htmlcov/
 env/
 venv/
 
+# Personal app data: saved matches, local profile (player tag). Never commit.
+user_data/
+
 # macOS files
 .DS_Store
 .AppleDouble
@@ -41,3 +44,6 @@ pretrained_weights/*.onnx
 pretrained_weights/*.pth
 !pretrained_weights/README.md
 !pretrained_weights/download_weights.py
+
+# Detector weights (licence: personal use only, do not redistribute)
+pretrained_weights/**/*.onnx
