@@ -93,3 +93,19 @@ class RollingSpell:
     source_event_id: int
     hit: Set[int] = field(default_factory=set)
     params: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+
+
+@dataclass
+class Projectile:
+    """Homing shot (Musketeer, Archers, Cannon, towers ...): flies to its target, damage lands on arrival."""
+    uid: int
+    side: int
+    source_uid: int
+    card_id: str
+    target_uid: int
+    x: float
+    y: float
+    speed: float                   # tiles / s
+    damage: float
+    splash: float = 0.0            # > 0: area damage around the target on arrival
+    targets: Tuple[str, ...] = ("ground",)

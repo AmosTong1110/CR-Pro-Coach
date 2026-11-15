@@ -21,9 +21,15 @@ from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 from backend_engine.contracts import PublicDeployEvent, TilePos
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
-from backend_engine.simulator.entities import RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
+from backend_engine.simulator.entities import Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
 from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
 from backend_engine.simulator.mechanics import status as S
+from backend_engine.simulator.mechanics.core import advance_projectile
+
+# Bumped whenever gameplay changes on purpose (golden hashes re-recorded). Saved matches made with another
+# version can't be rebuilt, only shown from their saved summary / review.
+#   1: initial engine   2: projectiles with travel time, knockback (Fireball, Log), Evo Knight damage reduction
+ENGINE_VERSION = 2
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
@@ -103,6 +109,7 @@ class Match:
         self.units: Dict[int, Unit] = {}
         self.spells: List[Spell] = []
         self.rolling: List[RollingSpell] = []
+        self.projectiles: List[Projectile] = []
         self.tower_uid: Dict[Tuple[int, str], int] = {}
         self.next_uid = 1
         self.next_event_id = 1
@@ -146,9 +153,12 @@ class Match:
                 st = self.db.tower_stats(tid, self.sides[side].level)
                 atk = self.db.towers[tid]["attack"]
                 x, y, rad = G.tower_pos(side, role)
+                proj = atk.get("projectile_speed_tiles_s")
                 u = Unit(self._uid(), side, tid, "tower", "ground", x, y, rad, st["hitpoints"], st["hitpoints"],
                          st["damage"], int(atk["hit_speed_s"] * 1000), int(atk["hit_speed_s"] * 1000),
-                         atk["range_tiles"], tuple(atk["targets"]), tower_role=role, active=(role != "king"))
+                         atk["range_tiles"], tuple(atk["targets"]), tower_role=role, active=(role != "king"),
+                         mechanics=("projectile",) if proj else (),
+                         params={"projectile": {"speed_tiles_s": proj}} if proj else {})
                 self.units[u.uid] = u
                 self.tower_uid[(side, role)] = u.uid
 
@@ -309,6 +319,10 @@ class Match:
             SPELLS["rolling_spell"].advance(self, rs, dt)
             if rs.remaining <= 0:
                 self.rolling.remove(rs)
+
+        # 3b. 弹道飞行物 (火枪手、弓箭手、加农炮、防御塔…) 追踪目标，抵达时结算伤害
+        if self.projectiles:
+            self.projectiles = [p for p in self.projectiles if not advance_projectile(self, p, dt)]
 
         # 4. 场上全部单位的战斗行为逻辑 (按 uid 稳定排序以保证绝对确定性)
         for uid in sorted(self.units):
@@ -494,16 +508,20 @@ class Match:
             n = math.hypot(px, py)
             if n > MAX_PUSH_PER_TICK:
                 px, py = px * MAX_PUSH_PER_TICK / n, py * MAX_PUSH_PER_TICK / n
-            ox, oy = u.x, u.y
-            nx_, ny_ = min(max(ox + px, 0.0), G.W - 0.01), min(max(oy + py, 0.0), G.H - 0.01)
-            # 地面单位若不是跳河兵种，严禁被推挤进河水区域 (桥梁除外)
-            if u.layer == "ground" and not self._river_passable(u) and G.region(ny_) == "river" and not G.on_bridge(nx_):
-                if G.region(oy) == "river":       # 原本在桥上被挤：限制在桥面范围内滑动
-                    bx = min(G.BRIDGE_X, key=lambda b: abs(b - ox))
-                    nx_ = min(max(nx_, bx - G.BRIDGE_HALF_W), bx + G.BRIDGE_HALF_W)
-                else:                              # 原本在岸上：禁止落入河水
-                    ny_ = oy
-            u.x, u.y = nx_, ny_
+            self._move_clamped(u, u.x + px, u.y + py)
+
+    def _move_clamped(self, u: Unit, nx: float, ny: float) -> None:
+        """Move a unit (pushes, knockback) inside the arena; ground units can't be pushed into the river."""
+        ox, oy = u.x, u.y
+        nx_, ny_ = min(max(nx, 0.0), G.W - 0.01), min(max(ny, 0.0), G.H - 0.01)
+        # 地面单位若不是跳河兵种，严禁被推挤进河水区域 (桥梁除外)
+        if u.layer == "ground" and not self._river_passable(u) and G.region(ny_) == "river" and not G.on_bridge(nx_):
+            if G.region(oy) == "river":       # 原本在桥上被挤：限制在桥面范围内滑动
+                bx = min(G.BRIDGE_X, key=lambda b: abs(b - ox))
+                nx_ = min(max(nx_, bx - G.BRIDGE_HALF_W), bx + G.BRIDGE_HALF_W)
+            else:                              # 原本在岸上：禁止落入河水
+                ny_ = oy
+        u.x, u.y = nx_, ny_
 
     def apply_status(self, u: Unit, tag: str, ms: int) -> None:
         """Mechanics apply status effects through here (stun, slow, root, invisible, freeze)."""
@@ -613,7 +631,8 @@ class Match:
         sides = tuple((r(s.elixir), tuple(s.hand), tuple(s.queue), s.crowns) for s in self.sides)
         spells = tuple((s.uid, r(s.x), r(s.y), s.impact_in_ms) for s in self.spells)
         rolling = tuple((s.uid, r(s.y), r(s.remaining), tuple(sorted(s.hit))) for s in self.rolling)
-        blob = repr((self.t_ms, sides, units, spells, rolling, self.result))
+        projectiles = tuple((p.uid, p.target_uid, r(p.x), r(p.y)) for p in self.projectiles)
+        blob = repr((self.t_ms, sides, units, spells, rolling, projectiles, self.result))
         return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
     @classmethod

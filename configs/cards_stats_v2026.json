@@ -112,7 +112,9 @@
           "air"
         ],
         "range_tiles": 7.5,
-        "hit_speed_s": 0.8
+        "hit_speed_s": 0.8,
+        "projectile_speed_tiles_s": 10.0,
+        "_projectile_source": "TowerPrincessProjectile speed 600 (game units, 60 = 1 tile/s)"
       },
       "footprint_tiles": [
         3,
@@ -133,7 +135,9 @@
           "air"
         ],
         "range_tiles": 7.0,
-        "hit_speed_s": 1.0
+        "hit_speed_s": 1.0,
+        "projectile_speed_tiles_s": 16.666666666666668,
+        "_projectile_source": "KingProjectile speed 1000"
       },
       "footprint_tiles": [
         4,
@@ -413,7 +417,10 @@
       "mechanics": [
         {
           "kind": "knockback",
-          "params": {}
+          "params": {
+            "distance_tiles": 1.0,
+            "_source": "royaleapi-cr-api-data projectile.pushback (game units / 1000), 2023-10-18"
+          }
         },
         {
           "kind": "reduced_tower_damage",
@@ -468,7 +475,10 @@
         },
         {
           "kind": "knockback",
-          "params": {}
+          "params": {
+            "distance_tiles": 0.7,
+            "_source": "royaleapi-cr-api-data projectile.pushback (game units / 1000), 2023-10-18"
+          }
         },
         {
           "kind": "ground_only",

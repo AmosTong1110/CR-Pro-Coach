@@ -267,6 +267,8 @@ class CardDB:
         if variant != "base":
             lst += list((self.variant(card_id, variant) or {}).get("mechanics", []))
         derived = []
+        if c.get("attack", {}).get("projectile_speed_tiles_s"):
+            derived.append("projectile")          # before splash: the projectile carries the splash
         if c.get("attack", {}).get("splash_radius_tiles", 0) > 0:
             derived.append("splash")
         if c["type"] == "building" and c.get("lifetime_s"):
@@ -274,7 +276,8 @@ class CardDB:
         if c["type"] == "spell":
             derived.append(self.spell_kind(card_id))
         out, seen = [], set()
-        for m in lst + [{"kind": k, "params": {}} for k in derived]:
+        dparams = {"projectile": {"speed_tiles_s": c.get("attack", {}).get("projectile_speed_tiles_s")}}
+        for m in lst + [{"kind": k, "params": dparams.get(k, {})} for k in derived]:
             if m["kind"] not in seen:
                 seen.add(m["kind"])
                 out.append(m)

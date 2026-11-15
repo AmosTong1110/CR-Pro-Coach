@@ -21,7 +21,7 @@ from backend_engine.perception.bayesian_deck_guesser import DeckGuess, default_g
 from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
-from backend_engine.simulator.engine import Match, MatchConfig, MatchResult, PlayResult, Unit
+from backend_engine.simulator.engine import ENGINE_VERSION, Match, MatchConfig, MatchResult, PlayResult, Unit
 from backend_engine.simulator.match_runner import DEFAULT_DECK, MatchRunner
 from backend_engine.storage.match_store import (
     MatchMeta, MatchRecord, actions_from_events, new_match_id, outcome_of,
@@ -412,7 +412,7 @@ class GameSession:
             player_archetype=archetype_name(c.player_deck, c.player_evo),
             opp_archetype=archetype_name(c.ai_deck, c.ai_evo),
             n_plays=sum(e.side == HUMAN for e in m.events),
-            data_version=str(self.db.raw.get("data_version", "")),
+            data_version=str(self.db.raw.get("data_version", "")), engine_version=ENGINE_VERSION,
         )
         return meta, record
 

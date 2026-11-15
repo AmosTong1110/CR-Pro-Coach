@@ -244,3 +244,16 @@ def test_shell_decks_and_account(shell, tmp_path):
     a.save()
     p = load_profile(tmp_path)
     assert p.player_tag == "2PQ8" and p.default_level == 16 and not shell.fight.auto_review
+
+
+def test_old_engine_match_is_summary_only(shell):
+    from backend_engine.simulator.engine import ENGINE_VERSION
+    f = shell.fight
+    play_at(f.session, 1000, 8.5, 10.5)
+    mid = shell.save_current()
+    meta = shell.store.load_meta(mid)
+    assert meta.engine_version == ENGINE_VERSION
+    meta.engine_version = ENGINE_VERSION - 1
+    shell.store.save(meta, shell.store.load_record(mid))
+    shell.show_page("analysis")
+    assert not shell.analysis.open_btn.isEnabled() and "older engine" in shell.analysis.grades.text()

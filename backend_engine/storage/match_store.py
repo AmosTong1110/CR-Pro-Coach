@@ -74,6 +74,7 @@ class MatchMeta:
     accuracy: Optional[float] = None      # None until analyzed
     counts: Dict[str, int] = field(default_factory=dict)
     data_version: str = ""                # card data the match was simulated with
+    engine_version: int = 1               # engine.ENGINE_VERSION at save time (files without it: 1)
     format: int = FORMAT_VERSION
 
     @property

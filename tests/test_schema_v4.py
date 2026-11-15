@@ -135,7 +135,7 @@ def test_units_carry_registered_mechanics_only(db):
     (hog,) = play(m, 0, "hog_rider", 3.5, 13.5)
     (cannon,) = play(m, 0, "cannon", 9.5, 8.5)
     assert hog.mechanics == ("river_jump",) and hog.river_jump
-    assert cannon.mechanics == ("decay",)
+    assert cannon.mechanics == ("decay", "projectile")
     assert all(k in REGISTRY for k in hog.mechanics + cannon.mechanics)
     assert set(SPELLS) >= {"area_spell", "rolling_spell"}
 

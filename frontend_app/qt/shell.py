@@ -33,6 +33,7 @@ from backend_engine.storage.match_store import MatchMeta, MatchStore, MatchStore
 from backend_engine.storage.profile import Profile, load_profile, save_profile
 from frontend_app.qt.app import SPEEDS, MainWindow
 from frontend_app.qt.review import WinRateGraph, mmss
+from backend_engine.simulator.engine import ENGINE_VERSION
 from frontend_app.qt.session import PERSONAS, GameSession, ReplayMismatch, SessionConfig
 
 # -- CRbot palette (own identity: charcoal + teal / violet) -------------------
@@ -242,7 +243,12 @@ class AnalysisPage(QWidget):
         else:
             self.grades.setText("Not analyzed yet. Press Analyze to grade every play.")
         self.analyze_btn.setText("Re-analyze" if review is not None else "Analyze")
-        self.open_btn.setEnabled(m.mode == "practice")
+        replayable = m.mode == "practice" and m.engine_version == ENGINE_VERSION
+        self.open_btn.setEnabled(replayable)
+        self.analyze_btn.setEnabled(replayable)
+        if m.engine_version != ENGINE_VERSION:
+            self.grades.setText(self.grades.text() + f"   ·   Made with an older engine (v{m.engine_version}): "
+                                "summary and saved review only, it can't be replayed.")
 
     def open_selected(self, analyze: bool = False) -> None:
         m = self.selected()
@@ -610,6 +616,11 @@ class CRbotWindow(QMainWindow):
             review = self.store.load_review(match_id)
         except MatchStoreError as e:
             QMessageBox.warning(self, "Open match", str(e))
+            return False
+        if meta.engine_version != ENGINE_VERSION:
+            QMessageBox.information(self, "Open match", f"This match was played on an older engine "
+                                    f"(v{meta.engine_version}, now v{ENGINE_VERSION}), so it can't be replayed. "
+                                    "Its summary and saved review stay available in Analysis.")
             return False
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
