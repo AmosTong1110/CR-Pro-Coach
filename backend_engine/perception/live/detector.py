@@ -171,6 +171,8 @@ class YoloOnnxDetector:
             if card is None:
                 continue
             fbox = (ox + box[0] * sx, oy + box[1] * sy, ox + box[2] * sx, oy + box[3] * sy)
+            # side_mode "position": leave side unknown; the play tracker assigns it from where the
+            # unit is first deployed (more reliable than colour when no health bar is shown)
             if side is None and self.side_mode == "color":
                 side = side_by_color(frame, fbox)
             dets.append(Detection(card, side, tuple(float(v) for v in fbox), conf, evolved))

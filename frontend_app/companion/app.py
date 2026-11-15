@@ -230,10 +230,12 @@ class CompanionWindow(QWidget):
 
     # -- setup -------------------------------------------------------------
     def _try_default_model(self) -> None:
-        onnx = sorted(Path(__file__).resolve().parents[2].joinpath("pretrained_weights").glob("*.onnx"))
+        onnx = sorted(Path(__file__).resolve().parents[2].joinpath("pretrained_weights").glob("**/*.onnx"))
         if onnx and CLASS_MAP_PATH.exists():
             try:
                 self.comp.detector = YoloOnnxDetector(onnx[0], CLASS_MAP_PATH)
+                self.comp.reset()   # rebuild the play tracker with the model's spawn / unit-count hints
+                self.status.setText(f"Model: {onnx[0].parent.name}/{onnx[0].name}")
             except Exception as err:  # missing onnxruntime / bad model: stay usable
                 self.status.setText(f"Model not loaded: {err}")
 

@@ -30,6 +30,12 @@ from backend_engine.simulator.card_db import CardDB
 
 YOU, OPP = 0, 1
 
+# real-game spells (the simulator only models a few); their owner can't be read from position
+KNOWN_SPELLS = frozenset({
+    "arrows", "barbarian_barrel", "clone", "earthquake", "fireball", "freeze", "giant_snowball", "goblin_barrel",
+    "goblin_curse", "graveyard", "lightning", "mirror", "poison", "rage", "rocket", "royal_delivery", "the_log",
+    "tornado", "void", "zap", "vines"})
+
 
 class LiveClock:
     """Match clock from wall time. Start it when the battle starts; nudge to resync."""
@@ -82,8 +88,10 @@ class CompanionState:
 class LiveCompanion:
     def __init__(self, rules: dict, costs: Dict[str, int], units_per_play: Dict[str, int],
                  calibration: Optional[ArenaCalibration] = None, detector: Optional[Detector] = None,
-                 guesser=None, min_conf: float = 0.0, lifetimes_ms: Optional[Dict[str, int]] = None):
+                 guesser=None, min_conf: float = 0.0, lifetimes_ms: Optional[Dict[str, int]] = None,
+                 spells: frozenset = frozenset()):
         self.lifetimes_ms = lifetimes_ms or {}
+        self.spells = spells
         self.rules = rules
         self.costs = costs
         self.units_per_play = units_per_play
@@ -104,12 +112,14 @@ class LiveCompanion:
         units = {cid: int(c.get("count", 1)) for cid, c in db.cards.items()}
         lifetimes = {cid: int((c["lifetime_s"] + c.get("deploy_time_s", 1.0)) * 1000)
                      for cid, c in db.cards.items() if c.get("lifetime_s")}
-        return cls(db.rules, costs, units, calibration, detector, default_guesser(), lifetimes_ms=lifetimes)
+        spells = frozenset(cid for cid, c in db.cards.items() if c["type"] == "spell") | KNOWN_SPELLS
+        return cls(db.rules, costs, units, calibration, detector, default_guesser(), lifetimes_ms=lifetimes,
+                   spells=spells)
 
     def reset(self) -> None:
         units = {**self.units_per_play, **getattr(self.detector, "units_per_play", {})}
         self.tracker = PlayTracker(self.costs, units, lifetimes_ms=self.lifetimes_ms,
-                                   spawned_by=getattr(self.detector, "spawned_by", {}))
+                                   spawned_by=getattr(self.detector, "spawned_by", {}), spells=self.spells)
         self.opp_tracker = OppElixirTracker(self.rules, observer_side=YOU)   # counts the opponent
         self.me_tracker = OppElixirTracker(self.rules, observer_side=OPP)    # counts you
         self.events: List[PublicDeployEvent] = []
@@ -129,8 +139,8 @@ class LiveCompanion:
         h, w = frame.shape[:2]
         tiles: List[TileDetection] = []
         for d in self.detector.detect(frame, self.calibration):
-            if d.side is None or d.conf < self.min_conf:
-                continue
+            if d.conf < self.min_conf:
+                continue   # side None is fine: the tracker infers it from where the unit appears
             x, y = self.calibration.px_to_tile(*d.foot, frame_w=w, frame_h=h)
             if ArenaCalibration.in_arena(x, y):
                 tiles.append((d.card_id, d.side, x, y))
