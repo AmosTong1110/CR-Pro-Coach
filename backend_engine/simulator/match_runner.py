@@ -65,7 +65,7 @@ class MatchRunner:
         self.guesser = default_guesser()
         self._guess_cache: Dict[Tuple[int, Tuple[str, ...]], DeckGuess] = {}
         self._hand_cache: Dict[tuple, Dict[str, float]] = {}
-        evo_capable = [c for c, d in db.cards.items() if d.get("evolution")]
+        evo_capable = db.evo_capable()
         # 每个 AI 阵营独立实例化一个对手圣水计数器，仅在“观察”到事件后才更新 (保证认知符合生理延迟)
         self.trackers = {s: OppElixirTracker(db.rules, observer_side=s, evo_cards=evo_capable)
                          for s in self.buffers}

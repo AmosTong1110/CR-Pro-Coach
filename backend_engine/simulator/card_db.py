@@ -17,17 +17,57 @@
 """
 from __future__ import annotations
 
+import copy
 import json
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from backend_engine.simulator.mechanics import SPELLS, known_kinds
+
 # 默认读取的卡牌配置 JSON 路径
 DEFAULT_PATH = Path(__file__).resolve().parents[2] / "configs" / "cards_stats_v2026.json"
 # 支持的卡牌类别枚举
 CARD_TYPES = {"troop", "building", "spell", "champion", "hero"}
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
+SUPPORTED_SCHEMAS = (3, 4)          # schema 3 files are upgraded in memory (normalise_card)
+VARIANTS = ("base", "evo", "hero")
+_RENAME = {"decaying_building": "decay"}
+
+
+def _mech_list(tags, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    out = []
+    for t in tags or []:
+        if isinstance(t, dict):
+            out.append({"kind": _RENAME.get(t["kind"], t["kind"]), "params": dict(t.get("params", {}))})
+        else:
+            out.append({"kind": _RENAME.get(t, t), "params": dict(params or {})})
+    return out
+
+
+def normalise_card(c: Dict[str, Any]) -> Dict[str, Any]:
+    """Schema 3 card -> schema 4 shape (idempotent): mechanics as [{kind, params}], variants {evo, hero}."""
+    c = copy.deepcopy(c)
+    c["mechanics"] = _mech_list(c.get("mechanics"))
+    if "variants" not in c:
+        evo = c.pop("evolution", None)
+        hero = c.pop("hero", None)
+        c["variants"] = {
+            "evo": None if not evo else {
+                "cycles_required": int(evo["cycles_required"]),
+                "mechanics": _mech_list(evo.get("mechanics"), evo.get("params")),
+                "stat_mods": dict(evo.get("stat_mods", {})),
+            },
+            "hero": hero,
+        }
+    else:
+        for v in c["variants"].values():
+            if v:
+                v["mechanics"] = _mech_list(v.get("mechanics"))
+                v.setdefault("stat_mods", {})
+    c.setdefault("aliases", {})
+    return c
 
 
 class CardDataError(ValueError):
@@ -73,6 +113,8 @@ class CardDB:
     """卡牌数据库主类：负责管理所有卡牌属性、防御塔属性及等级缩放运算"""
 
     def __init__(self, raw: Dict[str, Any]):
+        if raw.get("schema_version") in SUPPORTED_SCHEMAS and isinstance(raw.get("cards"), dict):
+            raw = {**raw, "cards": {cid: normalise_card(c) for cid, c in raw["cards"].items()}}
         self.raw = raw
         self._validate()
         sc = raw["level_scaling"]
@@ -98,8 +140,9 @@ class CardDB:
         for key in ("schema_version", "level_scaling", "rules", "cards"):
             if key not in r:
                 raise CardDataError(f"missing top-level key '{key}'")
-        if r["schema_version"] != SCHEMA_VERSION:
+        if r["schema_version"] not in SUPPORTED_SCHEMAS:
             raise CardDataError(f"unsupported schema_version {r['schema_version']} (want {SCHEMA_VERSION})")
+        known = known_kinds()
         offsets = r["level_scaling"].get("rarity_offset", {})
         for cid, c in r["cards"].items():
             for key in ("name", "type", "rarity", "elixir"):
@@ -116,6 +159,13 @@ class CardDB:
             stats = c.get("base_stats", c.get("stats_l11", {}))
             if c["type"] in ("troop", "building", "champion", "hero") and "hitpoints" not in stats:
                 raise CardDataError(f"card '{cid}' ({c['type']}) needs hitpoints")
+            lists = [c["mechanics"]] + [v["mechanics"] for v in c["variants"].values() if v]
+            for m in (m for lst in lists for m in lst):
+                if m["kind"] not in known:
+                    raise CardDataError(f"card '{cid}' has unknown mechanic '{m['kind']}'")
+            for v in c["variants"]:
+                if v not in VARIANTS[1:]:
+                    raise CardDataError(f"card '{cid}' has unknown variant '{v}'")
 
     def _index(self, rarity: str, level: int) -> int:
         """根据卡牌稀有度 (普通/稀有/史诗/传奇/英雄) 换算出在乘数表中的索引位置"""
@@ -158,12 +208,16 @@ class CardDB:
             out["crown_tower_damage"] = int(math.floor(out["damage"] * (100 + pct) / 100 + 0.5))
         return out, exact or bool(overrides) and set(overrides) >= set(src)
 
-    def stats(self, card_id: str, level: int = 11) -> ResolvedCardStats:
-        """获取指定卡牌在特定等级 (默认 11 级) 下的完整属性结构体"""
+    def stats(self, card_id: str, level: int = 11, variant: str = "base") -> ResolvedCardStats:
+        """获取指定卡牌在特定等级 (默认 11 级) 下的完整属性结构体 (variant 的 stat_mods 为百分比)"""
         if card_id not in self.cards:
             raise KeyError(f"unknown card '{card_id}'")
         c = self.cards[card_id]
         stats, exact = self._scale(c, level)
+        v = self.variant(card_id, variant) if variant != "base" else None
+        for k, pct in ((v or {}).get("stat_mods") or {}).items():
+            if k in stats:
+                stats[k] = int(math.floor(stats[k] * pct / 100 + 1e-9))
         return ResolvedCardStats(
             card_id=card_id,
             level=level,
@@ -173,7 +227,7 @@ class CardDB:
             attack=dict(c.get("attack", {})),
             movement=dict(c.get("movement", {})),
             spell=dict(c.get("spell", {})),
-            mechanics=tuple(c.get("mechanics", [])),
+            mechanics=tuple(m["kind"] for m in c.get("mechanics", [])),
             exact=exact,
             verified=bool(c.get("verified", False)),
         )
@@ -185,6 +239,79 @@ class CardDB:
     def elixir_costs(self) -> Dict[str, int]:
         """获取全部卡牌的圣水花费字典映射"""
         return {cid: c["elixir"] for cid, c in self.cards.items()}
+
+    # -- schema 4: variants, mechanics, aliases ---------------------------
+    def variant(self, card_id: str, variant: str) -> Optional[Dict[str, Any]]:
+        """The variant block ("evo" / "hero") of a card, or None if the card has no such variant."""
+        if variant == "base":
+            return {}
+        return self.cards[card_id]["variants"].get(variant)
+
+    def has_variant(self, card_id: str, variant: str) -> bool:
+        return card_id in self.cards and bool(self.variant(card_id, variant))
+
+    def evo_cycles(self, card_id: str) -> int:
+        v = self.variant(card_id, "evo")
+        if not v:
+            raise KeyError(f"'{card_id}' has no evolution")
+        return int(v["cycles_required"])
+
+    def evo_capable(self) -> List[str]:
+        return [cid for cid in self.cards if self.has_variant(cid, "evo")]
+
+    def mechanics_for(self, card_id: str, variant: str = "base") -> List[Dict[str, Any]]:
+        """Explicit mechanics (base + variant) plus ones derived from stats, deduplicated by kind:
+        `splash` (attack splash radius > 0), `decay` (building lifetime), spell kind (area / rolling)."""
+        c = self.cards[card_id]
+        lst = list(c["mechanics"])
+        if variant != "base":
+            lst += list((self.variant(card_id, variant) or {}).get("mechanics", []))
+        derived = []
+        if c.get("attack", {}).get("splash_radius_tiles", 0) > 0:
+            derived.append("splash")
+        if c["type"] == "building" and c.get("lifetime_s"):
+            derived.append("decay")
+        if c["type"] == "spell":
+            derived.append(self.spell_kind(card_id))
+        out, seen = [], set()
+        for m in lst + [{"kind": k, "params": {}} for k in derived]:
+            if m["kind"] not in seen:
+                seen.add(m["kind"])
+                out.append(m)
+        return out
+
+    def spell_kind(self, card_id: str) -> str:
+        sp = self.cards[card_id].get("spell", {})
+        explicit = [m["kind"] for m in self.cards[card_id]["mechanics"] if m["kind"] in SPELLS]
+        if explicit:
+            return explicit[0]
+        return "rolling_spell" if "rolling_range_tiles" in sp else "area_spell"
+
+    def by_alias(self, name: str, source: Optional[str] = None) -> Optional[str]:
+        """Card id for an id, display name, internal name or alias (optionally from one source:
+        hf / royaleapi / detector / display / internal_name)."""
+        key = name.strip().lower()
+        for cid, c in self.cards.items():
+            a = c.get("aliases", {})
+            cands = {
+                "id": [cid], "internal_name": [c.get("internal_name") or ""], "display": [a.get("display") or c["name"]],
+                "hf": [a.get("hf") or ""], "royaleapi": [a.get("royaleapi") or ""], "detector": list(a.get("detector", [])),
+            }
+            pool = cands.get(source, []) if source else [v for vs in cands.values() for v in vs]
+            if any(key == v.lower() for v in pool if v):
+                return cid
+        return None
+
+    def unsimulated_tags(self) -> Dict[str, List[str]]:
+        """card id -> mechanic kinds in the data that the engine does not simulate yet."""
+        from backend_engine.simulator.mechanics import PLANNED
+        out: Dict[str, List[str]] = {}
+        for cid, c in self.cards.items():
+            lists = [c["mechanics"]] + [v["mechanics"] for v in c["variants"].values() if v]
+            miss = sorted({m["kind"] for lst in lists for m in lst if m["kind"] in PLANNED})
+            if miss:
+                out[cid] = miss
+        return out
 
     def unverified(self) -> List[str]:
         """返回尚未进行官方完全核验的卡牌列表"""

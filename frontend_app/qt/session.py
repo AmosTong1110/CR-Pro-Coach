@@ -122,7 +122,7 @@ class GameSession:
                                   {AI: self.ai_buffer})
         self.log = []
         self._logged = 0
-        evo_capable = [cid for cid, d in self.db.cards.items() if d.get("evolution")]
+        evo_capable = self.db.evo_capable()
         # 玩家视角面向 AI 的算水与卡序追踪器
         self.opp_tracker = OppElixirTracker(self.db.rules, observer_side=HUMAN, evo_cards=evo_capable)
         self.timeline: List[Checkpoint] = []       # 当前时间线上的历史快照栈 (从旧到新)

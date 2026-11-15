@@ -1,12 +1,13 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "data_version": "2026.11-gamedata-2023.10",
   "_doc": [
     "Coordinates: tiles. Arena is 18 wide x 32 tall; y=0 is the side-0 (bottom) king tower edge.",
     "Speeds in tiles/second (game speed 60 = 1.0 tile/s). Times in seconds here; the engine converts to integer ms.",
     "base_stats = stats at the rarity's first level, exactly as stored in the game files. stat(L) = floor(base * multiplier_pct[L-1-rarity_offset] / 100). Verified exact on all 4,945 per-level values in the RoyaleAPI data.",
     "Cards are filled by `python -m backend_engine.simulator.sync_meta`. data_as_of shows how old the balance numbers are; verified=true only after checking the live game.",
-    "Hero/Champion abilities (Aug 2026 patch): single-use, no cooldown, except Boss Bandit. Schema: ability = {name, elixir, uses: 1, cooldown_s: null}."
+    "Hero/Champion abilities (Aug 2026 patch): single-use, no cooldown, except Boss Bandit. Schema: ability = {name, elixir, uses: 1, cooldown_s: null}.",
+    "Schema 4: identity (internal_name = game sc_key, game_id, aliases) and variants {evo, hero} live inside the base card; mechanics are [{kind, params}] resolved by backend_engine/simulator/mechanics."
   ],
   "level_scaling": {
     "base_level": 11,
@@ -149,6 +150,17 @@
   "cards": {
     "knight": {
       "name": "Knight",
+      "internal_name": "Knight",
+      "game_id": 26000000,
+      "aliases": {
+        "display": "Knight",
+        "hf": "knight",
+        "royaleapi": "knight",
+        "detector": [
+          "knight",
+          "knight-evolution"
+        ]
+      },
       "type": "troop",
       "rarity": "common",
       "elixir": 3,
@@ -171,16 +183,6 @@
       },
       "level_overrides": {},
       "mechanics": [],
-      "evolution": {
-        "cycles_required": 2,
-        "mechanics": [
-          "damage_reduction_while_not_attacking"
-        ],
-        "params": {
-          "damage_reduction": 0.6
-        }
-      },
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "Knight"
@@ -192,10 +194,36 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/Knight",
       "data_as_of": "2023-10-18",
-      "mass": 6
+      "mass": 6,
+      "variants": {
+        "evo": {
+          "cycles_required": 2,
+          "mechanics": [
+            {
+              "kind": "damage_reduction_while_not_attacking",
+              "params": {
+                "damage_reduction": 0.6
+              }
+            }
+          ],
+          "stat_mods": {},
+          "sc_key": "Knight_EV1"
+        },
+        "hero": null
+      }
     },
     "hog_rider": {
       "name": "Hog Rider",
+      "internal_name": "HogRider",
+      "game_id": 26000021,
+      "aliases": {
+        "display": "Hog Rider",
+        "hf": "hog_rider",
+        "royaleapi": "hog-rider",
+        "detector": [
+          "hog-rider"
+        ]
+      },
       "type": "troop",
       "rarity": "rare",
       "elixir": 4,
@@ -218,11 +246,15 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "building_targeting",
-        "river_jump"
+        {
+          "kind": "building_targeting",
+          "params": {}
+        },
+        {
+          "kind": "river_jump",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "HogRider"
@@ -234,10 +266,25 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/HogRider",
       "data_as_of": "2023-10-18",
-      "mass": 4
+      "mass": 4,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "musketeer": {
       "name": "Musketeer",
+      "internal_name": "Musketeer",
+      "game_id": 26000014,
+      "aliases": {
+        "display": "Musketeer",
+        "hf": "musketeer",
+        "royaleapi": "musketeer",
+        "detector": [
+          "musketeer",
+          "musketeer-evolution"
+        ]
+      },
       "type": "troop",
       "rarity": "rare",
       "elixir": 4,
@@ -262,8 +309,6 @@
       },
       "level_overrides": {},
       "mechanics": [],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "Musketeer"
@@ -275,10 +320,25 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/Musketeer",
       "data_as_of": "2023-10-18",
-      "mass": 5
+      "mass": 5,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "cannon": {
       "name": "Cannon",
+      "internal_name": "Cannon",
+      "game_id": 27000000,
+      "aliases": {
+        "display": "Cannon",
+        "hf": "cannon",
+        "royaleapi": "cannon",
+        "detector": [
+          "cannon",
+          "cannon-evolution"
+        ]
+      },
       "type": "building",
       "rarity": "common",
       "elixir": 3,
@@ -302,11 +362,15 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "decaying_building",
-        "pulls_building_targeters"
+        {
+          "kind": "decay",
+          "params": {}
+        },
+        {
+          "kind": "pulls_building_targeters",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "building",
         "name": "Cannon"
@@ -318,10 +382,24 @@
       },
       "data_source": "royaleapi-cr-api-data:building/Cannon",
       "data_as_of": "2023-10-18",
-      "mass": 0
+      "mass": 0,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "fireball": {
       "name": "Fireball",
+      "internal_name": "Fireball",
+      "game_id": 28000000,
+      "aliases": {
+        "display": "Fireball",
+        "hf": "fireball",
+        "royaleapi": "fireball",
+        "detector": [
+          "fireball"
+        ]
+      },
       "type": "spell",
       "rarity": "rare",
       "elixir": 4,
@@ -333,11 +411,15 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "knockback",
-        "reduced_tower_damage"
+        {
+          "kind": "knockback",
+          "params": {}
+        },
+        {
+          "kind": "reduced_tower_damage",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "projectile",
         "name": "FireballSpell"
@@ -347,10 +429,24 @@
         "damage": 325
       },
       "data_source": "royaleapi-cr-api-data:projectile/FireballSpell",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "the_log": {
       "name": "The Log",
+      "internal_name": "Log",
+      "game_id": 28000011,
+      "aliases": {
+        "display": "The Log",
+        "hf": "the_log",
+        "royaleapi": "the-log",
+        "detector": [
+          "the-log"
+        ]
+      },
       "type": "spell",
       "rarity": "legendary",
       "elixir": 2,
@@ -366,13 +462,23 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "rolling_spell",
-        "knockback",
-        "ground_only",
-        "reduced_tower_damage"
+        {
+          "kind": "rolling_spell",
+          "params": {}
+        },
+        {
+          "kind": "knockback",
+          "params": {}
+        },
+        {
+          "kind": "ground_only",
+          "params": {}
+        },
+        {
+          "kind": "reduced_tower_damage",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "projectile",
         "name": "LogProjectileRolling"
@@ -382,10 +488,25 @@
         "damage": 240
       },
       "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "skeletons": {
       "name": "Skeletons",
+      "internal_name": "Skeletons",
+      "game_id": 26000010,
+      "aliases": {
+        "display": "Skeletons",
+        "hf": "skeletons",
+        "royaleapi": "skeletons",
+        "detector": [
+          "skeleton",
+          "skeleton-evolution"
+        ]
+      },
       "type": "troop",
       "rarity": "common",
       "elixir": 1,
@@ -408,10 +529,11 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "swarm"
+        {
+          "kind": "swarm",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "Skeletons"
@@ -423,10 +545,25 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/Skeletons",
       "data_as_of": "2023-10-18",
-      "mass": 1
+      "mass": 1,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "archers": {
       "name": "Archers",
+      "internal_name": "Archer",
+      "game_id": 26000001,
+      "aliases": {
+        "display": "Archers",
+        "hf": "archers",
+        "royaleapi": "archers",
+        "detector": [
+          "archer",
+          "archer-evolution"
+        ]
+      },
       "type": "troop",
       "rarity": "common",
       "elixir": 3,
@@ -451,8 +588,6 @@
       },
       "level_overrides": {},
       "mechanics": [],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "Archer"
@@ -464,10 +599,24 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/Archer",
       "data_as_of": "2023-10-18",
-      "mass": 3
+      "mass": 3,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     },
     "minions": {
       "name": "Minions",
+      "internal_name": "Minions",
+      "game_id": 26000005,
+      "aliases": {
+        "display": "Minions",
+        "hf": "minions",
+        "royaleapi": "minions",
+        "detector": [
+          "minion"
+        ]
+      },
       "type": "troop",
       "rarity": "common",
       "elixir": 3,
@@ -492,10 +641,11 @@
       },
       "level_overrides": {},
       "mechanics": [
-        "air_unit"
+        {
+          "kind": "air_unit",
+          "params": {}
+        }
       ],
-      "evolution": null,
-      "hero": null,
       "source_ref": {
         "section": "troop",
         "name": "Minions"
@@ -507,7 +657,11 @@
       },
       "data_source": "royaleapi-cr-api-data:troop/Minions",
       "data_as_of": "2023-10-18",
-      "mass": 2
+      "mass": 2,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     }
   }
 }

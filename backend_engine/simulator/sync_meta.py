@@ -25,7 +25,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from backend_engine.simulator.card_db import DEFAULT_PATH, CardDB
+from backend_engine.simulator.card_db import DEFAULT_PATH, SUPPORTED_SCHEMAS, CardDB
 
 MS = 1000.0
 SPEED_UNIT = 60.0  # game speed 60 == 1 tile/s (Medium)
@@ -112,7 +112,7 @@ def build_card(card: Dict[str, Any], src: SourceIndex, as_of: str) -> Dict[str, 
 def sync(config_path: Path, source_path: Path, as_of: str, write: bool) -> Dict[str, Any]:
     cfg = json.loads(config_path.read_text(encoding="utf-8"))
     src = SourceIndex(json.loads(source_path.read_text(encoding="utf-8")))
-    before = CardDB(cfg) if cfg.get("schema_version") == 3 else None
+    before = CardDB(cfg) if cfg.get("schema_version") in SUPPORTED_SCHEMAS else None
     new = copy.deepcopy(cfg)
     for cid, card in cfg["cards"].items():
         if "source_ref" in card:

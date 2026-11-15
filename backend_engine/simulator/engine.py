@@ -21,92 +21,16 @@ from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 from backend_engine.contracts import PublicDeployEvent, TilePos
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
+from backend_engine.simulator.entities import RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
+from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
+from backend_engine.simulator.mechanics import status as S
 
 # 战斗感知与物理常量
-TROOP_SIGHT = 5.5           # 军队通用视野警戒半径 (格子)
+from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
 UNIT_RADIUS = 0.5           # 单位默认碰撞半径 (半格)
 THREAT_DEPTH = 4.0          # 距河道 4 格以内的下兵直接判定为前线进攻威胁 (is_threat)
 COLLISION_STIFFNESS = 0.5   # 碰撞重叠软缓解系数 (每帧消除 50% 重叠量，贴近官方手感)
 MAX_PUSH_PER_TICK = 0.25    # 单帧最大位移推挤上限 (防止卡飞或穿模)
-
-
-# ---------------------------------------------------------------------------
-# 实体状态数据类 (State Records)
-# ---------------------------------------------------------------------------
-@dataclass
-class Unit:
-    """场上存活实体对象 (包括军队 Troop、防御建筑 Building、皇室防御塔 Tower)"""
-    uid: int                       # 实体唯一数字 ID
-    side: int                      # 归属方 (0=玩家, 1=AI)
-    card_id: str                   # 对应卡牌 ID
-    kind: str                      # 实体大类：troop | building | tower
-    layer: str                     # 空间层级：ground (地面) | air (空中)
-    x: float                       # 当前横坐标 (网格)
-    y: float                       # 当前纵坐标 (网格)
-    radius: float                  # 碰撞体积半径
-    hp: float                      # 当前生命值
-    max_hp: float                  # 生命值上限
-    damage: int                    # 单次普通攻击伤害
-    hit_speed_ms: int              # 攻击速度/攻速周期 (毫秒)
-    first_hit_ms: int              # 接触目标后首次出刀延迟 (毫秒)
-    range: float                   # 攻击射程 (格子)
-    targets: Tuple[str, ...]       # 攻击目标喜好 ("ground", "air", "buildings")
-    splash: float = 0.0            # 范围伤害半径 (0.0 为单体攻击)
-    speed: float = 0.0             # 移动速度 (格 / 秒)
-    sight: float = TROOP_SIGHT     # 索敌警戒半径 (格)
-    river_jump: bool = False       # 是否具备跳河特性 (如野猪骑士、野蛮人攻城槌)
-    deploy_ms: int = 0             # 部署读条剩余时间 (毫秒，读条期间不可移动和攻击)
-    cooldown_ms: int = 0           # 距离下次攻击的冷却倒计时 (毫秒)
-    target_uid: Optional[int] = None # 当前锁定的目标实体 ID
-    decay_per_tick: float = 0.0    # 建筑每帧自然掉血量 (根据生命周期换算)
-    tower_role: Optional[str] = None # 防御塔角色 ("king", "princess_left", "princess_right")
-    active: bool = True            # 是否处于激活开炮状态 (国王塔初始为 False，挨打或破塔后激活)
-    source_event_id: Optional[int] = None # 生成该单位的原始下牌事件 ID
-    evolved: bool = False          # 是否为觉醒形态单位
-    mass: float = 0.0              # 物理推挤质量 (0 = 无法被推动的静止建筑/防御塔，数值越大越不易被推开)
-
-    @property
-    def building_only(self) -> bool:
-        """是否为只打建筑的推进单位 (如野猪骑士、巨人)"""
-        return self.targets == ("buildings",)
-
-    @property
-    def is_structure(self) -> bool:
-        """是否为静止结构体 (防御塔或召唤建筑)"""
-        return self.kind in ("tower", "building")
-
-
-@dataclass
-class Spell:
-    """范围投掷型法术实体 (如火球、火箭、小电等，具有飞行弹道时间)"""
-    uid: int
-    side: int
-    card_id: str
-    x: float                       # 目标落点 x
-    y: float                       # 目标落点 y
-    radius: float                  # 爆炸作用半径
-    damage: int                    # 对常规单位伤害
-    tower_damage: int              # 对皇室防御塔伤害 (通常有大幅衰减)
-    impact_in_ms: int              # 距离着地爆炸的剩余飞行毫秒数
-    source_event_id: int
-
-
-@dataclass
-class RollingSpell:
-    """线性滚动型法术实体 (如滚木，沿直线向前推移并对路径上的地面目标造成贯穿伤害)"""
-    uid: int
-    side: int
-    card_id: str
-    x: float                       # 滚动起始中轴 x
-    y: float                       # 当前滚动前锋 y
-    direction: int                 # 推进方向 (+1 为向上滚，-1 为向下滚)
-    remaining: float               # 剩余滚动距离 (格)
-    width: float                   # 滚木横向碾压宽度
-    speed: float                   # 滚动速度 (格 / 秒)
-    damage: int                    # 常规伤害
-    tower_damage: int              # 塔伤
-    source_event_id: int
-    hit: Set[int] = field(default_factory=set) # 已被击中过的实体 ID 集合 (避免单次滚动多重伤害)
 
 
 @dataclass
@@ -185,6 +109,7 @@ class Match:
         self.events: List[PublicDeployEvent] = []
         self.action_log: List[ActionRecord] = []
         self.result: Optional[MatchResult] = None
+        self.status_used = False   # set once any status effect is applied (keeps the hot path cheap)
         self.sides = [self._make_side(s, float(r["start_elixir"])) for s in (0, 1)]
         self._spawn_towers()
 
@@ -203,7 +128,7 @@ class Match:
         hs = self.db.rules["hand_size"]
         evo = set(self.cfg.evo_cards[side])
         for c in evo:
-            if c not in deck or not self.db.cards[c].get("evolution"):
+            if c not in deck or not self.db.has_variant(c, "evo"):
                 raise ValueError(f"side {side}: '{c}' cannot be an evolution slot")
         return SideState(self.cfg.levels[side], deck[:hs], deck[hs:], start_elixir,
                          evo_cards=evo, evo_counter={c: 0 for c in evo})
@@ -282,14 +207,15 @@ class Match:
         # 觉醒充能机制：达到指定出牌轮次后触发觉醒进化形态
         evolved = False
         if card_id in st.evo_cards:
-            need = card["evolution"]["cycles_required"]
+            need = self.db.evo_cycles(card_id)
             if st.evo_counter[card_id] >= need:
                 evolved, st.evo_counter[card_id] = True, 0
             else:
                 st.evo_counter[card_id] += 1
 
         ev = PublicDeployEvent(self.next_event_id, self.t_ms, side, card_id, cost, TilePos(x, y),
-                               is_evolved=evolved, is_threat=self._is_threat(side, card["type"], y))
+                               is_evolved=evolved, is_threat=self._is_threat(side, card["type"], y),
+                               variant="evo" if evolved else "base")
         self.next_event_id += 1
         self.events.append(ev)
         self.action_log.append((self.t_ms, side, card_id, x, y))
@@ -312,8 +238,11 @@ class Match:
     def _spawn_card_units(self, side: int, card_id: str, x: float, y: float, eid: int, evolved: bool) -> None:
         """在指定网格生成军队或建筑实体 (支持多单位阵型散开生成，如骷髅军团/三枪)"""
         card = self.db.cards[card_id]
-        s = self.db.stats(card_id, self.sides[side].level)
+        variant = "evo" if evolved else "base"
+        s = self.db.stats(card_id, self.sides[side].level, variant)
         atk, mov = s.attack, s.movement
+        mechs = [m for m in self.db.mechanics_for(card_id, variant) if m["kind"] in REGISTRY]
+        kinds = tuple(m["kind"] for m in mechs)
         kind = "building" if s.type == "building" else "troop"
         n = int(card.get("count", 1))
         if kind == "building" and "footprint_tiles" in card:
@@ -338,28 +267,21 @@ class Match:
                 splash=float(atk.get("splash_radius_tiles", 0.0)),
                 speed=float(mov.get("speed_tiles_s", 0.0)),
                 sight=float(atk.get("sight_tiles", TROOP_SIGHT)),
-                river_jump="river_jump" in s.mechanics,
                 deploy_ms=int(card.get("deploy_time_s", 1.0) * 1000),
                 cooldown_ms=int(atk.get("first_hit_s", 0.5) * 1000),
                 decay_per_tick=decay, source_event_id=eid, evolved=evolved,
                 mass=0.0 if kind == "building" else float(card.get("mass") or 1),
+                variant=variant, mechanics=kinds, params={m["kind"]: dict(m["params"]) for m in mechs},
             )
             self.units[u.uid] = u
+            for mech in hooks_for(u.mechanics, "on_spawn"):
+                mech.on_spawn(self, u)
 
     def _cast_spell(self, side: int, card_id: str, x: float, y: float, eid: int) -> None:
-        """释放法术：计算从国王塔发起到落点的弹道飞行耗时或创建滚木实体"""
-        s = self.db.stats(card_id, self.sides[side].level)
-        sp = s.spell
-        dmg, tdmg = s.stats.get("damage", 0), s.stats.get("crown_tower_damage", s.stats.get("damage", 0))
-        if "rolling_range_tiles" in sp:
-            self.rolling.append(RollingSpell(self._uid(), side, card_id, x, y, G.forward(side),
-                                             sp["rolling_range_tiles"], sp["width_tiles"],
-                                             sp["travel_speed_tiles_s"], dmg, tdmg, eid))
-        else:
-            kx, ky, _ = G.tower_pos(side, "king")
-            travel = G.dist(kx, ky, x, y) / sp.get("travel_speed_tiles_s", 1e9) * 1000
-            self.spells.append(Spell(self._uid(), side, card_id, x, y, sp["radius_tiles"], dmg, tdmg,
-                                     int(math.ceil(travel / G.TICK_MS) * G.TICK_MS), eid))
+        """释放法术：交给对应的法术类型组件 (area_spell 弹道落地 / rolling_spell 滚木)"""
+        kind = self.db.spell_kind(card_id)
+        params = {m["kind"]: dict(m["params"]) for m in self.db.mechanics_for(card_id)}
+        SPELLS[kind].cast(self, side, card_id, x, y, eid, self.db.stats(card_id, self.sides[side].level), params)
 
     # -- 核心仿真步进循环 (Simulation Step) ------------------------------------
     def step(self) -> None:
@@ -379,12 +301,12 @@ class Match:
         for sp in list(self.spells):
             sp.impact_in_ms -= dt
             if sp.impact_in_ms <= 0:
-                self._spell_impact(sp)
+                SPELLS[sp.kind].impact(self, sp)
                 self.spells.remove(sp)
 
         # 3. 滚动法术 (滚木) 推进与沿途贯穿伤害
         for rs in list(self.rolling):
-            self._roll(rs, dt)
+            SPELLS["rolling_spell"].advance(self, rs, dt)
             if rs.remaining <= 0:
                 self.rolling.remove(rs)
 
@@ -393,14 +315,17 @@ class Match:
             u = self.units[uid]
             if u.hp <= 0:
                 continue
+            if u.status:
+                S.tick(u, dt)
             if u.deploy_ms > 0:
                 u.deploy_ms -= dt
                 continue
-            if u.decay_per_tick:
-                u.hp -= u.decay_per_tick
-                if u.hp <= 0:
-                    continue
+            # 机制组件的逐帧钩子 (如建筑自然衰减)；返回 True 表示该单位本帧结束
+            if u.mechanics and self._tick_hooks(u, dt):
+                continue
             if u.kind == "tower" and not u.active:
+                continue
+            if u.status and not S.can_attack(u) and not S.can_move(u):
                 continue
             u.cooldown_ms = max(0, u.cooldown_ms - dt)
             # 索敌锁定目标
@@ -409,10 +334,10 @@ class Match:
                 continue
             # 若在射程内，且攻速冷却完毕，发起普通攻击
             if self._in_range(u, tgt):
-                if u.cooldown_ms == 0:
+                if u.cooldown_ms == 0 and (not u.status or S.can_attack(u)):
                     self._attack(u, tgt)
                     u.cooldown_ms = u.hit_speed_ms
-            elif u.kind == "troop":
+            elif u.kind == "troop" and (not u.status or S.can_move(u)):
                 u.cooldown_ms = max(u.cooldown_ms, u.first_hit_ms)
                 self._move(u, tgt, dt)
 
@@ -457,6 +382,8 @@ class Match:
         if cur is not None and cur.hp > 0 and self._in_range(u, cur):
             return cur
         enemies = [e for e in self.units.values() if e.side != u.side and e.hp > 0 and self._can_target(u, e)]
+        if self.status_used:
+            enemies = [e for e in enemies if not e.status or S.targetable(e)]
         if u.is_structure:
             pool = [e for e in enemies if self._in_range(u, e)]
         elif u.building_only:
@@ -471,29 +398,40 @@ class Match:
         u.target_uid = best.uid
         return best
 
-    def _deal(self, t: Unit, amount: float) -> None:
-        """造成伤害并处理国王塔受击激活"""
+    def _deal(self, t: Unit, amount: float, source=None) -> None:
+        """造成伤害 (经过 on_damaged 钩子，如护盾/减伤) 并处理国王塔受击激活"""
+        if t.mechanics:
+            for mech in hooks_for(t.mechanics, "on_damaged"):
+                amount = mech.on_damaged(self, t, amount, source)
         t.hp -= amount
         if t.kind == "tower" and t.tower_role == "king" and not t.active:
             t.active = True
 
     def _attack(self, u: Unit, t: Unit) -> None:
-        """执行单次攻击 (包含溅射 AoE 范围伤害处理)"""
-        if u.splash <= 0:
-            self._deal(t, u.damage)
-            return
-        for e in sorted(self.units.values(), key=lambda e: e.uid):
-            if e.side != u.side and e.hp > 0 and self._can_target(u, e) \
-                    and G.dist(e.x, e.y, t.x, t.y) <= u.splash + e.radius:
-                self._deal(e, u.damage)
+        """执行单次攻击：机制组件 (溅射、弹道…) 可接管，否则单体伤害"""
+        if u.mechanics:
+            for mech in hooks_for(u.mechanics, "on_attack"):
+                if mech.on_attack(self, u, t):
+                    return
+        self._deal(t, u.damage, u)
 
     def _move(self, u: Unit, t: Unit, dt: int) -> None:
         """推进单位位移：空中单位直线飞向目标；地面单位依桥梁拐点智能寻路"""
-        if u.layer == "air" or u.river_jump:
+        wp = None
+        if u.mechanics:
+            for mech in hooks_for(u.mechanics, "waypoint"):
+                wp = mech.waypoint(self, u, t)
+                if wp is not None:
+                    break
+        if u.layer == "air":
             wx, wy = t.x, t.y
+        elif wp is not None:
+            wx, wy = wp
         else:
             wx, wy = G.ground_waypoint(u.x, u.y, t.x, t.y)
         step = u.speed * dt / 1000.0
+        if u.status:
+            step *= S.speed_factor(u)
         d = G.dist(u.x, u.y, wx, wy)
         if (wx, wy) == (t.x, t.y):  # 避免直接走进目标核心内部
             step = min(step, max(0.0, d - u.radius - t.radius - u.range + 0.01))
@@ -502,25 +440,6 @@ class Match:
         f = min(1.0, step / d)
         u.x = min(max(u.x + (wx - u.x) * f, 0.0), G.W - 0.01)
         u.y = min(max(u.y + (wy - u.y) * f, 0.0), G.H - 0.01)
-
-    def _spell_impact(self, sp: Spell) -> None:
-        """范围法术落地引爆：对半径内所有存活敌方实体造成伤害"""
-        for e in sorted(self.units.values(), key=lambda e: e.uid):
-            if e.side != sp.side and e.hp > 0 and G.dist(e.x, e.y, sp.x, sp.y) <= sp.radius + e.radius:
-                self._deal(e, sp.tower_damage if e.kind == "tower" else sp.damage)
-
-    def _roll(self, rs: RollingSpell, dt: int) -> None:
-        """滚木前进物理推算：沿线横向矩形检测碰撞，避免多次重复伤害"""
-        adv = min(rs.speed * dt / 1000.0, rs.remaining)
-        y0, y1 = rs.y, rs.y + rs.direction * adv
-        lo, hi = min(y0, y1), max(y0, y1)
-        for e in sorted(self.units.values(), key=lambda e: e.uid):
-            if e.side == rs.side or e.hp <= 0 or e.layer != "ground" or e.uid in rs.hit:
-                continue
-            if abs(e.x - rs.x) <= rs.width / 2 + e.radius and lo - e.radius <= e.y <= hi + e.radius:
-                rs.hit.add(e.uid)
-                self._deal(e, rs.tower_damage if e.kind == "tower" else rs.damage)
-        rs.y, rs.remaining = y1, rs.remaining - adv
 
     def _resolve_collisions(self) -> None:
         """
@@ -578,7 +497,7 @@ class Match:
             ox, oy = u.x, u.y
             nx_, ny_ = min(max(ox + px, 0.0), G.W - 0.01), min(max(oy + py, 0.0), G.H - 0.01)
             # 地面单位若不是跳河兵种，严禁被推挤进河水区域 (桥梁除外)
-            if u.layer == "ground" and not u.river_jump and G.region(ny_) == "river" and not G.on_bridge(nx_):
+            if u.layer == "ground" and not self._river_passable(u) and G.region(ny_) == "river" and not G.on_bridge(nx_):
                 if G.region(oy) == "river":       # 原本在桥上被挤：限制在桥面范围内滑动
                     bx = min(G.BRIDGE_X, key=lambda b: abs(b - ox))
                     nx_ = min(max(nx_, bx - G.BRIDGE_HALF_W), bx + G.BRIDGE_HALF_W)
@@ -586,12 +505,30 @@ class Match:
                     ny_ = oy
             u.x, u.y = nx_, ny_
 
+    def apply_status(self, u: Unit, tag: str, ms: int) -> None:
+        """Mechanics apply status effects through here (stun, slow, root, invisible, freeze)."""
+        self.status_used = True
+        S.apply(u, tag, ms)
+
+    def _tick_hooks(self, u: Unit, dt: int) -> bool:
+        for mech in hooks_for(u.mechanics, "on_tick"):
+            if mech.on_tick(self, u, dt):
+                return True
+        return False
+
+    @staticmethod
+    def _river_passable(u: Unit) -> bool:
+        return any(REGISTRY[k].river_passable for k in u.mechanics)
+
     def _resolve_deaths(self) -> None:
         """结算生命值 <= 0 的阵亡单位并更新比分 (拔公主塔得 1 冠，拆国王塔直接 3 冠)"""
         for uid in sorted(self.units):
             u = self.units[uid]
             if u.hp > 0:
                 continue
+            if u.mechanics:
+                for mech in hooks_for(u.mechanics, "on_death"):
+                    mech.on_death(self, u)
             if u.kind == "tower":
                 enemy = self.sides[1 - u.side]
                 if u.tower_role == "king":

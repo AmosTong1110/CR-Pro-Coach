@@ -197,7 +197,7 @@ class DeckDialog(QDialog):
             evo_box = QComboBox()
             evo_box.addItem("No evolution", None)
             for cid, c in db.cards.items():
-                if c.get("evolution"):
+                if db.has_variant(cid, "evo"):
                     evo_box.addItem(f"Evo {c['name']}", cid)
                     if cid in evo:
                         evo_box.setCurrentIndex(evo_box.count() - 1)
@@ -311,7 +311,7 @@ class CounterPanel(QGroupBox):
         lines = [f"In hand: {' · '.join(hand)}",
                  f"Returns next: ▶ {' → '.join(q)}"]
         # 觉醒轮换层数计数
-        evo = [f"{names[c]} {k}/{s.db.cards[c]['evolution']['cycles_required']}"
+        evo = [f"{names[c]} {k}/{s.db.evo_cycles(c)}"
                for c, k in e.evo_progress.items()]
         if evo:
             lines.append("Evo cycles: " + ", ".join(evo))
@@ -782,7 +782,7 @@ class MainWindow(QMainWindow):
         names = {cid: c["name"] for cid, c in s.db.cards.items()}
         costs = {cid: c["elixir"] for cid, c in s.db.cards.items()}
         evo_ready = {c for c in st.evo_cards
-                     if st.evo_counter[c] >= s.db.cards[c]["evolution"]["cycles_required"]}
+                     if st.evo_counter[c] >= s.db.evo_cycles(c)}
         self.hand.refresh(st.hand, st.queue[0], names, costs, st.elixir, self.selected, evo_ready)
         self.counter.refresh()
         if not self.slider.isSliderDown():

@@ -49,6 +49,7 @@ class SavedAction:
     y: float
     evolved: bool = False
     event_id: int = 0
+    variant: str = "base"
 
 
 @dataclass
@@ -258,5 +259,5 @@ def outcome_of(winner: Optional[int], finished: bool, side: int = 0) -> Optional
 
 def actions_from_events(events: Sequence[Any]) -> List[SavedAction]:
     """PublicDeployEvent list -> SavedAction list."""
-    return [SavedAction(e.t_ms, e.side, e.card_id, float(e.tile.x), float(e.tile.y), bool(e.is_evolved), e.event_id)
-            for e in events]
+    return [SavedAction(e.t_ms, e.side, e.card_id, float(e.tile.x), float(e.tile.y), bool(e.is_evolved), e.event_id,
+                        getattr(e, "variant", "base")) for e in events]

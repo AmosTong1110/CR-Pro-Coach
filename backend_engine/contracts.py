@@ -54,6 +54,28 @@ class TilePos:
         )
 
 
+VARIANTS = ("base", "evo", "hero")
+
+
+@dataclass(frozen=True)
+class CardRef:
+    """A card plus its variant. String form: "knight" or "knight#evo" (logs, URLs, datasets)."""
+    card_id: str
+    variant: str = "base"
+
+    def __post_init__(self) -> None:
+        if self.variant not in VARIANTS:
+            raise ValueError(f"unknown variant {self.variant!r}")
+
+    def __str__(self) -> str:
+        return self.card_id if self.variant == "base" else f"{self.card_id}#{self.variant}"
+
+    @classmethod
+    def parse(cls, text: str) -> "CardRef":
+        cid, _, variant = text.strip().partition("#")
+        return cls(cid, variant or "base")
+
+
 # --------------------------------------------------------------------------
 # 模拟器 -> 感知层/大脑：对局公开下牌事件
 # 严格遵守人类玩家在屏幕上看到的合法信息，绝对不泄露对手暗置手牌（防作弊）
@@ -70,6 +92,19 @@ class PublicDeployEvent:
     is_evolved: bool = False # 是否为觉醒形态出牌
     is_ability: bool = False # 是否为英雄/冠军技能触发按钮（而非传统手牌）
     is_threat: bool = False  # 是否为威胁攻击单位（落点靠近河道或直接空降半场）
+    variant: str = "base"    # "base" | "evo" | "hero" (kept in sync with is_evolved)
+
+    def __post_init__(self) -> None:
+        if self.variant not in VARIANTS:
+            raise ValueError(f"unknown variant {self.variant!r}")
+        if self.is_evolved and self.variant == "base":
+            object.__setattr__(self, "variant", "evo")
+        elif self.variant == "evo" and not self.is_evolved:
+            object.__setattr__(self, "is_evolved", True)
+
+    @property
+    def card_ref(self) -> "CardRef":
+        return CardRef(self.card_id, self.variant)
 
 
 # --------------------------------------------------------------------------
