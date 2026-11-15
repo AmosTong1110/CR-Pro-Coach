@@ -94,21 +94,10 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 9. Engine v2 (2026-11-15) changed gameplay (projectiles, knockback, Evo Knight). Matches saved with v1 show their
    summary/review in Analysis but can't be reopened. `configs/value_model.json` was trained on v1 bot games: retrain
    (`tools/train_value_model.py`) before trusting coach grades.
-10. Git: `origin/main` was rewritten on 2026-11-15 to drop a commit that had pushed `v8_best.onnx` and a `user_data/`
-   match. `v8_best.pt` (same model, licence "personal use only") is still in history since `f1077ea` (2026-11-14).
-   `user_data/` and `pretrained_weights/**/*.onnx` are git-ignored on both branches. Switching to an old branch that
-   tracked the ONNX deletes it from disk; restore with `git show <rev>:pretrained_weights/sudhishneel_v8/v8_best.onnx`.
-
-**Strict constraints**
-* MacBook Air M1, **8 GB RAM**: app < 1.2 GB; no torch at runtime; inference via onnxruntime (CoreML). Heavy training on Colab/Kaggle only.
-* Mode B: **read-only** (pixels only; no taps/clicks/keys/memory/ADB). Live overlay not for official tournament games.
-* AI must respect human limits (HumanDelayBuffer, 120 ms combo gap). No superhuman reactions, including MCTS.
-* Determinism must be preserved (replay/snapshot tests).
-* Keep all existing tests green; keep snake_case card ids as primary keys.
-* UI text is **English-only** (user's choice); CRbot has its own look (don't copy Counterpush or Supercell art).
-* Downloaded `.pt`/pickle files: verify hash and scan before loading.
-* Privacy: never send the user's player tag, email or name to external services; don't repeat them.
-* Reply in the language of the user's latest message.
+10. Git (2026-11-15): `main` and `feat/app-shell` were rewritten and force-pushed to remove `v8_best.onnx`,
+   `v8_best.pt` (licence "personal use only") and a `user_data/` match from all history. Clones made before that
+   must re-clone or `git reset --hard origin/<branch>`. Weights (`pretrained_weights/**/*.{onnx,pt,pth}`) and
+   `user_data/` are git-ignored; the local files are kept on disk only.
 
 ## 4. Recommended next steps
 1. **Retrain the value model on engine v2** (coach grades currently use a v1-trained model), then merge `feat/app-shell` into `main`.
