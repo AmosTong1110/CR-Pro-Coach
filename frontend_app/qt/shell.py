@@ -59,6 +59,7 @@ QPushButton.primary:disabled {{ background:{C['line']}; color:{C['muted']}; }}
 QPushButton.ghost {{ background:transparent; color:{C['text']}; border:1px solid {C['line']}; border-radius:7px;
                      padding:7px 14px; }}
 QPushButton.ghost:hover {{ border-color:{C['violet']}; }}
+QPushButton.ghost:disabled {{ color:{C['muted']}; border-color:{C['panel2']}; }}
 QPushButton.danger {{ background:transparent; color:{C['loss']}; border:1px solid {C['line']}; border-radius:7px;
                       padding:7px 14px; }}
 """
@@ -146,7 +147,7 @@ class AnalysisPage(QWidget):
         self.list.setStyleSheet(f"QListWidget{{background:{C['panel']}; border:1px solid {C['line']};"
                                 f"border-radius:8px;}}"
                                 f"QListWidget::item{{padding:8px;}}"
-                                f"QListWidget::item:selected{{background:{C['panel2']};}}")
+                                f"QListWidget::item:selected{{background:{C['panel2']}; color:{C['text']};}}")
         self.list.currentRowChanged.connect(self.show_match)
         self.list.itemDoubleClicked.connect(lambda _: self.open_selected())
         body.addWidget(self.list, 2)
@@ -158,6 +159,7 @@ class AnalysisPage(QWidget):
         self.graph = WinRateGraph()
         self.graph.setMinimumHeight(180)
         self.grades = QLabel()
+        self.grades.setWordWrap(True)
         self.grades.setStyleSheet("font-size:13px;")
         btns = QHBoxLayout()
         self.open_btn = _cls(QPushButton("Open review in Fight"), "primary")

@@ -1,7 +1,7 @@
 # CRbot — Session Handoff (2026-11-15)
 
 Read this first in every new session. Roadmap: `docs/CRBOT_UPGRADE_PLAN.md`.
-State at handoff: **201 tests passing** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`).
+State at handoff: **241 tests passing** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), engine **v2**, branch `feat/app-shell` (not merged into `main`).
 Environment: project venv `.venv` (Python 3.14; numpy, pyyaml, PySide6-Essentials, onnxruntime, Pillow, pytest).
 Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the app: `.venv/bin/python -m frontend_app.qt.app`.
 
@@ -13,10 +13,13 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 | `backend_engine/contracts.py` | Shared dataclasses: `PublicDeployEvent`, `ElixirEstimate`, `ActionIntent`, `HoverPlan`, `ScheduledAction`, `TilePos`. All time is integer **sim ms**. |
 | `backend_engine/simulator/geometry.py` | 18×32 tile arena, river/bridges, tower layout, `deploy_check` (own half, pocket after a princess falls, spells anywhere), bridge pathing. |
 | `backend_engine/simulator/engine.py` | Deterministic 50 ms tick engine: elixir phases (x1/x2/OT x2→x3), 4+4 card cycle, evo charge counter, towers + king activation on any damage, targeting, attacks, splash, spells (travel + area), rolling Log, building decay, **mass-based soft collision** (river-safe), win/crowns/tiebreaker, `snapshot/restore`, `state_hash`, `Match.replay`, fog-of-war `observation()`. |
-| `backend_engine/simulator/card_db.py` | Schema v3 loader. **Exact official scaling**: `stat(L)=floor(base·M[L-1-rarity_offset]/100)` (verified on 4,945 values). |
+| `backend_engine/simulator/card_db.py` | **Schema v4** loader (still reads v3 in memory via `normalise_card`). **Exact official scaling**: `stat(L)=floor(base·M[L-1-rarity_offset]/100)` (verified on 4,945 values). Helpers: `variant`, `has_variant`, `evo_cycles`, `evo_capable`, `mechanics_for(cid, variant)` (explicit + derived `projectile`/`splash`/`decay`/spell kind), `spell_kind`, `by_alias`, `unsimulated_tags`; `stats(cid, level, variant)` applies `stat_mods`. |
 | `backend_engine/simulator/sync_meta.py` | Imports RoyaleAPI-format game data into `configs/cards_stats_v2026.json` (base stats, timings, ranges, speed, mass). |
+| `backend_engine/simulator/mechanics/` | **Mechanics framework** (plan §5). `base.py`: `Mechanic` hooks (`on_spawn`, `on_tick`, `on_attack`, `on_damaged`, `on_death`, `waypoint`, `river_passable`), `REGISTRY` + `@register`, `SpellKind` + `SPELLS`, `DESCRIPTIVE` tags. `core.py`: `river_jump`, `splash`, `decay`, `area_spell`, `rolling_spell` (ported, identical hashes) + engine v2: `projectile` (homing, travel time; Musketeer/Archers/Minions/Cannon/towers), knockback (Fireball 1.0, Log 0.7 tiles from game `pushback`), `damage_reduction_while_not_attacking` (Evo Knight 60%). `status.py`: stun/freeze/slow/root/invisible via `Match.apply_status` (nothing applies them yet). |
+| `backend_engine/simulator/entities.py` | `Unit` (+ `variant`, `mechanics`, `params`, `status`, `mstate`), `Spell`, `RollingSpell`, `Projectile` (engine re-exports them). |
+| `backend_engine/simulator/golden.py` + `tests/golden/engine_hashes.json` | 15 determinism scenarios (bot matches L11/L16, Evo Knight, Log vs swarm, Fireball king, Cannon pulls Hog, river jump, crowd). `python tools/record_golden.py` checks + times them; `--write` re-records after an **intentional** gameplay change (then bump `engine.ENGINE_VERSION`). |
 | `backend_engine/simulator/match_runner.py` | Drives matches; AI perceives through HumanDelayBuffer + OppElixirTracker + deck guesser; human side via `human_play`. CLI demo. |
-| `configs/cards_stats_v2026.json` | 9 cards (knight, hog_rider, musketeer, cannon, fireball, the_log, skeletons, archers, minions) + towers + rules. Data from game files **as of 2023-10**. |
+| `configs/cards_stats_v2026.json` | Schema 4. 9 cards (knight, hog_rider, musketeer, cannon, fireball, the_log, skeletons, archers, minions) + towers + rules. Each card: `internal_name` (game sc_key, e.g. Log), `game_id` (e.g. 26000000, for copyDeck links), `aliases {display, hf, royaleapi, detector[]}`, `variants {evo, hero}`, `mechanics [{kind, params}]`. Balance data **as of 2023-10**. Migrated by `tools/migrate_cards_v4.py`. |
 
 ### Brain / perception
 | file | what it does |
@@ -62,9 +65,9 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 |---|---|---|
 | App shell (CRbot sidebar: Fight / Analysis / Recommended deck / Account) | 85% | Mode B recordings into the store (`mode="recording"`); drills; restyle Fight page widgets (hand bar, buttons still old inline colours); review runs synchronously (UI blocks ~5 s) → move to a worker |
 | UI layout (existing arena/review screens) | 70% | move into shell; *Show me* playback; visual identity (own palette) |
-| Card schema v4 (internal names, aliases, variants) | 0% | `internal_name`, alias table, `variants{evo,hero}`, `CardRef`, `variant` on events |
-| Simulation core | 85% | projectiles with travel, status effects, mechanic hooks |
-| Mechanics framework + 30-card batch | 10% | component registry; port existing behaviour; 21 new cards (§1 of plan) |
+| Card schema v4 (internal names, aliases, variants) | 95% | hero variants (data + offset) when the first hero card arrives |
+| Simulation core | 90% | stun/slow appliers, death spawn/damage, charge, burrow (with batch 1) |
+| Mechanics framework + 30-card batch | 30% | framework + projectiles/knockback/Evo Knight done; 21 new cards (§1 of plan) |
 | Current card stats (Nov 2026, L16) | 10% | find a fresh data source; golden-value tests |
 | Deck link import + archetype names | 40% | naming rules done (`meta/archetypes.py`); `copyDeck` parser |
 | IL dataset + policy/value | 5% | event-stream sample builder; Colab training; ONNX `NeuralBot` |
@@ -72,7 +75,7 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 | Coach v2 (value-net evaluator, tiers, timing ±1 s) | 40% | swap evaluator; Great/Excellent tiers; weighted accuracy; timing variants |
 | Elixir counter / deck guesser / delay system | 92% | minor |
 | Mode B companion | 60% | test on real recorded matches; RoyaleAPI timeline comparison; detector fine-tuning |
-| **Overall** | **~44%** | |
+| **Overall** | **~48%** | |
 
 ## 3. Open issues & constraints
 
@@ -88,6 +91,13 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
    `coach_analyzer.py`, `human_delay_buffer.py` and `session.py` (the later copy silently won). Trimmed; behaviour
    unchanged (identical ASTs). Watch for this if docstrings are regenerated.
 8. Only 0 of 932 real meta decks are playable with 9 cards; the Decks page shows what each one still needs.
+9. Engine v2 (2026-11-15) changed gameplay (projectiles, knockback, Evo Knight). Matches saved with v1 show their
+   summary/review in Analysis but can't be reopened. `configs/value_model.json` was trained on v1 bot games: retrain
+   (`tools/train_value_model.py`) before trusting coach grades.
+10. Git: `origin/main` was rewritten on 2026-11-15 to drop a commit that had pushed `v8_best.onnx` and a `user_data/`
+   match. `v8_best.pt` (same model, licence "personal use only") is still in history since `f1077ea` (2026-11-14).
+   `user_data/` and `pretrained_weights/**/*.onnx` are git-ignored on both branches. Switching to an old branch that
+   tracked the ONNX deletes it from disk; restore with `git show <rev>:pretrained_weights/sudhishneel_v8/v8_best.onnx`.
 
 **Strict constraints**
 * MacBook Air M1, **8 GB RAM**: app < 1.2 GB; no torch at runtime; inference via onnxruntime (CoreML). Heavy training on Colab/Kaggle only.
@@ -101,7 +111,9 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 * Reply in the language of the user's latest message.
 
 ## 4. Recommended next steps
-1. **Card schema v4 + mechanics framework**, porting the current 9 cards with identical state hashes, then the first new mechanics (projectiles, stun, knockback, death spawn).
-2. **Validate Mode B on one real recorded match** (user records to `recordings/`, we extract frames with ffmpeg, calibrate, compare with the RoyaleAPI replay timeline).
-3. **Shell polish**: run the coach review in a background worker with a cancel button; restyle the Fight page
-   controls in the CRbot palette; save Mode B companion sessions as `recording` matches.
+1. **Retrain the value model on engine v2** (coach grades currently use a v1-trained model), then merge `feat/app-shell` into `main`.
+2. **Batch-1 mechanics + first new cards** (plan Week 2): stun/slow appliers (Zap/Ice Spirit/Electro Spirit), death spawn,
+   multi-spawn, burrow (Miner), invisibility (Royal Ghost); add cards with `tools/migrate_cards_v4.py` + `sync_meta`.
+3. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>` using `game_id` and `CardDB.by_alias`.
+4. **Validate Mode B on one real recorded match** (record to `recordings/`, extract frames with ffmpeg, calibrate, compare with the RoyaleAPI timeline).
+5. **Shell polish**: coach review in a background worker with cancel; restyle Fight page controls; save Mode B sessions as `recording` matches.
