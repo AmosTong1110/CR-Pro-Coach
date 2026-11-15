@@ -253,6 +253,7 @@ def test_old_engine_match_is_summary_only(shell):
     mid = shell.save_current()
     meta = shell.store.load_meta(mid)
     assert meta.engine_version == ENGINE_VERSION
+    f.set_session(GameSession(cfg=SessionConfig(seed=8)))   # the old match is no longer on screen
     meta.engine_version = ENGINE_VERSION - 1
     shell.store.save(meta, shell.store.load_record(mid))
     shell.show_page("analysis")
