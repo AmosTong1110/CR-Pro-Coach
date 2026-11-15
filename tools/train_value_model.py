@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from backend_engine.brain.scripted_bot import ScriptedBot  # noqa: E402
 from backend_engine.brain.value_model import DEFAULT_PATH, FEATURES, features  # noqa: E402
 from backend_engine.simulator.card_db import CardDB  # noqa: E402
-from backend_engine.simulator.engine import Match, MatchConfig  # noqa: E402
+from backend_engine.simulator.engine import ENGINE_VERSION, Match, MatchConfig  # noqa: E402
 from backend_engine.simulator.match_runner import DEFAULT_DECK, MatchRunner  # noqa: E402
 
 SAMPLE_EVERY_MS = 3000
@@ -99,15 +99,25 @@ def main():
     Xte, yte = to_xy(games[cut:])
     w = fit(Xtr, ytr)
     acc, ll = evaluate(Xte, yte, w)
+    prev = None
+    if DEFAULT_PATH.exists():                      # the model currently in use, scored on the same test games
+        old = json.loads(DEFAULT_PATH.read_text(encoding="utf-8"))
+        if old.get("features") == list(FEATURES):
+            o_acc, o_ll = evaluate(Xte, yte, np.array(old["weights"]))
+            prev = {"engine_version": old.get("meta", {}).get("engine_version", 1),
+                    "test_accuracy": round(o_acc, 4), "test_log_loss": round(o_ll, 4)}
     base_ll = math.log(2)
     late = Xte[:, FEATURES.index("crowns_late")] != 0  # not a great slice; report overall
     meta = {"trained": True, "games": a.games, "decisive_games": len(games), "draws": draws,
             "train_states": int(len(ytr)), "test_states": int(len(yte)),
             "test_accuracy": round(acc, 4), "test_log_loss": round(ll, 4), "coin_flip_log_loss": round(base_ll, 4),
-            "sample_every_ms": SAMPLE_EVERY_MS, "opponents": "ScriptedBot vs ScriptedBot"}
+            "sample_every_ms": SAMPLE_EVERY_MS, "opponents": "ScriptedBot vs ScriptedBot",
+            "engine_version": ENGINE_VERSION, "seed": a.seed}
     a.out.write_text(json.dumps({"features": FEATURES, "weights": [round(float(v), 5) for v in w], "meta": meta},
                                 indent=2) + "\n", encoding="utf-8")
     print(json.dumps(meta, indent=1))
+    if prev:
+        print("previous model on the same test games:", prev)
     print("weights:", dict(zip(FEATURES, [round(float(v), 3) for v in w])))
     _ = late
 
