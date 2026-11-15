@@ -47,3 +47,7 @@ user_data/
 
 # Detector weights (licence: personal use only, do not redistribute)
 pretrained_weights/**/*.onnx
+
+# Detector training weights (same licence)
+pretrained_weights/**/*.pt
+pretrained_weights/**/*.pth
