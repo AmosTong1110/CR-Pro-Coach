@@ -1,7 +1,7 @@
 # CRbot — Session Handoff (2026-11-15)
 
 Read this first in every new session. Roadmap: `docs/CRBOT_UPGRADE_PLAN.md`.
-State at handoff: **241 tests passing** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), engine **v2**, branch `feat/app-shell` (not merged into `main`).
+State at handoff: **241 tests passing** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), engine **v2**, all work merged into `main`.
 Environment: project venv `.venv` (Python 3.14; numpy, pyyaml, PySide6-Essentials, onnxruntime, Pillow, pytest).
 Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the app: `.venv/bin/python -m frontend_app.qt.app`.
 
@@ -26,7 +26,7 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 |---|---|
 | `brain/human_delay_buffer.py` | 3-layer human limits: perception delay (surprise 420–580 / anticipated / routine), hover reflex 120–200, APM gap 180–300, combo gap **120 ms**. Snapshot-able. |
 | `brain/scripted_bot.py` | Rule-based baseline AI (all 4 personas use it with different aggression). |
-| `brain/value_model.py` + `configs/value_model.json` | Logistic win-prob model trained on 200 bot-vs-bot games (73% held-out acc). |
+| `brain/value_model.py` + `configs/value_model.json` | Logistic win-prob model, retrained on **engine v2**: 400 bot-vs-bot games, 78.2% held-out accuracy, log loss 0.448 (v1 model on the same games: 77.9% / 0.453). `tools/train_value_model.py` records `engine_version` and scores the previous model on the same test games. |
 | `brain/coach_analyzer.py` | Post-match review: ~30–40 candidates per play, 8 s rollouts, grades, accuracy, curve. |
 | `perception/opp_elixir_count.py` | Exact opponent elixir + cycle/hand inference + evo progress (error 1e-13 vs engine). |
 | `perception/bayesian_deck_guesser.py` | Deck posterior from `configs/meta_decks_hf.json` (3,184 real decks, HF Dec 2025). |
@@ -75,7 +75,7 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 | Coach v2 (value-net evaluator, tiers, timing ±1 s) | 40% | swap evaluator; Great/Excellent tiers; weighted accuracy; timing variants |
 | Elixir counter / deck guesser / delay system | 92% | minor |
 | Mode B companion | 60% | test on real recorded matches; RoyaleAPI timeline comparison; detector fine-tuning |
-| **Overall** | **~48%** | |
+| **Overall** | **~49%** | |
 
 ## 3. Open issues & constraints
 
@@ -92,17 +92,15 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
    unchanged (identical ASTs). Watch for this if docstrings are regenerated.
 8. Only 0 of 932 real meta decks are playable with 9 cards; the Decks page shows what each one still needs.
 9. Engine v2 (2026-11-15) changed gameplay (projectiles, knockback, Evo Knight). Matches saved with v1 show their
-   summary/review in Analysis but can't be reopened. `configs/value_model.json` was trained on v1 bot games: retrain
-   (`tools/train_value_model.py`) before trusting coach grades.
+   summary/review in Analysis but can't be reopened. The value model has been retrained on v2.
 10. Git (2026-11-15): `main` and `feat/app-shell` were rewritten and force-pushed to remove `v8_best.onnx`,
    `v8_best.pt` (licence "personal use only") and a `user_data/` match from all history. Clones made before that
    must re-clone or `git reset --hard origin/<branch>`. Weights (`pretrained_weights/**/*.{onnx,pt,pth}`) and
    `user_data/` are git-ignored; the local files are kept on disk only.
 
 ## 4. Recommended next steps
-1. **Retrain the value model on engine v2** (coach grades currently use a v1-trained model), then merge `feat/app-shell` into `main`.
-2. **Batch-1 mechanics + first new cards** (plan Week 2): stun/slow appliers (Zap/Ice Spirit/Electro Spirit), death spawn,
+1. **Batch-1 mechanics + first new cards** (plan Week 2): stun/slow appliers (Zap/Ice Spirit/Electro Spirit), death spawn,
    multi-spawn, burrow (Miner), invisibility (Royal Ghost); add cards with `tools/migrate_cards_v4.py` + `sync_meta`.
-3. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>` using `game_id` and `CardDB.by_alias`.
-4. **Validate Mode B on one real recorded match** (record to `recordings/`, extract frames with ffmpeg, calibrate, compare with the RoyaleAPI timeline).
-5. **Shell polish**: coach review in a background worker with cancel; restyle Fight page controls; save Mode B sessions as `recording` matches.
+2. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>` using `game_id` and `CardDB.by_alias`.
+3. **Validate Mode B on one real recorded match** (record to `recordings/`, extract frames with ffmpeg, calibrate, compare with the RoyaleAPI timeline).
+4. **Shell polish**: coach review in a background worker with cancel; restyle Fight page controls; save Mode B sessions as `recording` matches.
