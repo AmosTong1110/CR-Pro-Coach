@@ -22,6 +22,7 @@ from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.engine import ENGINE_VERSION, Match, MatchConfig, MatchResult, PlayResult, Unit
+from backend_engine.simulator.mechanics.abilities import ABILITY_SUFFIX
 from backend_engine.simulator.match_runner import DEFAULT_DECK, MatchRunner
 from backend_engine.storage.match_store import (
     MatchMeta, MatchRecord, actions_from_events, new_match_id, outcome_of,
@@ -226,6 +227,33 @@ class GameSession:
             return None
         target = self.match.t_ms + int(seconds * 1000)
         return self.seek(target) if self.redo[0].t_ms <= target else self.seek(self.redo[0].t_ms)
+
+    # -- review playback (watch the match like a video) ------------------------------------------------------
+    def review_actions(self) -> Dict[int, List[Tuple[str, float, float]]]:
+        """Your plays on the furthest timeline, by tick: {t_ms: [(card_id or 'card#ability', x, y), ...]}."""
+        out: Dict[int, List[Tuple[str, float, float]]] = {}
+        for t, side, card, x, y in self._furthest_match().action_log:
+            if side == HUMAN:
+                out.setdefault(int(t), []).append((card, x, y))
+        return out
+
+    def replay_to(self, t_ms: int, actions: Dict[int, List[Tuple[str, float, float]]]) -> int:
+        """Playback: move forward to t_ms along the recorded timeline without changing it. Jumps to the last
+        checkpoint <= t_ms, then re-simulates the few ticks after it, re-applying your plays at their ticks (the
+        AI re-decides identically: everything is deterministic). Returns the new match time."""
+        target = min(int(t_ms), self.max_known_ms())
+        if target > self.match.t_ms:
+            self.seek(target)                     # passes every checkpoint <= target (keeps timeline / redo sorted)
+        m = self.match
+        while m.t_ms < target and m.result is None:
+            for card, x, y in actions.get(m.t_ms, ()):
+                if card.endswith(ABILITY_SUFFIX):
+                    self.runner.human_ability(card[: -len(ABILITY_SUFFIX)], side=HUMAN)
+                else:
+                    self.runner.human_play(card, x, y, side=HUMAN)
+            self.runner.tick()
+        self._collect_log()
+        return m.t_ms
 
     def take_over_before(self, log_index: int) -> Optional[int]:
         """从出牌记录的第 log_index 步之前一瞬间接管游戏，重打这波对拼"""

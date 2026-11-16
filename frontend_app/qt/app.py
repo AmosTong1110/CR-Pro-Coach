@@ -478,6 +478,10 @@ class MainWindow(QMainWindow):
         self.analyzing = False
         self._cancel = False
         self.away_paused = False
+        self.playing = False                    # review playback (watch the match like a video)
+        self.play_speed = 1
+        self._play_actions = None
+        self._banner_until: Optional[int] = None
 
         # -- left: board + (hand | review graph and timeline) -------------------------------------------------
         self.board = BoardWidget(self.session)
@@ -500,6 +504,14 @@ class MainWindow(QMainWindow):
         self.fwd_btn = cls(QPushButton("10s ⏩"), "ghost")
         self.fwd_btn.setToolTip("Forward 10 seconds (F)")
         self.fwd_btn.clicked.connect(lambda: self.step(10))
+        self.play_btn = cls(QPushButton("▶  Play"), "primary")
+        self.play_btn.setToolTip("Watch the match from this moment (Space). Press again to stop.")
+        self.play_btn.setMinimumWidth(92)
+        self.play_btn.clicked.connect(self.toggle_playback)
+        self.speed_btn = cls(QPushButton("1x"), "ghost")
+        self.speed_btn.setToolTip("Playback speed: 1x · 2x · 4x")
+        self.speed_btn.setMaximumWidth(56)
+        self.speed_btn.clicked.connect(self._cycle_play_speed)
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setSingleStep(1000)
         self.slider.setPageStep(10_000)
@@ -510,7 +522,7 @@ class MainWindow(QMainWindow):
         self.slider_label.setAlignment(Qt.AlignCenter)
         tl = QHBoxLayout()
         tl.setSpacing(8)
-        for w in (self.rew_btn, self.slider, self.slider_label, self.fwd_btn):
+        for w in (self.rew_btn, self.play_btn, self.slider, self.slider_label, self.speed_btn, self.fwd_btn):
             tl.addWidget(w, 1 if w is self.slider else 0)
         self.review_strip = QWidget()
         vs = QVBoxLayout(self.review_strip)
@@ -575,7 +587,7 @@ class MainWindow(QMainWindow):
             QShortcut(QKeySequence(seq), self, activated=lambda: None if self.analyzing else fn())
         for i in range(4):
             key(str(i + 1), lambda i=i: self.on_hand_slot(i))
-        key(Qt.Key_Space, self.start_match)
+        key(Qt.Key_Space, lambda: self.toggle_playback() if self.mode == REVIEW else self.start_match())
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._escape)
         key("A", self.use_ability)
         key("N", self.new_match)
@@ -718,6 +730,8 @@ class MainWindow(QMainWindow):
 
     # -- states -----------------------------------------------------------------------------------------------
     def _set_mode(self, mode: str) -> None:
+        if mode != REVIEW:
+            self.stop_playback()
         self.mode = mode
         self.stop_btn.setVisible(mode == LIVE)
         self.setup_box.setVisible(mode == SETUP)
@@ -790,6 +804,7 @@ class MainWindow(QMainWindow):
 
     def pause_for_away(self) -> None:
         """Called by the shell when you leave the Fight page: never let a match run unseen."""
+        self.stop_playback()
         if self.mode == LIVE and (self.running or self.countdown_ms > 0):
             self.running = False
             self._stop_countdown()
@@ -805,6 +820,9 @@ class MainWindow(QMainWindow):
 
     # -- simulation loop --------------------------------------------------------------------------------------
     def on_timer(self) -> None:
+        if self.playing:
+            self._playback_tick()
+            return
         if self.countdown_ms > 0:            # real-time 3-2-1; the match clock is frozen meanwhile
             self.countdown_ms -= TICK_MS
             if self.countdown_ms <= 0:
@@ -847,7 +865,10 @@ class MainWindow(QMainWindow):
 
     def _set_busy(self, busy: bool) -> None:
         self.review_panel.set_busy(busy)
-        for w in (self.board, self.rew_btn, self.fwd_btn, self.slider, self.review_panel.graph):
+        if busy:
+            self.stop_playback()
+        for w in (self.board, self.rew_btn, self.fwd_btn, self.slider, self.review_panel.graph, self.play_btn,
+                  self.speed_btn):
             w.setEnabled(not busy)
         self.busyChanged.emit(busy)
 
@@ -923,6 +944,7 @@ class MainWindow(QMainWindow):
 
     def show_review_move(self, i: int) -> None:
         """Show graded play i on the board: just before it, your play in red, the recommendation in green."""
+        self.stop_playback()
         review = self.review_panel.review
         mv = review.moves[i]
         if self.session.restore_before_event(mv.event_id) is None:
@@ -942,6 +964,61 @@ class MainWindow(QMainWindow):
         self.board.banner = f"{mmss(mv.t_ms)}  {mv.label_text} {mv.symbol}  ·  {tip}"
         self.refresh()
 
+    # -- review playback ---------------------------------------------------------------------------------------
+    def toggle_playback(self) -> None:
+        """Play / Stop: watch the reviewed match from the moment on the board (Space)."""
+        if self.playing:
+            self.stop_playback()
+            self.flash("Stopped · Take over from here, or press Play to continue")
+            return
+        if self.mode != REVIEW or self.analyzing:
+            return
+        s = self.session
+        if s.result is not None or s.match.t_ms >= s.max_known_ms():
+            s.seek(0)                                   # at the end: watch from the start
+            self._reload_log()
+        self._play_actions = s.review_actions()
+        self.board.ghosts, self.board.banner = [], None
+        self.review_panel.clear_selection()
+        self.select(None)
+        self.playing = True
+        self._banner_until = None
+        self.play_btn.setText("■  Stop")
+        self.flash(f"Playing at {self.play_speed}x · Space or Stop to pause")
+        self.refresh()
+
+    def stop_playback(self) -> None:
+        if not getattr(self, "playing", False):
+            return
+        self.playing = False
+        self._play_actions = None
+        self.play_btn.setText("▶  Play")
+
+    def _cycle_play_speed(self) -> None:
+        self.play_speed = {1: 2, 2: 4, 4: 1}[self.play_speed]
+        self.speed_btn.setText(f"{self.play_speed}x")
+
+    def _playback_tick(self) -> None:
+        s = self.session
+        before = s.match.t_ms
+        t = s.replay_to(before + TICK_MS * self.play_speed, self._play_actions)
+        review = self.review_panel.review
+        if review is not None:                          # passing a graded play: show its grade for ~2.5 s
+            for i, mv in enumerate(review.moves):
+                if before < mv.t_ms <= t:
+                    name = s.db.cards.get(mv.actual.card_id, {}).get("name", mv.actual.card_id)
+                    self.board.banner = f"{mmss(mv.t_ms)}  {name}  {mv.symbol} {mv.label_text}  (−{mv.loss:.0%})"
+                    self.review_panel.graph.selected = i
+                    self._banner_until = t + 2500
+        if self._banner_until is not None and t >= self._banner_until:
+            self.board.banner, self._banner_until = None, None
+            self.review_panel.graph.selected = None
+        self.add_log([])
+        self.refresh()
+        if s.result is not None or t >= s.max_known_ms():
+            self.stop_playback()
+            self.flash("End of the match · drag the timeline or press Play to watch again")
+
     def review_goto(self, t_ms: int) -> None:
         """Review mode: select the graded play at t_ms if there is one, else jump to that moment."""
         if self.mode != REVIEW:
@@ -957,6 +1034,7 @@ class MainWindow(QMainWindow):
         """Review mode: jump straight to t_ms (no countdown, nothing runs)."""
         if self.mode != REVIEW or self.analyzing:
             return
+        self.stop_playback()
         if self.session.seek(int(t_ms)) is not None:
             self._after_scrub()
 
@@ -975,6 +1053,7 @@ class MainWindow(QMainWindow):
         """U / F and the ⏪ / ⏩ buttons. Review: jump. Live: take over from there after a countdown."""
         if self.analyzing or self.mode not in (LIVE, REVIEW):
             return
+        self.stop_playback()
         s = self.session
         restored = s.rewind(-seconds) if seconds < 0 else s.forward(seconds)
         if self.mode == REVIEW:
@@ -986,6 +1065,7 @@ class MainWindow(QMainWindow):
     def take_over_review(self) -> None:
         if self.analyzing:
             return
+        self.stop_playback()
         if self.session.result is not None:
             self.flash("This is the end of the match. Pick an earlier moment on the timeline first.")
             return
