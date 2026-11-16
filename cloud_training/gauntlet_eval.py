@@ -39,7 +39,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from backend_engine.brain.neural_bot import load_neural_bot, model_dir, model_files  # noqa: E402
+from backend_engine.brain.neural_bot import MODEL_NAME, load_neural_bot, model_dir, model_files  # noqa: E402
 from backend_engine.brain.scripted_bot import ScriptedBot  # noqa: E402
 from backend_engine.meta.presets import PresetDeck, load_presets, playable  # noqa: E402
 from backend_engine.simulator.card_db import CardDB  # noqa: E402
@@ -102,7 +102,7 @@ def _db() -> CardDB:
 
 
 def play_game(game: Game, model_folder: str, gate_threshold: float, decide_every_ms: int,
-              aggression: float = 0.5, max_ms: Optional[int] = None) -> GameResult:
+              aggression: float = 0.5, max_ms: Optional[int] = None, model: str = MODEL_NAME) -> GameResult:
     db = _db()
     n, s = game.neural_side, 1 - game.neural_side
     decks = [None, None]
@@ -110,7 +110,7 @@ def play_game(game: Game, model_folder: str, gate_threshold: float, decide_every
     decks[n], decks[s] = game.neural_deck, game.scripted_deck
     evos[n], evos[s] = game.neural_evo, game.scripted_evo
     m = Match(MatchConfig((decks[0], decks[1]), (11, 11), (evos[0], evos[1]), seed=game.seed), db)
-    bot = load_neural_bot(db, n, Path(model_folder), decide_every_ms=decide_every_ms,
+    bot = load_neural_bot(db, n, Path(model_folder), model, decide_every_ms=decide_every_ms,
                           gate_threshold=gate_threshold)
     calls = [0, 0.0]
     evaluate = bot.evaluate
@@ -214,15 +214,15 @@ class ConfigResult:
 
 
 def _run(args) -> Tuple[int, Game, GameResult]:
-    idx, game, folder, thr, every, aggression, max_ms = args
-    return idx, game, play_game(game, folder, thr, every, aggression, max_ms)
+    idx, game, folder, thr, every, aggression, max_ms, model = args
+    return idx, game, play_game(game, folder, thr, every, aggression, max_ms, model)
 
 
 def run_sweep(folder: Path, thresholds: Sequence[float], cadences: Sequence[int], games: Sequence[Game],
               workers: int = 1, aggression: float = 0.5, max_ms: Optional[int] = None,
-              progress: bool = True) -> List[ConfigResult]:
+              progress: bool = True, model: str = MODEL_NAME) -> List[ConfigResult]:
     configs = [ConfigResult(t, c) for c in cadences for t in thresholds]
-    jobs = [(i, g, str(folder), cfg.gate_threshold, cfg.decide_every_ms, aggression, max_ms)
+    jobs = [(i, g, str(folder), cfg.gate_threshold, cfg.decide_every_ms, aggression, max_ms, model)
             for i, cfg in enumerate(configs) for g in games]
     t0 = time.time()
     done = 0
@@ -258,8 +258,8 @@ def print_table(configs: Sequence[ConfigResult]) -> None:
               f"{s['neural_leaked']:5.2f} {s['neural_rejected']:4d} | {s['ms_per_call']:5.2f}")
 
 
-def write_meta(folder: Path, best: dict) -> Path:
-    _, meta_path = model_files(folder)
+def write_meta(folder: Path, best: dict, model: str = MODEL_NAME) -> Path:
+    _, meta_path = model_files(folder, model)
     shutil.copy(meta_path, meta_path.with_suffix(".json.bak"))
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     meta["gate_threshold"] = best["gate_threshold"]
@@ -271,7 +271,8 @@ def write_meta(folder: Path, best: dict) -> Path:
 
 def main(argv: Optional[Sequence[str]] = None) -> dict:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--model-dir", default=str(model_dir()), help="folder with crbot_il_v1.onnx + .json")
+    ap.add_argument("--model", default=MODEL_NAME, help="model name: crbot_il_v1 (default) or crbot_ppo_v1")
+    ap.add_argument("--model-dir", default="", help="folder with <model>.onnx + .json (default pretrained_weights/<model>)")
     ap.add_argument("--thresholds", default="0.3:0.7:0.05")
     ap.add_argument("--cadences", default="250,500", help="decision cadences in ms (multiples of 50)")
     ap.add_argument("--pairs", type=int, default=6, help="deck pairs")
@@ -284,25 +285,26 @@ def main(argv: Optional[Sequence[str]] = None) -> dict:
     ap.add_argument("--write-meta", action="store_true", help="store the best config in the model's .json")
     args = ap.parse_args(argv)
 
-    folder = Path(args.model_dir)
-    load_neural_bot(_db(), 1, folder)               # fail fast (ModelUnavailable) before the sweep
+    folder = Path(args.model_dir) if args.model_dir else model_dir(args.model)
+    load_neural_bot(_db(), 1, folder, args.model)   # fail fast (ModelUnavailable) before the sweep
     games = make_games(_db(), args.pairs, args.seeds, args.base_seed)
     thresholds = parse_range(args.thresholds)
     cadences = [int(c) for c in args.cadences.split(",") if c]
     print(f"model {folder} | {len(thresholds)} thresholds x {len(cadences)} cadences x {len(games)} matches "
           f"= {len(thresholds) * len(cadences) * len(games)} matches on {args.workers} worker(s)")
-    configs = run_sweep(folder, thresholds, cadences, games, args.workers, args.aggression, args.max_ms or None)
+    configs = run_sweep(folder, thresholds, cadences, games, args.workers, args.aggression, args.max_ms or None,
+                        model=args.model)
     print_table(configs)
     best = best_config(configs)
     print(f"best: gate_threshold {best['gate_threshold']}, decide_every_ms {best['decide_every_ms']} -> score "
           f"{best['score_pct']}% [{best['ci95'][0]}, {best['ci95'][1]}] over {best['matches']} matches")
-    report = {"model_dir": str(folder), "games": [asdict(g) for g in games], "aggression": args.aggression,
+    report = {"model": args.model, "model_dir": str(folder), "games": [asdict(g) for g in games], "aggression": args.aggression,
               "max_ms": args.max_ms or None, "configs": [c.summary() for c in configs], "best": best}
     if args.out:
         Path(args.out).write_text(json.dumps(report, indent=1), encoding="utf-8")
         print("report:", args.out)
     if args.write_meta:
-        print("updated", write_meta(folder, best))
+        print("updated", write_meta(folder, best, args.model))
     return report
 
 

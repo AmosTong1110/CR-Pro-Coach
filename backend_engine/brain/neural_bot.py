@@ -32,7 +32,8 @@ from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator.card_db import CardDB
 
 ROOT = Path(__file__).resolve().parents[2]
-MODEL_NAME = "crbot_il_v1"
+MODEL_NAME = "crbot_il_v1"                 # imitation learning (default)
+PPO_MODEL_NAME = "crbot_ppo_v1"            # PPO self-play fine-tune of it (cloud_training/train_ppo_colab.ipynb)
 DEFAULT_MODEL_DIR = ROOT / "pretrained_weights" / MODEL_NAME
 DECIDE_EVERY_MS = 500
 # fallback when the model .json has no gate_threshold: the crbot_il_v1 gauntlet optimum (2026-11-16: 0.45 at 500 ms,
@@ -45,17 +46,19 @@ class ModelUnavailable(RuntimeError):
     """The IL model can't be used (missing files, no onnxruntime, or trained for different features)."""
 
 
-def model_dir() -> Path:
-    return Path(os.environ.get("CRBOT_IL_MODEL_DIR") or DEFAULT_MODEL_DIR)
+def model_dir(name: str = MODEL_NAME) -> Path:
+    """pretrained_weights/<name>/ (overrides: CRBOT_IL_MODEL_DIR for crbot_il_v1, CRBOT_<NAME>_DIR for others)."""
+    env = "CRBOT_IL_MODEL_DIR" if name == MODEL_NAME else f"CRBOT_{name.upper()}_DIR"
+    return Path(os.environ.get(env) or ROOT / "pretrained_weights" / name)
 
 
-def model_files(folder: Optional[Path] = None) -> Tuple[Path, Path]:
-    folder = Path(folder) if folder is not None else model_dir()
-    return folder / f"{MODEL_NAME}.onnx", folder / f"{MODEL_NAME}.json"
+def model_files(folder: Optional[Path] = None, name: str = MODEL_NAME) -> Tuple[Path, Path]:
+    folder = Path(folder) if folder is not None else model_dir(name)
+    return folder / f"{name}.onnx", folder / f"{name}.json"
 
 
-def model_available(folder: Optional[Path] = None) -> bool:
-    onnx, meta = model_files(folder)
+def model_available(folder: Optional[Path] = None, name: str = MODEL_NAME) -> bool:
+    onnx, meta = model_files(folder, name)
     return onnx.exists() and meta.exists()
 
 
@@ -150,10 +153,11 @@ class NeuralBot:
                              source="policy")]
 
 
-def load_neural_bot(db: CardDB, side: int, folder: Optional[Path] = None, **kw) -> NeuralBot:
-    onnx_path, meta_path = model_files(folder)
+def load_neural_bot(db: CardDB, side: int, folder: Optional[Path] = None, name: str = MODEL_NAME, **kw) -> NeuralBot:
+    """Load <folder>/<name>.onnx + .json (crbot_il_v1 by default; crbot_ppo_v1 has the same format)."""
+    onnx_path, meta_path = model_files(folder, name)
     if not (onnx_path.exists() and meta_path.exists()):
-        raise ModelUnavailable(f"no {MODEL_NAME} model in {onnx_path.parent}")
+        raise ModelUnavailable(f"no {name} model in {onnx_path.parent}")
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     check_meta(meta, db)
     try:
@@ -169,11 +173,11 @@ def load_neural_bot(db: CardDB, side: int, folder: Optional[Path] = None, **kw) 
 
 
 def make_agent(db: CardDB, side: int, kind: str = "scripted", aggression: float = 0.5,
-               folder: Optional[Path] = None):
+               folder: Optional[Path] = None, model: str = MODEL_NAME):
     """Agent for a persona: (agent, note). kind "neural" falls back to ScriptedBot (note says why)."""
     if kind == "neural":
         try:
-            return load_neural_bot(db, side, folder), None
+            return load_neural_bot(db, side, folder, model), None
         except ModelUnavailable as e:
             return ScriptedBot(db, side, aggression), f"Neural model unavailable ({e}); using the rule-based AI."
     return ScriptedBot(db, side, aggression), None
