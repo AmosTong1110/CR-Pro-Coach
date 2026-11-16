@@ -56,3 +56,14 @@ recordings/
 
 # Fine-tuning sets built from the user's own recordings (private gameplay)
 data/finetune/
+
+# Lint cache
+.ruff_cache/
+
+# Mode B / fine-tune artifacts (private gameplay, large)
+*.mov
+*.mp4
+data/**/*.zip
+*_reviewed/
+runs/
+detector_ipad_ft*.zip
