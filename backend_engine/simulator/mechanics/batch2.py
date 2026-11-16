@@ -31,6 +31,10 @@ def fill_spawn_params(params: dict, stats) -> None:
         params["tower_damage"]["damage"] = st.get("crown_tower_damage", 0)
     if "ramp_damage" in params:
         params["ramp_damage"]["damages"] = [st[k] for k in params["ramp_damage"]["stats"]]
+    for kind, p in params.items():                  # evolutions: "<x>_stat": stat name -> "<x>": scaled value
+        if kind.startswith("evo_"):
+            for k in [k for k in p if k.endswith("_stat")]:
+                p[k[: -len("_stat")]] = st.get(p[k], 0)
     if "champion_ability" in params:
         ca = params["champion_ability"]
         ca["damage"] = st.get(ca.get("damage_stat", "damage"), 0)

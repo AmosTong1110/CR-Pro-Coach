@@ -16,7 +16,8 @@ from typing import Any, Dict, Optional, Tuple
 
 REGISTRY: Dict[str, "Mechanic"] = {}
 SPELLS: Dict[str, "SpellKind"] = {}
-HOOK_NAMES = ("on_spawn", "on_tick", "on_attack", "on_damaged", "on_death", "waypoint")
+HOOK_NAMES = ("on_spawn", "on_tick", "on_attack", "after_attack", "on_damaged", "on_death", "waypoint",
+              "on_projectile_hit")
 HOOKS: Dict[str, set] = {h: set() for h in HOOK_NAMES}
 
 # Tags in card data that describe a card but need no code (behaviour comes from stats / targeting).
@@ -27,8 +28,8 @@ DESCRIPTIVE = frozenset({"building_targeting", "swarm", "ground_only", "reduced_
 # Known game mechanics that are not simulated yet (listed so data can mention them).
 PLANNED: frozenset = frozenset({
     # evolutions whose special behaviour is not simulated yet (data: cycles + stats are in the card)
-    "evo_power_shot", "evo_heal_pulse", "evo_barrage", "evo_poison_darts", "evo_sparks", "evo_ice_blast",
-    "evo_sniper", "evo_souldiers", "evo_general_gerry", "evo_multiply", "evo_pulse", "evo_tornado", "evo_double_zap",
+    "evo_power_shot", "evo_heal_pulse", "evo_barrage", "evo_poison_darts", "evo_ice_blast",
+    "evo_sniper", "evo_souldiers", "evo_general_gerry",
     # heroes whose ability is not simulated yet
     "hero_rowdy_reroll", "hero_dismount",
 })
@@ -47,6 +48,9 @@ class Mechanic:
     def on_attack(self, m, u, target) -> bool:
         return False
 
+    def after_attack(self, m, u, target) -> None:
+        """Called after every attack of the unit, whoever resolved it (default hit or an on_attack mechanic)."""
+
     def on_damaged(self, m, u, amount: float, source) -> float:
         return amount
 
@@ -55,6 +59,9 @@ class Mechanic:
 
     def waypoint(self, m, u, target) -> Optional[Tuple[float, float]]:
         return None
+
+    def on_projectile_hit(self, m, p, target) -> None:
+        """A projectile carrying this kind's params (`Projectile.params`, copied from the shooter) landed."""
 
 
 class SpellKind:

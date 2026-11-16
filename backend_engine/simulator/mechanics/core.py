@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.entities import Projectile, RollingSpell, Spell
-from backend_engine.simulator.mechanics.base import Mechanic, SpellKind, register, register_spell
+from backend_engine.simulator.mechanics.base import REGISTRY, Mechanic, SpellKind, hooks_for, register, register_spell
 
 
 @register("river_jump")
@@ -60,6 +60,12 @@ class AreaSpell(SpellKind):
                               int(math.ceil(travel / G.TICK_MS) * G.TICK_MS), eid, self.kind, dict(params)))
 
     def impact(self, m, sp: Spell) -> None:
+        dz = sp.params.get("evo_double_zap")
+        if dz:                                  # Evo Zap: a second, larger hit after `delay_ms`
+            more = {k: v for k, v in sp.params.items() if k != "evo_double_zap"}
+            m.spells.append(Spell(m._uid(), sp.side, sp.card_id, sp.x, sp.y,
+                                  sp.radius + float(dz.get("radius_growth_tiles", 0.5)), sp.damage, sp.tower_damage,
+                                  int(dz.get("delay_ms", 500)), sp.source_event_id, sp.kind, more))
         for e in sorted(m.units.values(), key=lambda e: e.uid):
             if e.side != sp.side and e.hp > 0 and G.dist(e.x, e.y, sp.x, sp.y) <= sp.radius + e.radius:
                 m._deal(e, sp.tower_damage if e.kind == "tower" else sp.damage, sp)
@@ -125,8 +131,9 @@ class ProjectileAttack(Mechanic):
         speed = float(u.params.get("projectile", {}).get("speed_tiles_s") or 0)
         if speed <= 0:
             return False
+        payload = {mech.kind: dict(u.params.get(mech.kind, {})) for mech in hooks_for(u.mechanics, "on_projectile_hit")}
         m.projectiles.append(Projectile(m._uid(), u.side, u.uid, u.card_id, target.uid, u.x, u.y, speed,
-                                        u.damage, u.splash, u.targets))
+                                        u.damage, u.splash, u.targets, params=payload))
         return True
 
 
@@ -148,6 +155,8 @@ def advance_projectile(m, p: Projectile, dt: int) -> bool:
                 m._deal(e, p.damage, p)
     else:
         m._deal(t, p.damage, p)
+    for kind in p.params:                       # payload effects on landing (Evo Firecracker sparks)
+        REGISTRY[kind].on_projectile_hit(m, p, t)
     return True
 
 

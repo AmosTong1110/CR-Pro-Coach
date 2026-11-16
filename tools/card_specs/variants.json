@@ -5,16 +5,16 @@
     "bats": {"mechanics": [{"kind": "evo_heal_pulse", "params": {}}]},
     "cannon": {"mechanics": [{"kind": "evo_barrage", "params": {}}]},
     "dart_goblin": {"mechanics": [{"kind": "evo_poison_darts", "params": {}}]},
-    "firecracker": {"mechanics": [{"kind": "evo_sparks", "params": {}}]},
+    "firecracker": {"stats_extra": {"spark_damage": "Small Spark Damage", "spark_crown_tower_damage": "Small Spark Crown Tower Damage"}, "mechanics": [{"kind": "evo_sparks", "params": {"big_radius_tiles": 2.5, "big_duration_ms": 3000, "small_radius_tiles": 1.2, "small_duration_ms": 2500, "small_count": 5, "hit_every_ms": 250, "slow": "slow15", "slow_ms": 350, "shrapnel_range_tiles": 11.0, "fan_degrees": 40, "damage_stat": "spark_damage", "tower_damage_stat": "spark_crown_tower_damage"}}], "assumed": ["the 5 shrapnel fan out over 40 degrees around the shot direction and stop 11 tiles (Projectile Range) from her", "a small spark sits where each shrapnel stops (the wiki: shrapnel 'leave sparks behind')", "sparks hit air and ground, troops, buildings and towers (crown-tower column)", "the initial shot keeps the base card's single-target hit", "spark damage read from the Small Spark columns: the wiki's L11 Big Spark Damage (12) is a typo (DPS 192 = 48 x 4)"]},
     "ice_spirit": {"mechanics": [{"kind": "evo_ice_blast", "params": {}}]},
     "knight": {"keep_mechanics": true},
     "musketeer": {"mechanics": [{"kind": "evo_sniper", "params": {}}]},
     "royal_ghost": {"mechanics": [{"kind": "evo_souldiers", "params": {}}]},
     "skeleton_army": {"mechanics": [{"kind": "evo_general_gerry", "params": {}}]},
-    "skeletons": {"mechanics": [{"kind": "evo_multiply", "params": {}}]},
-    "tesla": {"mechanics": [{"kind": "evo_pulse", "params": {}}]},
-    "valkyrie": {"mechanics": [{"kind": "evo_tornado", "params": {}}]},
-    "zap": {"mechanics": [{"kind": "evo_double_zap", "params": {}}]}
+    "skeletons": {"mechanics": [{"kind": "evo_multiply", "params": {"max_alive": 8, "spawn_deploy_ms": 0}}], "assumed": ["the new Skeleton spawns 0.5 tiles behind the attacker with no deploy time (it still waits its first-hit time)", "the cap of 8 counts living Skeletons of the same play"]},
+    "tesla": {"stats_extra": {"pulse_damage": "Pulse Damage"}, "mechanics": [{"kind": "evo_pulse", "params": {"radius_tiles": 6.0, "stun_ms": 500, "damage_stat": "pulse_damage"}}], "assumed": ["a pulse every time it comes up from underground (the first time right after deploying, if not hidden) and when it dies", "the pulse doesn't damage crown towers (no crown-tower column on the page)"]},
+    "valkyrie": {"stats_extra": {"tornado_damage": "Tornado Damage", "tornado_crown_tower_damage": "Tornado Crown Tower Damage"}, "mechanics": [{"kind": "evo_tornado", "params": {"radius_tiles": 5.0, "duration_ms": 500, "pull_speed_tiles_s": 3.6, "damage_stat": "tornado_damage", "tower_damage_stat": "tornado_crown_tower_damage"}}], "assumed": ["radius 5.0: the wiki history cut it from 5.5 to 5 (1/12/2025); the attribute table still says 5.5", "one damage hit per attack at the start of the 0.5 s tornado; pull speed as the Tornado spell (3.6 tiles/s)", "the table's tornado damage is taken as current (the 4/8/2026 -50% change can't be checked from the page)"]},
+    "zap": {"mechanics": [{"kind": "evo_double_zap", "params": {"delay_ms": 500, "radius_growth_tiles": 0.5}}], "assumed": ["the second hit lands 0.5 s after the first (the wiki gives no delay)"]}
   },
   "hero": {
     "knight": {

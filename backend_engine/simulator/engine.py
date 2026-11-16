@@ -252,7 +252,7 @@ class Match:
         self.action_log.append((self.t_ms, side, card_id, x, y))
 
         if card["type"] == "spell":
-            self._cast_spell(side, card_id, x, y, ev.event_id)
+            self._cast_spell(side, card_id, x, y, ev.event_id, variant)
         else:
             self._spawn_card_units(side, card_id, x, y, ev.event_id, evolved, variant=variant)
         return PlayResult(True, event=ev)
@@ -306,7 +306,8 @@ class Match:
         return depth_to_river < THREAT_DEPTH or G.region(y) == enemy_home
 
     def _spawn_card_units(self, side: int, card_id: str, x: float, y: float, eid: int, evolved: bool,
-                          deploy_ms: Optional[int] = None, variant: Optional[str] = None) -> None:
+                          deploy_ms: Optional[int] = None, variant: Optional[str] = None,
+                          count: Optional[int] = None) -> None:
         """在指定网格生成军队或建筑实体 (支持多单位阵型散开生成，如骷髅军团/三枪)；
         card_id 也可以是 token (由卡牌生成的单位)，deploy_ms 覆盖其部署时间"""
         card = self.db.entry(card_id)
@@ -316,7 +317,7 @@ class Match:
         mechs = [m for m in self.db.mechanics_for(card_id, variant) if m["kind"] in REGISTRY]
         kinds = tuple(m["kind"] for m in mechs)
         kind = "building" if s.type == "building" else "troop"
-        n = int(card.get("count", 1))
+        n = int(card.get("count", 1)) if count is None else int(count)
         if kind == "building" and "footprint_tiles" in card:
             radius = card["footprint_tiles"][0] / 2
         else:
@@ -351,11 +352,13 @@ class Match:
             for mech in hooks_for(u.mechanics, "on_spawn"):
                 mech.on_spawn(self, u)
 
-    def _cast_spell(self, side: int, card_id: str, x: float, y: float, eid: int) -> None:
-        """释放法术：交给对应的法术类型组件 (area_spell 弹道落地 / rolling_spell 滚木)"""
+    def _cast_spell(self, side: int, card_id: str, x: float, y: float, eid: int, variant: str = "base") -> None:
+        """释放法术：交给对应的法术类型组件 (area_spell 弹道落地 / rolling_spell 滚木)；variant "evo" adds the
+        evolution's params (Evo Zap) and stats"""
         kind = self.db.spell_kind(card_id)
-        params = {m["kind"]: dict(m["params"]) for m in self.db.mechanics_for(card_id)}
-        SPELLS[kind].cast(self, side, card_id, x, y, eid, self.db.stats(card_id, self.sides[side].level), params)
+        params = {m["kind"]: dict(m["params"]) for m in self.db.mechanics_for(card_id, variant)}
+        SPELLS[kind].cast(self, side, card_id, x, y, eid, self.db.stats(card_id, self.sides[side].level, variant),
+                          params)
 
     # -- 核心仿真步进循环 (Simulation Step) ------------------------------------
     def step(self) -> None:
@@ -501,11 +504,17 @@ class Match:
 
     def _attack(self, u: Unit, t: Unit) -> None:
         """执行单次攻击：机制组件 (溅射、弹道…) 可接管，否则单体伤害"""
+        handled = False
         if u.mechanics:
             for mech in hooks_for(u.mechanics, "on_attack"):
                 if mech.on_attack(self, u, t):
-                    return
-        self._deal(t, u.damage, u)
+                    handled = True
+                    break
+        if not handled:
+            self._deal(t, u.damage, u)
+        if u.mechanics:
+            for mech in hooks_for(u.mechanics, "after_attack"):     # evolutions: tornado, multiply
+                mech.after_attack(self, u, t)
 
     def _move(self, u: Unit, t: Unit, dt: int) -> None:
         """推进单位位移：空中单位直线飞向目标；地面单位依桥梁拐点智能寻路"""
