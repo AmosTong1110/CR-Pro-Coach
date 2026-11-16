@@ -35,7 +35,7 @@ from backend_engine.storage.match_store import MatchMeta, MatchStore, MatchStore
 from backend_engine.storage.profile import Profile, load_profile, save_profile
 from frontend_app.qt.app import SPEEDS, MainWindow, avg_cost, deck_label
 from frontend_app.qt.review import LABEL_COLOR, WinRateGraph, grade_chips_html, mmss
-from frontend_app.qt.session import PERSONAS, GameSession, ReplayMismatch, SessionConfig
+from frontend_app.qt.session import PERSONAS, persona_label, GameSession, ReplayMismatch, SessionConfig
 from frontend_app.qt.theme import C, STYLE, cls, dark_palette  # noqa: F401  (C/STYLE/dark_palette re-exported)
 from frontend_app.qt.widgets import DeckView, StatTile, card_frame, deck_costs, deck_names
 
@@ -515,7 +515,7 @@ class AccountPage(QWidget):
         self.level.addItem("Level 16 (max)", 16)
         self.persona = QComboBox()
         for key, p in PERSONAS.items():
-            self.persona.addItem(p["label"], key)
+            self.persona.addItem(persona_label(key), key)
         self.speed = QComboBox()
         for label, v in SPEEDS:
             self.speed.addItem(label, v)

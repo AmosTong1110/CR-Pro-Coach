@@ -1,598 +1,631 @@
-"""
-Imitation Learning Dataset Builder (tools/build_il_dataset.py)
+"""Imitation-learning dataset builder: real replays -> (observation, action) shards.
 
-Replays high-tier battle event streams (from Hugging Face Cochon123/clash-royale-replays
-or VanguardX101/IL_Replay or local JSONL files) through CRbot's deterministic physics
-simulator (Engine v6).
+Source: Hugging Face `VanguardX101/IL_Replay` (252,238 anonymized RoyaleAPI replays, 52 parquet parts of ~5,000;
+the `replays/part-*.parquet` table holds the decks, crowns and full event stream in `payload_json`). Parts are
+downloaded one at a time into a git-ignored cache (`data/il_raw/`), checked against the dataset's SHA-256
+manifest, read in small record batches and (unless --keep-raw) deleted after use, so RAM and disk stay small.
 
-Generates human-legal (observation, action) training tuples with:
-  1. Card Pool Guardrail: Strict or configurable deck coverage filter against the 38 supported cards.
-  2. Human-Legal Observation Parity: Only visible units, own hand/elixir, OppElixirTracker,
-     and BayesianDeckGuesser outputs (strictly no hidden ground truth opponent state).
-  3. Balanced Negative/Wait Sampling: Emits gate=0 (wait) samples between plays at valid decision points.
-  4. Memory-Safe Streaming Export: Streams samples directly into chunked .npz shards
-     (e.g., data/il_shards/shard_0000.npz) on memory-constrained machines (8GB M1).
+Per replay, both decks are mapped to the simulated card pool. A side is a **learner** when its deck has at least
+--min-coverage simulated cards (default 8 = all). The other side may contain unsimulated cards: each one is
+replaced by a **proxy** (simulated card of the same type and air/ground layer, nearest elixir cost), so the
+board still shows a unit of about the right cost where the real card was played. A replay is used when at
+least one side is a learner and the other side has >= --min-opp-coverage simulated cards.
+
+The replay is run through the engine (seed 0, deck order = order of first play, the replay's card levels and
+simulated evolution / hero slots). For every learner side:
+  * play sample  just before each of its real plays: observation, slot of the card, tile in the side's own frame,
+                 slot / tile masks. Skipped (but still played, to keep the board going) when the card is a proxy,
+                 the side is > --max-elixir-deficit short of the cost in the sim, or the real tile is illegal in
+                 the sim (sim divergence, e.g. a tower that fell for real is still up).
+  * wait sample  at 1 s decision points where a card is affordable and the side doesn't play in the next 0.5 s;
+                 subsampled to --wait-ratio x the number of play samples of that side.
+  * value target final result from that side's view (1 win, 0 loss, 0.5 draw).
+Observations come from backend_engine/brain/il_features.py (the same code NeuralBot uses): own hand / elixir,
+visible units, the side's own OppElixirTracker + deck guess. No hidden opponent state.
+
+Shards: data/il_shards/shard_NNNN.npz with obs f32[N,333], gate i8, card_slot i8 (-1 for waits),
+tile_index i16 (-1), value_target f32, slot_mask bool[N,4], tile_mask u8[N,72] (packed bits of the played
+card's legal tiles), battle u32, side i8. manifest.json has the counts, filter statistics and the vocab.
+
+    .venv/bin/python tools/build_il_dataset.py --max-samples 100000            # streams parts until 100k
+    .venv/bin/python tools/build_il_dataset.py --parts 0-3 --keep-raw
+    .venv/bin/python tools/build_il_dataset.py --survey --parts 0               # coverage / yield only
 """
 from __future__ import annotations
 
 import argparse
+import bisect
+import collections
 import gc
+import hashlib
 import json
 import logging
-import math
-import os
 import re
+import shutil
 import sys
+import time
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
-# Ensure project root is in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 
-from backend_engine.contracts import TilePos
-from backend_engine.perception.bayesian_deck_guesser import BayesianDeckGuesser, default_guesser
+from backend_engine.brain import il_features as F
+from backend_engine.perception.bayesian_deck_guesser import default_guesser
 from backend_engine.perception.opp_elixir_count import OppElixirTracker
+from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.engine import Match, MatchConfig
-import backend_engine.simulator.geometry as G
 
+ROOT = Path(__file__).resolve().parents[1]
+HF_REPO = "VanguardX101/IL_Replay"
+HF_BASE = f"https://huggingface.co/datasets/{HF_REPO}/resolve/main"
+N_PARTS = 52
+SCHEMA = "il_shards_v1"
+WAIT_EVERY_MS = 1000
+WAIT_QUIET_MS = 500
 logger = logging.getLogger("build_il_dataset")
 
-# Fixed Observation Tensor Specs
-MAX_VISIBLE_UNITS = 30
-UNIT_FEAT_DIM = 8
-HAND_SLOTS = 4
-GRID_W, GRID_H = 18, 32
-NUM_TILES = GRID_W * GRID_H  # 576
+# unsimulated flying troops (proxied by a flying simulated troop)
+AIR_TROOPS = {"baby_dragon", "balloon", "electro_dragon", "flying_machine", "inferno_dragon", "lava_hound",
+              "mega_minion", "minion_horde", "phoenix", "skeleton_dragons", "night_witch_bats", "lava_pups"}
 
 
-def get_card_vocab(db: CardDB) -> List[str]:
-    """Alphabetically sorted list of all 38 simulated cards."""
-    return sorted(list(db.cards))
+# -- card names ------------------------------------------------------------------------------------------------
+_FORM = re.compile(r"-(ev\d+|hero)$")
+
+
+def split_card_key(key: str) -> Tuple[str, str]:
+    """RoyaleAPI card key -> (snake_case id, form): 'firecracker-ev1' -> ('firecracker', 'evo')."""
+    key = (key or "").strip().lower()
+    m = _FORM.search(key)
+    form = "base" if not m else ("hero" if m.group(1) == "hero" else "evo")
+    base = _FORM.sub("", key).replace("-", "_").replace(" ", "_").replace(".", "")
+    return {"log": "the_log"}.get(base, base), form
 
 
 def normalize_card_name(raw: str) -> str:
-    """Normalize raw card string from RoyaleAPI/HF datasets to CardDB id."""
-    if not raw:
-        return ""
-    slug = raw.strip().lower().replace("-", "_")
-    # Strip common evolution and hero prefixes/suffixes
-    slug = re.sub(r"_(ev1|ev2|evo|evolution|hero)$", "", slug)
-    slug = re.sub(r"^(evo|hero)_", "", slug)
-    # Common alias corrections
-    aliases = {
-        "log": "the_log",
-        "barb_barrel": "barbarian_barrel",
-        "barb_hut": "barbarian_hut",
-    }
-    return aliases.get(slug, slug)
+    return split_card_key(raw)[0]
 
 
-def check_deck_coverage(deck: Iterable[str], vocab_set: Set[str]) -> Tuple[int, List[str]]:
-    """Return count of supported cards and list of unsupported cards."""
-    normalized = [normalize_card_name(c) for c in deck]
-    unsupported = [c for c in normalized if c not in vocab_set]
-    return len(normalized) - len(unsupported), unsupported
+def _slug(name: str) -> str:
+    return name.lower().replace(".", "").replace("-", " ").strip().replace(" ", "_")
 
 
-def encode_observation(
-    match: Match,
-    side: int,
-    tracker: OppElixirTracker,
-    guesser: Optional[BayesianDeckGuesser],
-    vocab: List[str],
-) -> np.ndarray:
-    """Construct a strictly human-legal 1D float32 observation vector."""
-    opp_side = 1 - side
-    st = match.sides[side]
-    t_ms = match.t_ms
-    est = tracker.estimate(t_ms)
-
-    # 1. Global & Phase Features (8 floats)
-    t_norm = min(t_ms / 300000.0, 1.0)
-    reg_ms = match.regulation_ms
-    time_left = max((reg_ms if t_ms < reg_ms else match.end_ms) - t_ms, 0)
-    time_left_norm = min(time_left / 300000.0, 1.0)
-    multiplier_norm = match.multiplier(t_ms) / 3.0
-    is_overtime = 1.0 if t_ms >= reg_ms else 0.0
-    own_crowns = st.crowns / 3.0
-    opp_crowns = match.sides[opp_side].crowns / 3.0
-    crown_diff = (st.crowns - match.sides[opp_side].crowns) / 3.0
-    own_elixir_norm = min(max(st.elixir, 0.0), 10.0) / 10.0
-
-    global_feats = [
-        t_norm,
-        time_left_norm,
-        multiplier_norm,
-        is_overtime,
-        own_crowns,
-        opp_crowns,
-        crown_diff,
-        own_elixir_norm,
-    ]
-
-    # 2. Tower Features (6 own + 6 opp = 12 floats)
-    tower_feats = []
-    for s in (side, opp_side):
-        for role in ("king", "princess_left", "princess_right"):
-            tow = match.tower(s, role)
-            if tow is not None and tow.hp > 0:
-                hp_frac = tow.hp / max(tow.max_hp, 1)
-                is_active = 1.0 if tow.active else 0.0
-            else:
-                hp_frac = 0.0
-                is_active = 0.0
-            tower_feats.extend([hp_frac, is_active])
-
-    # 3. Opponent Perception (Human-Legal Tracker & Guesser) (4 + 38 + 1 = 43 floats)
-    opp_elixir_point = est.point / 10.0
-    opp_elixir_low = est.low / 10.0
-    opp_elixir_high = est.high / 10.0
-    opp_known_count = len(est.known_cards) / 8.0
-    opp_perception = [opp_elixir_point, opp_elixir_low, opp_elixir_high, opp_known_count]
-
-    # In-hand probability distribution over the 38 cards
-    in_hand_probs = [float(est.in_hand_prob.get(card, 0.0)) for card in vocab]
-    opp_perception.extend(in_hand_probs)
-
-    # Bayesian Deck Guesser confidence
-    guess_conf = 0.0
-    if guesser is not None and est.known_cards:
-        guess = guesser.guess(est.known_cards)
-        if guess and guess.likely_decks:
-            guess_conf = float(guess.likely_decks[0][1])
-    opp_perception.append(guess_conf)
-
-    # 4. Own Hand & Queue (5 cards x 6 features = 30 floats)
-    # 4 hand cards + 1 next card from queue
-    hand_and_next = list(st.hand[:HAND_SLOTS])
-    while len(hand_and_next) < HAND_SLOTS:
-        hand_and_next.append("")
-    next_card = st.queue[0] if st.queue else ""
-    hand_and_next.append(next_card)
-
-    vocab_map = {c: i for i, c in enumerate(vocab)}
-    hand_feats = []
-    for slot_card in hand_and_next:
-        if slot_card and slot_card in match.db.cards:
-            c_meta = match.db.cards[slot_card]
-            c_idx_norm = (vocab_map.get(slot_card, 0) + 1.0) / (len(vocab) + 1.0)
-            cost_norm = c_meta.get("elixir", 3) / 10.0
-            can_play = 1.0 if st.elixir >= c_meta.get("elixir", 3) else 0.0
-            is_evo_cap = 1.0 if match.db.has_variant(slot_card, "evo") else 0.0
-            is_evo_ready = 1.0 if (is_evo_cap and st.evo_counter.get(slot_card, 0) >= match.db.evo_cycles(slot_card)) else 0.0
-            ctype = c_meta.get("type", "troop")
-            type_val = 0.0 if ctype == "troop" else (0.5 if ctype == "building" else 1.0)
-            hand_feats.extend([c_idx_norm, cost_norm, can_play, is_evo_cap, is_evo_ready, type_val])
-        else:
-            hand_feats.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-
-    # 5. Visible Board Units (MAX_VISIBLE_UNITS x UNIT_FEAT_DIM = 240 floats)
-    # Collect all living non-tower units
-    active_units = [u for u in match.units.values() if u.hp > 0 and u.kind != "tower"]
-    # Sort by proximity to South player for consistent representation
-    active_units.sort(key=lambda u: (abs(u.y - 16.0), u.uid))
-
-    unit_feats = []
-    for i in range(MAX_VISIBLE_UNITS):
-        if i < len(active_units):
-            u = active_units[i]
-            is_present = 1.0
-            is_own = 1.0 if u.side == side else -1.0
-            x_norm = min(max(u.x / G.W, 0.0), 1.0)
-            y_norm = min(max(u.y / G.H, 0.0), 1.0)
-            hp_norm = min(max(u.hp / max(u.max_hp, 1), 0.0), 1.0)
-            cost_norm = match.db.cards.get(u.card_id, {}).get("elixir", 3) / 10.0
-            is_deploying = 1.0 if u.deploy_ms > 0 else 0.0
-            is_air = 1.0 if u.layer == "air" else 0.0
-            unit_feats.extend([is_present, is_own, x_norm, y_norm, hp_norm, cost_norm, is_deploying, is_air])
-        else:
-            unit_feats.extend([0.0] * UNIT_FEAT_DIM)
-
-    # Concatenate all features
-    full_vector = np.array(
-        global_feats + tower_feats + opp_perception + hand_feats + unit_feats,
-        dtype=np.float32,
-    )
-    return full_vector
+def load_card_catalog() -> Dict[str, Tuple[str, int]]:
+    """id -> (type, cost) for every card in the game (official list: id prefix 26 troop, 27 building, 28 spell;
+    costs from the official list, else configs/card_costs_hf.json)."""
+    costs = json.loads((ROOT / "configs" / "card_costs_hf.json").read_text())["costs"]
+    out: Dict[str, Tuple[str, int]] = {}
+    path = ROOT / "data" / "raw_sources" / "official_cards.json"
+    if path.exists():
+        for it in json.loads(path.read_text())["items"]:
+            kind = {26: "troop", 27: "building", 28: "spell"}.get(it["id"] // 1_000_000, "troop")
+            cid = _slug(it["name"])
+            out[cid] = (kind, int(it.get("elixirCost") or costs.get(cid, 4)))
+    for cid, c in costs.items():
+        out.setdefault(cid, ("troop", int(c)))
+    return out
 
 
-OBS_DIM = 8 + 12 + 43 + 30 + (MAX_VISIBLE_UNITS * UNIT_FEAT_DIM)  # 333 floats
+class ProxyMap:
+    """Unsimulated card -> simulated stand-in of the same type / layer and the nearest cost (deterministic)."""
+
+    def __init__(self, db: CardDB, catalog: Dict[str, Tuple[str, int]]):
+        self.db, self.catalog = db, catalog
+        self.pool = sorted(db.cards)
+
+    def _layer(self, cid: str) -> str:
+        if cid in self.db.cards:
+            return (self.db.cards[cid].get("movement") or {}).get("layer", "ground")
+        return "air" if cid in AIR_TROOPS else "ground"
+
+    def candidates(self, cid: str) -> List[str]:
+        kind, cost = self.catalog.get(cid, ("troop", 4))
+        layer = self._layer(cid)
+        same = [c for c in self.pool if self.db.cards[c]["type"] == kind]
+        if kind == "troop":
+            same = [c for c in same if self._layer(c) == layer] or same
+        return sorted(same, key=lambda c: (abs(self.db.cards[c]["elixir"] - cost), c))
+
+    def deck(self, cards: Sequence[str]) -> Dict[str, str]:
+        """Map a deck's unsimulated cards to unused simulated ones: {original: simulated}."""
+        used = {c for c in cards if c in self.db.cards}
+        out = {}
+        for c in cards:
+            if c in self.db.cards:
+                out[c] = c
+                continue
+            pick = next((p for p in self.candidates(c) if p not in used), None) \
+                or next(p for p in self.pool if p not in used)
+            used.add(pick)
+            out[c] = pick
+        return out
+
+
+# -- replay model ------------------------------------------------------------------------------------------------
+@dataclass
+class ReplayEvent:
+    tick: int
+    side: int                 # 0 team (south), 1 opponent
+    card: str                 # original snake_case id
+    ability: bool
+    x: float = 0.0
+    y: float = 0.0
+
+
+@dataclass
+class Replay:
+    rid: str
+    decks: Tuple[List[str], List[str]]
+    forms: Tuple[Dict[str, str], Dict[str, str]]
+    levels: Tuple[int, int]
+    crowns: Tuple[int, int]
+    events: List[ReplayEvent]
+    mode: str = ""
+
+
+def parse_payload(payload: dict, rid: str = "") -> Optional[Replay]:
+    """IL_Replay `payload_json` -> Replay (None if not a 1v1 battle with two 8-card decks)."""
+    b = payload.get("battle") or {}
+    decks, forms, levels, crowns = [], [], [], []
+    for key in ("team", "opponent"):
+        players = (b.get(key) or {}).get("players") or []
+        if len(players) != 1 or len(players[0].get("deck") or []) != 8:
+            return None
+        ids, fm, lv = [], {}, []
+        for c in players[0]["deck"]:
+            cid, form = split_card_key(c.get("card_key", ""))
+            ids.append(cid)
+            fm[cid] = form
+            if c.get("level"):
+                lv.append(int(c["level"]))
+        if len(set(ids)) != 8:
+            return None
+        decks.append(ids)
+        forms.append(fm)
+        levels.append(collections.Counter(lv).most_common(1)[0][0] if lv else 11)
+        crowns.append(int((b.get(key) or {}).get("crowns") or 0))
+    events = []
+    for ev in payload.get("events") or []:
+        side = {"team": 0, "opponent": 1}.get(ev.get("side"))
+        tick = ev.get("replay_tick_20hz")
+        if side is None or tick is None:
+            continue
+        if ev.get("kind") == "activate_ability":
+            cands = ev.get("ability_source_candidates") or []
+            if len(cands) == 1:
+                events.append(ReplayEvent(int(tick), side, split_card_key(cands[0])[0], True))
+            continue
+        if ev.get("kind") != "play_card":
+            continue
+        nw = (ev.get("coordinates") or {}).get("native_world_units") or {}
+        if nw.get("x") is None or nw.get("y") is None:
+            continue
+        events.append(ReplayEvent(int(tick), side, split_card_key(ev.get("card_key", ""))[0], False,
+                                  nw["x"] / 1000.0, nw["y"] / 1000.0))
+    events.sort(key=lambda e: e.tick)       # stable: keeps the source order inside a tick
+    return Replay(rid, (decks[0], decks[1]), (forms[0], forms[1]), (levels[0], levels[1]),
+                  (crowns[0], crowns[1]), events, b.get("game_mode", ""))
+
+
+# -- samples -----------------------------------------------------------------------------------------------------
+@dataclass
+class Stats:
+    replays_seen: int = 0
+    replays_used: int = 0
+    learner_sides: int = 0
+    rejected: Dict[str, int] = field(default_factory=collections.Counter)
+    skipped_plays: Dict[str, int] = field(default_factory=collections.Counter)
+    hand_repairs: int = 0
+    relocated_plays: int = 0
+    dropped_plays: int = 0
+
+    def as_dict(self) -> dict:
+        return {k: (dict(v) if isinstance(v, collections.Counter) else v) for k, v in self.__dict__.items()}
 
 
 class ShardWriter:
-    """Memory-safe chunked streaming exporter to .npz shards."""
+    """Buffers samples and writes compressed .npz shards of `shard_size` samples."""
 
     def __init__(self, output_dir: Path | str, shard_size: int = 5000):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.shard_size = shard_size
         self.current_shard_idx = 0
+        self.buf: Dict[str, list] = collections.defaultdict(list)
+        self.total_samples = self.total_plays = self.total_waits = self.total_battles = 0
 
-        self.obs_buffer: List[np.ndarray] = []
-        self.gate_buffer: List[int] = []
-        self.slot_buffer: List[int] = []
-        self.tile_buffer: List[int] = []
-        self.value_buffer: List[float] = []
-
-        self.total_samples = 0
-        self.total_plays = 0
-        self.total_waits = 0
-        self.total_battles = 0
-
-    def add_sample(self, obs: np.ndarray, gate: int, slot: int, tile: int, value: float) -> None:
-        """Add a single observation-action pair to memory buffer."""
-        self.obs_buffer.append(obs)
-        self.gate_buffer.append(gate)
-        self.slot_buffer.append(slot)
-        self.tile_buffer.append(tile)
-        self.value_buffer.append(value)
-
+    def add_sample(self, obs: np.ndarray, gate: int, slot: int, tile: int, value: float,
+                   slot_mask: Optional[np.ndarray] = None, tile_mask: Optional[np.ndarray] = None,
+                   battle: int = 0, side: int = 0) -> None:
+        self.buf["obs"].append(obs)
+        self.buf["gate"].append(gate)
+        self.buf["card_slot"].append(slot)
+        self.buf["tile_index"].append(tile)
+        self.buf["value_target"].append(value)
+        self.buf["slot_mask"].append(np.ones(F.HAND_SLOTS, bool) if slot_mask is None else slot_mask)
+        self.buf["tile_mask"].append(F.pack_mask(np.zeros(F.NUM_TILES, bool) if tile_mask is None else tile_mask))
+        self.buf["battle"].append(battle)
+        self.buf["side"].append(side)
         self.total_samples += 1
         if gate == 1:
             self.total_plays += 1
         else:
             self.total_waits += 1
-
-        if len(self.obs_buffer) >= self.shard_size:
+        if len(self.buf["obs"]) >= self.shard_size:
             self.flush()
 
     def flush(self) -> Optional[Path]:
-        """Flush buffered samples to disk and free memory."""
-        if not self.obs_buffer:
+        if not self.buf["obs"]:
             return None
-
-        shard_path = self.output_dir / f"shard_{self.current_shard_idx:04d}.npz"
+        path = self.output_dir / f"shard_{self.current_shard_idx:04d}.npz"
+        b = self.buf
         np.savez_compressed(
-            shard_path,
-            obs=np.array(self.obs_buffer, dtype=np.float32),
-            gate=np.array(self.gate_buffer, dtype=np.int64),
-            card_slot=np.array(self.slot_buffer, dtype=np.int64),
-            tile_index=np.array(self.tile_buffer, dtype=np.int64),
-            value_target=np.array(self.value_buffer, dtype=np.float32),
+            path,
+            obs=np.asarray(b["obs"], dtype=np.float32),
+            gate=np.asarray(b["gate"], dtype=np.int8),
+            card_slot=np.asarray(b["card_slot"], dtype=np.int8),
+            tile_index=np.asarray(b["tile_index"], dtype=np.int16),
+            value_target=np.asarray(b["value_target"], dtype=np.float32),
+            slot_mask=np.asarray(b["slot_mask"], dtype=bool),
+            tile_mask=np.asarray(b["tile_mask"], dtype=np.uint8),
+            battle=np.asarray(b["battle"], dtype=np.uint32),
+            side=np.asarray(b["side"], dtype=np.int8),
         )
-
-        logger.info(f"Saved {shard_path.name} with {len(self.obs_buffer)} samples")
+        logger.info("saved %s (%d samples)", path.name, len(b["obs"]))
         self.current_shard_idx += 1
-        self.obs_buffer.clear()
-        self.gate_buffer.clear()
-        self.slot_buffer.clear()
-        self.tile_buffer.clear()
-        self.value_buffer.clear()
+        self.buf = collections.defaultdict(list)
         gc.collect()
-        return shard_path
+        return path
 
-    def close(self, vocab: List[str]) -> Path:
-        """Flush any remaining samples and write dataset manifest."""
+    def close(self, vocab: Sequence[str], extra: Optional[dict] = None) -> Path:
         self.flush()
-        manifest_path = self.output_dir / "manifest.json"
         manifest = {
+            "schema": SCHEMA,
+            "obs_version": F.OBS_VERSION,
             "total_samples": self.total_samples,
             "total_plays": self.total_plays,
             "total_waits": self.total_waits,
             "total_battles": self.total_battles,
             "num_shards": self.current_shard_idx,
             "shard_size": self.shard_size,
-            "obs_dim": OBS_DIM,
-            "num_tiles": NUM_TILES,
-            "num_card_slots": HAND_SLOTS,
-            "vocab": vocab,
+            "obs_dim": F.obs_dim(vocab),
+            "num_tiles": F.NUM_TILES,
+            "num_card_slots": F.HAND_SLOTS,
+            "vocab": list(vocab),
+            **(extra or {}),
         }
-        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-        logger.info(f"Dataset complete: {self.total_samples} samples across {self.current_shard_idx} shards")
-        return manifest_path
+        path = self.output_dir / "manifest.json"
+        path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return path
 
 
-def replay_battle(
-    match_meta: dict,
-    events: List[dict],
-    db: CardDB,
-    vocab: List[str],
-    shard_writer: ShardWriter,
-    wait_ratio: float = 1.0,
-    min_deck_coverage: int = 8,
-) -> bool:
-    """Replay a single battle event stream through Engine v6 and emit training samples."""
-    vocab_set = set(vocab)
-    team_deck = [normalize_card_name(c) for c in match_meta.get("decks", {}).get("team", [])]
-    opp_deck = [normalize_card_name(c) for c in match_meta.get("decks", {}).get("opponent", [])]
+class _SidePerception:
+    """One learner side's human-legal view: its OppElixirTracker + cached deck guesses."""
 
-    # Guardrail check
-    t_cov, t_unsupp = check_deck_coverage(team_deck, vocab_set)
-    o_cov, o_unsupp = check_deck_coverage(opp_deck, vocab_set)
+    def __init__(self, db: CardDB, side: int, guesser):
+        self.side = side
+        self.tracker = OppElixirTracker(db.rules, observer_side=side, evo_cards=db.evo_capable())
+        self.guesser = guesser
+        self._cache: Dict[Tuple[str, ...], object] = {}
 
-    if t_cov < min_deck_coverage or o_cov < min_deck_coverage:
-        logger.debug(f"Skipping match {match_meta.get('battle_id')}: coverage team {t_cov}/8, opp {o_cov}/8")
+    def view(self, t_ms: int):
+        est = self.tracker.estimate(t_ms)
+        if self.guesser is None:
+            return est, None
+        key = tuple(sorted(est.known_cards))
+        if key not in self._cache:
+            self._cache[key] = self.guesser.guess(est.known_cards)
+        return est, self._cache[key]
+
+
+def _deck_order(deck: Sequence[str], events: Sequence[ReplayEvent], side: int) -> List[str]:
+    """Order of first play (cards never played go last): with an unshuffled deck this makes the first plays
+    always come from the hand, so few hand repairs are needed."""
+    seen = list(dict.fromkeys(e.card for e in events if e.side == side and not e.ability and e.card in deck))
+    return seen + [c for c in deck if c not in seen]
+
+
+def _repair_hand(st, card: str, upcoming: Sequence[str]) -> None:
+    """The real player had `card` in hand but the sim's reconstructed cycle has it in the queue: swap it with
+    the hand card that is needed latest (or never) in the side's upcoming plays."""
+    q = st.queue.index(card)
+
+    def next_use(c: str) -> int:
+        return upcoming.index(c) if c in upcoming else 1 << 30
+    slot = max(range(len(st.hand)), key=lambda k: (next_use(st.hand[k]), k))
+    st.hand[slot], st.queue[q] = st.queue[q], st.hand[slot]
+
+
+def replay_battle(rep: Replay, db: CardDB, vocab: Sequence[str], writer: ShardWriter, battle_idx: int,
+                  stats: Stats, proxies: ProxyMap, guesser=None, min_coverage: int = 8,
+                  min_opp_coverage: int = 4, wait_ratio: float = 1.0, max_elixir_deficit: float = 1.0) -> bool:
+    """Replay one battle and write its samples. Returns False if the replay was filtered out."""
+    stats.replays_seen += 1
+    cov = [sum(c in db.cards for c in d) for d in rep.decks]
+    learners = [s for s in (0, 1) if cov[s] >= min_coverage and cov[1 - s] >= min_opp_coverage]
+    if not learners:
+        stats.rejected["coverage"] += 1
         return False
 
-    # Filter out empty or unsupported cards for simulation initialization
-    t_deck_sim = [c for c in team_deck if c in vocab_set]
-    o_deck_sim = [c for c in opp_deck if c in vocab_set]
-    if len(t_deck_sim) < 8 or len(o_deck_sim) < 8:
+    maps = [proxies.deck(d) for d in rep.decks]                  # original -> simulated, per side
+    sim_decks = [tuple(_deck_order([maps[s][c] for c in rep.decks[s]],
+                                   [ReplayEvent(e.tick, e.side, maps[s].get(e.card, ""), e.ability)
+                                    for e in rep.events if e.side == s], s)) for s in (0, 1)]
+    slots = []
+    for s in (0, 1):
+        sl = []
+        for c in rep.decks[s]:
+            form = rep.forms[s].get(c, "base")
+            if c in db.cards and form in ("evo", "hero") and db.variant_simulated(c, form):
+                sl.append(c if form == "evo" else f"{c}#hero")
+        slots.append(tuple(sl))
+    levels = tuple(min(max(int(lv), 1), 16) for lv in rep.levels)
+    try:
+        match = Match(MatchConfig((sim_decks[0], sim_decks[1]), levels, (slots[0], slots[1]), seed=0,
+                                  shuffle=False), db)
+    except ValueError as e:
+        stats.rejected["config"] += 1
+        logger.debug("replay %s: %s", rep.rid, e)
         return False
 
-    # Determine ground-truth match outcome for Team (side 0)
-    crowns = match_meta.get("crowns", {})
-    t_crowns = crowns.get("team", 0)
-    o_crowns = crowns.get("opponent", 0)
-    if t_crowns > o_crowns:
-        val_target = 1.0
-    elif t_crowns < o_crowns:
-        val_target = 0.0
-    else:
-        val_target = 0.5
+    stats.replays_used += 1
+    stats.learner_sides += len(learners)
+    persp = {s: _SidePerception(db, s, guesser) for s in learners}
+    value = {0: 0.5 if rep.crowns[0] == rep.crowns[1] else float(rep.crowns[0] > rep.crowns[1])}
+    value[1] = 1.0 - value[0]
+    plays: Dict[int, list] = {s: [] for s in learners}
+    waits: Dict[int, list] = {s: [] for s in learners}
+    play_ticks = {s: [e.tick * G.TICK_MS for e in rep.events if e.side == s and not e.ability] for s in (0, 1)}
+    upcoming = {s: [maps[s].get(e.card, "") for e in rep.events if e.side == s and not e.ability] for s in (0, 1)}
+    played = {0: 0, 1: 0}
+    next_wait = WAIT_EVERY_MS
 
-    # Identify evolved cards
-    evo_capable = db.evo_capable()
-    team_evo = tuple(c for c in t_deck_sim if c in evo_capable)
-    opp_evo = tuple(c for c in o_deck_sim if c in evo_capable)
+    def sample(s: int):
+        obs = match.observation(s)
+        est, guess = persp[s].view(match.t_ms)
+        return obs, F.encode_observation(obs, est, guess, db, vocab)
 
-    cfg = MatchConfig(
-        decks=(tuple(t_deck_sim), tuple(o_deck_sim)),
-        levels=(11, 11),
-        evo_cards=(team_evo, opp_evo),
-        seed=0,
-        shuffle=False,
-    )
-    match = Match(cfg, db)
-
-    # Initialize human-legal perception
-    tracker = OppElixirTracker(db.rules, observer_side=0, evo_cards=evo_capable)
-    guesser = default_guesser()
-
-    # Track samples for this match to ensure balanced wait vs play
-    play_samples: List[Tuple[np.ndarray, int, int, int, float]] = []
-    wait_candidates: List[Tuple[np.ndarray, int, int, int, float]] = []
-
-    last_wait_t_ms = 0
-    wait_sample_interval_ms = 1000  # candidate wait check every 1 second
-
-    # Sort events by tick
-    sorted_events = sorted(events, key=lambda e: (e.get("ticks", 0), e.get("sequence", 0)))
-
-    for ev in sorted_events:
-        t_target_ms = ev.get("ticks", 0) * 50
-
-        # Advance physics simulation up to event timestamp
-        while match.t_ms < t_target_ms and match.result is None:
-            # Check for negative/wait candidate emission for Team (side 0)
-            if (match.t_ms - last_wait_t_ms) >= wait_sample_interval_ms:
-                last_wait_t_ms = match.t_ms
-                st = match.sides[0]
-                # Only sample wait if team has actionable elixir (>= 3.5)
-                # and at least one card in hand is playable
-                has_playable = any(
-                    st.elixir >= db.cards.get(c, {}).get("elixir", 99) for c in st.hand if c in db.cards
-                )
-                if has_playable and st.elixir >= 3.5:
-                    obs = encode_observation(match, side=0, tracker=tracker, guesser=guesser, vocab=vocab)
-                    wait_candidates.append((obs, 0, -1, -1, val_target))
-
+    for ev in rep.events:
+        t_target = ev.tick * G.TICK_MS
+        while match.t_ms < t_target and match.result is None:
+            if match.t_ms >= next_wait:
+                next_wait += WAIT_EVERY_MS
+                for s in learners:
+                    k = bisect.bisect_left(play_ticks[s], match.t_ms)
+                    if k < len(play_ticks[s]) and play_ticks[s][k] - match.t_ms < WAIT_QUIET_MS:
+                        continue
+                    st = match.sides[s]
+                    if any(db.cards[c]["elixir"] <= st.elixir + 1e-9 for c in st.hand):
+                        obs, vec = sample(s)
+                        waits[s].append((vec, F.slot_mask(obs, db)))
             match.step()
-
         if match.result is not None:
             break
-
-        side = 0 if ev.get("side") == "team" else 1
-        ev_type = ev.get("event_type", "card_play")
-
-        # Handle champion/hero ability
-        if ev_type == "ability_activation":
-            card = normalize_card_name(ev.get("ability_card") or "")
-            if card and card in db.cards:
-                match.use_ability(side, card)
+        s = ev.side
+        card = maps[s].get(ev.card)
+        if ev.ability:
+            if card:
+                match.use_ability(s, card)
             continue
-
-        # Handle card play
-        card = normalize_card_name(ev.get("card") or "")
-        if not card or card not in db.cards:
+        played[s] += 1                                   # index into upcoming[s] (all of the side's plays)
+        if card is None:                                 # card outside the listed deck: skip the event
+            stats.dropped_plays += 1
             continue
+        st = match.sides[s]
+        if card not in st.hand:
+            if card not in st.queue:
+                stats.dropped_plays += 1
+                continue
+            _repair_hand(st, card, upcoming[s][played[s]:])
+            stats.hand_repairs += 1
+        cost = float(db.cards[card]["elixir"])
+        deficit = cost - st.elixir
 
-        raw_x = ev.get("x")
-        raw_y = ev.get("y")
-        if raw_x is None or raw_y is None:
+        # positive sample (before the play changes anything)
+        if s in persp:
+            reason = None
+            if card != ev.card:
+                reason = "proxy_card"
+            elif deficit > max_elixir_deficit:
+                reason = "elixir_deficit"
+            if deficit > 0:
+                st.elixir = cost                         # small timing / leak differences: top up
+            obs, vec = sample(s)
+            tile = F.tile_index(s, ev.x, ev.y)
+            tmask = F.tile_mask(obs, card, db)
+            if reason is None and not tmask[tile]:
+                reason = "illegal_tile"
+            if reason is None:
+                plays[s].append((vec, obs["hand"].index(card), tile, F.slot_mask(obs, db), tmask))
+            else:
+                stats.skipped_plays[reason] += 1
+        elif deficit > 0:
+            st.elixir = cost
+
+        res = match.play(s, card, ev.x, ev.y)
+        if not res.ok and res.reason in ("enemy_half", "river", "blocked_by_structure", "out_of_bounds"):
+            obs = match.observation(s)
+            legal = np.flatnonzero(F.tile_mask(obs, card, db))
+            if legal.size:
+                want = F.tile_index(s, ev.x, ev.y)
+                wy, wx = divmod(want, F.GRID_W)
+                ly, lx = np.divmod(legal, F.GRID_W)
+                best = int(legal[np.argmin((lx - wx) ** 2 + (ly - wy) ** 2)])
+                res = match.play(s, card, *F.tile_center(s, best))
+                stats.relocated_plays += int(res.ok)
+        if not res.ok:
+            stats.dropped_plays += 1
             continue
+        for o, p in persp.items():
+            if o != s:
+                p.tracker.observe(res.event)
 
-        # Convert RoyaleAPI millitiles to arena tiles
-        x = float(raw_x) / 1000.0
-        y = 32.0 - (float(raw_y) / 1000.0)
-        x = min(max(x, 0.5), G.W - 0.5)
-        y = min(max(y, 0.5), G.H - 0.5)
-
-        st = match.sides[side]
-
-        # Reconstruct hand cycle: if card is in queue rather than hand, swap into hand
-        if card not in st.hand and card in st.queue:
-            q_idx = st.queue.index(card)
-            st.hand[0], st.queue[q_idx] = st.queue[q_idx], st.hand[0]
-
-        # Ensure sufficient elixir for replay continuity
-        cost = db.cards[card]["elixir"]
-        if st.elixir < cost:
-            st.elixir = float(cost)
-
-        # If team played, extract observation and record positive sample
-        if side == 0 and card in st.hand:
-            slot_idx = st.hand.index(card)
-            grid_x = min(max(int(x), 0), GRID_W - 1)
-            grid_y = min(max(int(y), 0), GRID_H - 1)
-            tile_idx = grid_y * GRID_W + grid_x
-
-            # Encode observation right before the card play executes
-            obs = encode_observation(match, side=0, tracker=tracker, guesser=guesser, vocab=vocab)
-            play_samples.append((obs, 1, slot_idx, tile_idx, val_target))
-
-        # Execute play in engine
-        res = match.play(side, card, x, y)
-
-        # Update perception tracker for side 0
-        if side == 1:
-            deploy_ev = match.events[-1] if match.events else None
-            if deploy_ev is not None:
-                tracker.observe(deploy_ev)
-
-    # Subsample wait candidates to match requested wait_ratio
-    num_waits = int(round(len(play_samples) * wait_ratio))
-    if wait_candidates and num_waits > 0:
-        if len(wait_candidates) > num_waits:
-            indices = np.linspace(0, len(wait_candidates) - 1, num_waits, dtype=int)
-            selected_waits = [wait_candidates[i] for i in indices]
-        else:
-            selected_waits = wait_candidates
-    else:
-        selected_waits = []
-
-    # Emit all samples for this match to shard writer
-    for s in play_samples:
-        shard_writer.add_sample(*s)
-    for s in selected_waits:
-        shard_writer.add_sample(*s)
-
-    shard_writer.total_battles += 1
+    for s in learners:
+        n_wait = int(round(len(plays[s]) * wait_ratio))
+        chosen = waits[s]
+        if len(chosen) > n_wait:
+            chosen = [chosen[i] for i in np.linspace(0, len(chosen) - 1, n_wait).round().astype(int)]
+        for vec, slot, tile, smask, tmask in plays[s]:
+            writer.add_sample(vec, 1, slot, tile, value[s], smask, tmask, battle_idx, s)
+        for vec, smask in chosen:
+            writer.add_sample(vec, 0, -1, -1, value[s], smask, None, battle_idx, s)
+    writer.total_battles += 1
     return True
 
 
-def stream_hf_corpus(
-    matches_url: str,
-    events_url: str,
-    db: CardDB,
-    vocab: List[str],
-    shard_writer: ShardWriter,
-    max_matches: int = 500,
-    min_deck_coverage: int = 8,
-) -> None:
-    """Stream replay matches and events from remote Hugging Face JSONL files line by line."""
-    import io
-
-    logger.info(f"Opening matches stream: {matches_url}")
-    req_m = urllib.request.Request(matches_url, headers={"User-Agent": "Mozilla/5.0"})
-    matches_by_id: Dict[str, dict] = {}
-
-    with urllib.request.urlopen(req_m) as resp_m:
-        reader = io.TextIOWrapper(resp_m, encoding="utf-8")
-        for line in reader:
-            if not line.strip():
-                continue
-            m = json.loads(line)
-            bid = m.get("battle_id")
-            if bid:
-                matches_by_id[bid] = m
-                if len(matches_by_id) >= max_matches:
-                    break
-
-    logger.info(f"Loaded {len(matches_by_id)} match headers. Streaming events...")
-
-    req_e = urllib.request.Request(events_url, headers={"User-Agent": "Mozilla/5.0"})
-    events_by_id: Dict[str, List[dict]] = {bid: [] for bid in matches_by_id}
-
-    with urllib.request.urlopen(req_e) as resp_e:
-        reader = io.TextIOWrapper(resp_e, encoding="utf-8")
-        for line in reader:
-            if not line.strip():
-                continue
-            ev = json.loads(line)
-            bid = ev.get("battle_id")
-            if bid in events_by_id:
-                events_by_id[bid].append(ev)
-
-    logger.info(f"Events loaded for target matches. Replaying through Engine v6...")
-    for bid, m_meta in matches_by_id.items():
-        evs = events_by_id.get(bid, [])
-        if evs:
-            replay_battle(
-                match_meta=m_meta,
-                events=evs,
-                db=db,
-                vocab=vocab,
-                shard_writer=shard_writer,
-                min_deck_coverage=min_deck_coverage,
-            )
+# -- IL_Replay streaming -----------------------------------------------------------------------------------------
+def _fetch(url: str, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".part")
+    req = urllib.request.Request(url, headers={"User-Agent": "crbot-il-builder"})
+    with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
+        shutil.copyfileobj(r, f, 1 << 20)
+    tmp.replace(dest)
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-    parser = argparse.ArgumentParser(description="CRbot Imitation Learning Dataset Builder")
-    parser.add_argument("--output-dir", type=str, default="data/il_shards", help="Target directory for shards")
-    parser.add_argument("--shard-size", type=int, default=5000, help="Samples per shard")
-    parser.add_argument("--max-matches", type=int, default=500, help="Max matches to process")
-    parser.add_argument("--min-coverage", type=int, default=8, help="Min supported cards in deck (default 8/8)")
-    parser.add_argument("--wait-ratio", type=float, default=1.0, help="Wait-to-play ratio")
-    parser.add_argument(
-        "--matches-file",
-        type=str,
-        default="",
-        help="Local matches.jsonl file (or leave empty to stream from Hugging Face)",
-    )
-    parser.add_argument(
-        "--events-file",
-        type=str,
-        default="",
-        help="Local events.jsonl file (or leave empty to stream from Hugging Face)",
-    )
-    args = parser.parse_args()
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def dataset_manifest(cache: Path) -> dict:
+    path = cache / "manifest.json"
+    if not path.exists():
+        _fetch(f"{HF_BASE}/manifest.json", path)
+    return json.loads(path.read_text())
+
+
+def part_path(cache: Path, part: int) -> Path:
+    """Download (if needed) and verify one replays part."""
+    rel = f"replays/part-{part:06d}.parquet"
+    dest = cache / rel
+    want = {f["path"]: f["sha256"] for f in dataset_manifest(cache)["files"]}.get(rel)
+    if not dest.exists():
+        logger.info("downloading %s", rel)
+        _fetch(f"{HF_BASE}/{rel}", dest)
+    if want and _sha256(dest) != want:
+        dest.unlink()
+        raise RuntimeError(f"{rel}: SHA-256 mismatch (deleted, re-run to download again)")
+    return dest
+
+
+def iter_replays(path: Path, batch_rows: int = 200) -> Iterator[Replay]:
+    import pyarrow.parquet as pq
+    pf = pq.ParquetFile(path)
+    for batch in pf.iter_batches(batch_size=batch_rows, columns=["replay_tag", "payload_json"]):
+        tags, payloads = batch.column(0).to_pylist(), batch.column(1).to_pylist()
+        for tag, raw in zip(tags, payloads):
+            rep = parse_payload(json.loads(raw), tag)
+            if rep is not None:
+                yield rep
+        del tags, payloads, batch
+
+
+def parse_parts(spec: str) -> List[int]:
+    out: List[int] = []
+    for chunk in spec.split(","):
+        a, _, b = chunk.partition("-")
+        out.extend(range(int(a), int(b or a) + 1))
+    return [p for p in out if 0 <= p < N_PARTS]
+
+
+def survey(paths: Iterable[Path], db: CardDB) -> dict:
+    """Coverage / yield statistics without simulating anything."""
+    n, cov_hist = 0, collections.Counter()
+    use = collections.Counter()
+    plays_by_rule = collections.Counter()
+    for path in paths:
+        for rep in iter_replays(path):
+            n += 1
+            cov = [sum(c in db.cards for c in d) for d in rep.decks]
+            cov_hist.update(cov)
+            sides_plays = [sum(1 for e in rep.events if e.side == s and not e.ability) for s in (0, 1)]
+            for mc in (8, 7):
+                for mo in (8, 6, 4, 0):
+                    ls = [s for s in (0, 1) if cov[s] >= mc and cov[1 - s] >= mo]
+                    if ls:
+                        use[f"learner>={mc} opp>={mo}"] += 1
+                        plays_by_rule[f"learner>={mc} opp>={mo}"] += sum(sides_plays[s] for s in ls)
+    return {"replays": n, "deck_coverage_hist": dict(sorted(cov_hist.items())),
+            "replays_used": dict(use), "learner_plays": dict(plays_by_rule)}
+
+
+def main(argv: Optional[Sequence[str]] = None) -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--output-dir", default=str(ROOT / "data" / "il_shards"))
+    ap.add_argument("--cache-dir", default=str(ROOT / "data" / "il_raw"))
+    ap.add_argument("--parts", default=f"0-{N_PARTS - 1}", help="replay parts to read, e.g. 0-3 or 0,5,7")
+    ap.add_argument("--max-samples", type=int, default=100_000, help="stop after this many samples")
+    ap.add_argument("--max-replays", type=int, default=0, help="stop after this many replays read (0 = no limit)")
+    ap.add_argument("--shard-size", type=int, default=5000)
+    ap.add_argument("--min-coverage", type=int, default=8, help="simulated cards a learner deck needs (8 = all)")
+    ap.add_argument("--min-opp-coverage", type=int, default=4, help="simulated cards the other deck needs")
+    ap.add_argument("--wait-ratio", type=float, default=1.0)
+    ap.add_argument("--max-elixir-deficit", type=float, default=1.0)
+    ap.add_argument("--keep-raw", action="store_true", help="keep downloaded parquet parts in the cache")
+    ap.add_argument("--survey", action="store_true", help="only report coverage / yield of the parts")
+    ap.add_argument("--overwrite", action="store_true", help="replace existing shards in --output-dir")
+    args = ap.parse_args(argv)
 
     db = CardDB.load()
-    vocab = get_card_vocab(db)
-    logger.info(f"Loaded CardDB: {len(vocab)} cards in vocabulary")
+    vocab = F.card_vocab(db)
+    cache = Path(args.cache_dir)
+    parts = parse_parts(args.parts)
+    if args.survey:
+        paths = [part_path(cache, p) for p in parts]
+        print(json.dumps(survey(paths, db), indent=2))
+        return
 
-    shard_writer = ShardWriter(output_dir=args.output_dir, shard_size=args.shard_size)
-
-    if args.matches_file and args.events_file:
-        logger.info(f"Reading from local files: {args.matches_file}, {args.events_file}")
-        # Local file reading implementation
-        matches_by_id = {}
-        with open(args.matches_file, "r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                m = json.loads(line)
-                bid = m.get("battle_id")
-                if bid:
-                    matches_by_id[bid] = m
-                    if len(matches_by_id) >= args.max_matches:
-                        break
-
-        events_by_id = {bid: [] for bid in matches_by_id}
-        with open(args.events_file, "r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                ev = json.loads(line)
-                bid = ev.get("battle_id")
-                if bid in events_by_id:
-                    events_by_id[bid].append(ev)
-
-        for bid, m_meta in matches_by_id.items():
-            evs = events_by_id.get(bid, [])
-            if evs:
-                replay_battle(
-                    match_meta=m_meta,
-                    events=evs,
-                    db=db,
-                    vocab=vocab,
-                    shard_writer=shard_writer,
-                    min_deck_coverage=args.min_coverage,
-                )
-    else:
-        # Default Hugging Face corpus URLs
-        matches_url = "https://huggingface.co/datasets/Cochon123/clash-royale-replays/resolve/main/cleaned-legacy/matches.jsonl"
-        events_url = "https://huggingface.co/datasets/Cochon123/clash-royale-replays/resolve/main/cleaned-legacy/events.jsonl"
-        stream_hf_corpus(
-            matches_url=matches_url,
-            events_url=events_url,
-            db=db,
-            vocab=vocab,
-            shard_writer=shard_writer,
-            max_matches=args.max_matches,
-            min_deck_coverage=args.min_coverage,
-        )
-
-    manifest_path = shard_writer.close(vocab)
-    logger.info(f"Done! Manifest saved to: {manifest_path}")
+    out = Path(args.output_dir)
+    if out.exists() and any(out.glob("shard_*.npz")):
+        if not args.overwrite:
+            raise SystemExit(f"{out} already has shards (use --overwrite)")
+        for p in out.glob("shard_*.npz"):
+            p.unlink()
+    writer = ShardWriter(out, args.shard_size)
+    stats = Stats()
+    proxies = ProxyMap(db, load_card_catalog())
+    guesser = default_guesser()
+    t0 = time.time()
+    done_parts: List[int] = []
+    battle_idx = 0
+    stop = False
+    for part in parts:
+        path = part_path(cache, part)
+        for rep in iter_replays(path):
+            replay_battle(rep, db, vocab, writer, battle_idx, stats, proxies, guesser, args.min_coverage,
+                          args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit)
+            battle_idx += 1
+            if stats.replays_seen % 500 == 0:
+                logger.info("part %d: %d replays read, %d used, %d samples (%.0f s)", part, stats.replays_seen,
+                            stats.replays_used, writer.total_samples, time.time() - t0)
+            if writer.total_samples >= args.max_samples or (args.max_replays and stats.replays_seen >= args.max_replays):
+                stop = True
+                break
+        done_parts.append(part)
+        if not args.keep_raw:
+            path.unlink(missing_ok=True)
+        if stop:
+            break
+    extra = {
+        "source": {"dataset": HF_REPO, "parts": done_parts, "last_part_complete": not stop},
+        "filters": {"min_coverage": args.min_coverage, "min_opp_coverage": args.min_opp_coverage,
+                    "wait_ratio": args.wait_ratio, "max_elixir_deficit": args.max_elixir_deficit},
+        "stats": stats.as_dict(),
+        "build_seconds": round(time.time() - t0, 1),
+    }
+    path = writer.close(vocab, extra)
+    logger.info("done: %d samples (%d plays, %d waits) from %d battles -> %s", writer.total_samples,
+                writer.total_plays, writer.total_waits, writer.total_battles, path)
 
 
 if __name__ == "__main__":

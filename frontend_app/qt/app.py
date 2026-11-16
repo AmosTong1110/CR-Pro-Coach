@@ -32,7 +32,7 @@ from backend_engine.meta.presets import AI_PUSH_CARDS, find_preset, playable
 from backend_engine.simulator.geometry import TICK_MS
 from frontend_app.qt.board import BoardWidget
 from frontend_app.qt.review import ReviewPanel, mmss
-from frontend_app.qt.session import AI, HUMAN, PERSONAS, GameSession, LogEntry
+from frontend_app.qt.session import AI, HUMAN, PERSONAS, persona_label, GameSession, LogEntry
 from frontend_app.qt.theme import C, cls
 from frontend_app.qt.widgets import DeckView, card_frame, deck_costs, deck_names, label
 
@@ -651,7 +651,7 @@ class MainWindow(QMainWindow):
         ol.addWidget(label("AI PERSONA", "section"))
         self.persona_box = QComboBox()
         for k, p in PERSONAS.items():
-            self.persona_box.addItem(p["label"], k)
+            self.persona_box.addItem(persona_label(k), k)
         self.persona_box.setCurrentIndex(list(PERSONAS).index(self.session.cfg.persona))
         self.persona_box.currentIndexChanged.connect(lambda _: self.restart(persona=self.persona_box.currentData()))
         ol.addWidget(self.persona_box)
