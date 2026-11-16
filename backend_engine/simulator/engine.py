@@ -32,7 +32,8 @@ from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
 #   1: initial engine   2: projectiles with travel time, knockback (Fireball, Log), Evo Knight damage reduction
 #   3: portable arithmetic (PCG32 RNG, constant trig tables, sqrt instead of hypot) for the C++ core
 #   4: card numbers from the Clash Royale Wiki (2026-11-16): exact L11-L16 hitpoints / damage / tower damage
-ENGINE_VERSION = 4
+#   5: wiki timings (hit speed, first hit, range) of the simulated cards
+ENGINE_VERSION = 5
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)

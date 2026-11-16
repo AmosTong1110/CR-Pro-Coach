@@ -376,6 +376,85 @@ def print_verification(rows: List[Dict[str, Any]], pages: List[WikiPage], levels
     return counts
 
 
+# ---- attributes: cost, timings, range, speed, count, targets -------------------------------------------
+def attribute_fields(pg: WikiPage, entry: Dict[str, Any]) -> Dict[str, Any]:
+    """Wiki attribute table -> {dotted config path: value}. Only fields a card of that type has are produced.
+    Speeds / projectile speeds are game units / 60 (tiles per second), the same convention as the importer."""
+    a, out = pg.attrs, {}
+    num = lambda k: wiki_number(a.get(k, ""))                        # noqa: E731
+    out["elixir"] = num("Cost")
+    spell = entry.get("type") == "spell"
+    if spell:
+        out["spell.radius_tiles"] = num("Radius") if "spell" in entry and "radius_tiles" in entry["spell"] else None
+        if "duration_ms" in entry.get("spell", {}) and num("Duration") is not None:
+            out["spell.duration_ms"] = round(num("Duration") * 1000)
+        if "width_tiles" in entry.get("spell", {}):
+            out["spell.width_tiles"] = num("Width")
+        if "rolling_range_tiles" in entry.get("spell", {}):
+            out["spell.rolling_range_tiles"] = num("Range")
+        if "travel_speed_tiles_s" in entry.get("spell", {}) and num("Projectile Speed"):
+            out["spell.travel_speed_tiles_s"] = num("Projectile Speed") / SPEED_UNIT
+    else:
+        out["attack.hit_speed_s"] = num("Hit Speed")
+        out["attack.first_hit_s"] = num("First Hit Speed")
+        out["attack.range_tiles"] = num("Range")
+        out["attack.splash_radius_tiles"] = num("Splash Radius")
+        out["deploy_time_s"] = num("Deploy Time")
+        if entry.get("type") == "building":
+            out["lifetime_s"] = num("Lifetime")
+        else:
+            out["movement.speed_tiles_s"] = num("Speed") / SPEED_UNIT if num("Speed") is not None else None
+            out["count"] = num("Count")
+        if num("Projectile Speed"):
+            out["attack.projectile_speed_tiles_s"] = num("Projectile Speed") / SPEED_UNIT
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def _get(d: Dict[str, Any], path: str) -> Any:
+    for k in path.split("."):
+        if not isinstance(d, dict) or k not in d:
+            return None
+        d = d[k]
+    return d
+
+
+def verify_attributes(db: CardDB, pages: List[WikiPage]) -> List[Dict[str, Any]]:
+    rows = []
+    for pg in pages:
+        if pg.variant != "base" or pg.card_id not in db.cards:
+            continue
+        entry = db.entry(pg.card_id)
+        for path, wiki in attribute_fields(pg, entry).items():
+            ours = _get(entry, path)
+            if path == "attack.splash_radius_tiles" and not wiki and not ours:
+                continue
+            ok = ours is not None and abs(float(ours) - float(wiki)) < 1e-6 + 0.011 * abs(float(wiki)) * 0
+            rows.append({"card": pg.card_id, "field": path, "wiki": wiki, "ours": ours,
+                         "status": "ok" if ok else "DIFF"})
+    return rows
+
+
+def apply_attributes(cfg: Dict[str, Any], pages: List[WikiPage], rows: List[Dict[str, Any]]) -> None:
+    """Write every DIFF row's wiki value into `cfg` (in place)."""
+    for r in rows:
+        if r["status"] != "DIFF":
+            continue
+        d = cfg["cards"][r["card"]]
+        *parents, leaf = r["field"].split(".")
+        for k in parents:
+            d = d.setdefault(k, {})
+        v = r["wiki"]
+        d[leaf] = int(v) if leaf in ("elixir", "count", "duration_ms") else v
+
+
+def print_attribute_rows(rows: List[Dict[str, Any]]) -> int:
+    diffs = [r for r in rows if r["status"] == "DIFF"]
+    for r in diffs:
+        print(f"{r['card']:<18}{r['field']:<34}wiki {r['wiki']:<8g} ours {r['ours']}")
+    print(f"[i] {len(rows)} attributes compared, {len(diffs)} differ")
+    return len(diffs)
+
+
 def dump_wiki(pages: List[WikiPage], out: Path) -> None:
     data = {f"{p.card_id}#{p.variant}": {"title": p.title, "attributes": p.attrs,
                                            "levels": {str(L): v for L, v in sorted(p.levels.items())}}
@@ -392,6 +471,7 @@ def main() -> None:
     ap.add_argument("--config", type=Path, default=DEFAULT_PATH)
     ap.add_argument("--as-of", help="date the source data reflects, e.g. 2023-10-18")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--attrs", action="store_true", help="with --html-dir: compare cost / timings / range / speed instead")
     ap.add_argument("--apply-wiki", action="store_true",
                     help="with --html-dir, --as-of and --write: store the wiki's L11-L16 numbers as level_overrides")
     a = ap.parse_args()
@@ -399,9 +479,15 @@ def main() -> None:
         if not (a.as_of and a.write):
             ap.error("--apply-wiki needs --as-of and --write")
         cfg = json.loads(a.config.read_text(encoding="utf-8"))
-        new = apply_wiki(cfg, load_wiki_dir(a.html_dir), a.as_of)
+        pages = load_wiki_dir(a.html_dir)
+        new = apply_wiki(cfg, pages, a.as_of)
+        apply_attributes(new, pages, verify_attributes(CardDB(new), pages))
         a.config.write_text(json.dumps(new, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"[+] wrote {a.config}; verify with --html-dir (no --apply-wiki)")
+        return
+    if a.html_dir and a.attrs:
+        cfg = json.loads(a.config.read_text(encoding="utf-8"))
+        print_attribute_rows(verify_attributes(CardDB(cfg), load_wiki_dir(a.html_dir)))
         return
     if a.html_dir:
         pages = load_wiki_dir(a.html_dir)
