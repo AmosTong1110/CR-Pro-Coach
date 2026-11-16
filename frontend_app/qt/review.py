@@ -13,7 +13,8 @@ from typing import Callable, Optional
 from PySide6.QtCore import QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (
-    QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout, QWidget,
+    QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QSizePolicy, QToolTip, QVBoxLayout,
+    QWidget,
 )
 
 from backend_engine.brain.coach_analyzer import MatchReview, MoveReview
@@ -30,6 +31,9 @@ LABEL_COLOR = {
 }
 GRADE_CHIPS = (("brilliant", "!!"), ("best", "★"), ("good", "Good"), ("inaccuracy", "?!"), ("mistake", "?"),
                ("blunder", "??"))
+# drawing / labelling priority on the graph (worst on top, labelled first)
+SEVERITY = {"blunder": 5, "mistake": 4, "inaccuracy": 3, "brilliant": 2, "best": 1, "good": 0}
+LABELLED = ("blunder", "mistake", "inaccuracy", "brilliant")
 
 
 def mmss(ms: int) -> str:
@@ -57,6 +61,7 @@ class WinRateGraph(QWidget):
         self.selected: Optional[int] = None
         self.cursor_ms: Optional[int] = None
         self.empty_text = "Press Analyze to grade your plays and draw the win-rate curve"
+        self.names: Optional[Callable[[str], str]] = None   # card id -> display name (set by ReviewPanel)
         self.setMinimumHeight(120)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMouseTracking(True)
@@ -144,23 +149,51 @@ class WinRateGraph(QWidget):
         f.setBold(True)
         f.setPixelSize(11)
         p.setFont(f)
-        last_label_x = -1e9
-        for i, mv in enumerate(self.review.moves):
+        moves = self.review.moves
+        order = sorted(range(len(moves)), key=lambda i: (SEVERITY[moves[i].label], i == self.selected))
+        for i in order:                                   # dots: worst grades drawn last (on top)
+            mv = moves[i]
             c = self._pt(mv.t_ms, self._curve_at(mv.t_ms))
-            col = LABEL_COLOR[mv.label]
-            big = mv.label in ("brilliant", "inaccuracy", "mistake", "blunder")
-            rad = 6 if big else 3.5
+            rad = 6 if mv.label in LABELLED else 3.5
             if i == self.selected:
                 p.setPen(QPen(QColor("white"), 2))
                 p.setBrush(Qt.NoBrush)
                 p.drawEllipse(c, rad + 4, rad + 4)
-            p.setPen(Qt.NoPen)
-            p.setBrush(col)
+            p.setPen(QPen(QColor(C["panel"]), 1))
+            p.setBrush(LABEL_COLOR[mv.label])
             p.drawEllipse(c, rad, rad)
-            if mv.symbol and big and (c.x() - last_label_x >= 16 or mv.label == "blunder" or i == self.selected):
-                p.setPen(col)
-                p.drawText(QRectF(c.x() - 15, c.y() - 22, 30, 14), Qt.AlignCenter, mv.symbol)
-                last_label_x = c.x()
+        for i, rect in self.label_rects():                 # symbols: stacked so none is dropped
+            p.setPen(LABEL_COLOR[moves[i].label])
+            p.drawText(rect, Qt.AlignCenter, moves[i].symbol)
+
+    def label_rects(self):
+        """(move index, rect) for every graded symbol (?!, ?, ??, !!): placed above its dot; when that spot is
+        taken it shifts sideways, stacks higher or goes below, always inside the widget (worst grades first)."""
+        if not self.review or not self.review.curve:
+            return []
+        moves = self.review.moves
+        bounds = QRectF(self.rect()).adjusted(1, 1, -1, -1)
+        placed = []
+        order = sorted((i for i, mv in enumerate(moves) if mv.label in LABELLED and mv.symbol),
+                       key=lambda i: (-(i == self.selected), -SEVERITY[moves[i].label], moves[i].t_ms))
+        for i in order:
+            c = self._pt(moves[i].t_ms, self._curve_at(moves[i].t_ms))
+            spots = [(dx, dy) for dy in (-22, -36, -50, 8, 22, 36) for dx in (0, -12, 12, -24, 24)]
+            for dx, dy in spots:
+                r = QRectF(c.x() - 11 + dx, c.y() + dy, 22, 14)
+                if r.top() < bounds.top():                 # near 100%: slide down instead of leaving the widget
+                    r.moveTop(bounds.top())
+                if r.bottom() > bounds.bottom():
+                    r.moveBottom(bounds.bottom())
+                if r.left() < bounds.left():
+                    r.moveLeft(bounds.left())
+                if r.right() > bounds.right():
+                    r.moveRight(bounds.right())
+                if r.contains(c) or any(r.intersects(q) for _, q in placed):
+                    continue
+                placed.append((i, r))
+                break
+        return placed
 
     def _move_near(self, pos) -> Optional[int]:
         if not self.review or not self.review.curve:
@@ -185,6 +218,17 @@ class WinRateGraph(QWidget):
     def mouseMoveEvent(self, e) -> None:
         if e.buttons() & Qt.LeftButton:
             self.timeClicked.emit(self._t_at(e.position().x()))
+            return
+        i = self._move_near(e.position())
+        if i is None:                                       # also the symbol above a dot
+            i = next((k for k, r in self.label_rects() if r.contains(e.position())), None)
+        if i is not None and self.names is not None:
+            QToolTip.showText(e.globalPosition().toPoint(), tooltip_html(self.review.moves[i], self.names), self)
+        else:
+            QToolTip.hideText()
+
+    def leaveEvent(self, e) -> None:
+        QToolTip.hideText()
 
 
 class ReviewPanel(QWidget):
@@ -198,6 +242,7 @@ class ReviewPanel(QWidget):
         self.review: Optional[MatchReview] = None
         self.diverged = False
         self.graph = WinRateGraph()
+        self.graph.names = names
         self.graph.moveClicked.connect(self.select)
 
         head = QHBoxLayout()
@@ -321,6 +366,7 @@ class ReviewPanel(QWidget):
             it = QListWidgetItem(f"{mmss(mv.t_ms)}   {self.names(mv.actual.card_id)}   {mv.symbol or '·'} "
                                  f"{mv.label_text}   −{mv.loss * 100:.0f}%")
             it.setForeground(LABEL_COLOR[mv.label])
+            it.setToolTip(tooltip_html(mv, self.names))
             self.list.addItem(it)
         self.list.blockSignals(False)
 
@@ -354,19 +400,96 @@ class ReviewPanel(QWidget):
         self._placeholder()
 
 
+def where(x: float, y: float) -> str:
+    """Plain-language spot on the board (your side at the bottom, like the real game)."""
+    lane = "left lane" if x < 7 else ("right lane" if x > 11 else "centre")
+    if y >= 17:
+        depth = "deep on their side" if y >= 24 else "on their side, past the river"
+    elif y >= 15:
+        depth = "on the river"
+    elif y >= 13:
+        depth = "at the bridge"
+    elif y >= 9:
+        depth = "mid-way on your side"
+    elif y >= 5:
+        depth = "by your Princess Towers"
+    else:
+        depth = "at the back, by your King Tower"
+    return f"{lane}, {depth}"
+
+
+def _shift(a, b) -> str:
+    """How your spot differs from the recommended one (same card)."""
+    parts = []
+    if abs(a.y - b.y) >= 1.5:
+        parts.append(f"{abs(a.y - b.y):.0f} tiles too far {'forward' if a.y > b.y else 'back'}")
+    if (a.x < 9) != (b.x < 9) and abs(a.x - b.x) >= 3:
+        parts.append("in the wrong lane")
+    elif abs(a.x - b.x) >= 1.5:
+        parts.append(f"{abs(a.x - b.x):.0f} tiles too far {'left' if a.x < b.x else 'right'}")
+    return " and ".join(parts) or "slightly off the best tile"
+
+
+def explain(mv: MoveReview, names: Callable[[str], str]) -> tuple:
+    """(mistake, alternative) in plain English for one graded play."""
+    a, b = mv.actual, mv.best
+    card = names(a.card_id)
+    spot = f"{card} at ({a.x:.1f}, {a.y:.1f}), {where(a.x, a.y)}"
+    swing = f"win chance {mv.v_before:.0%} → {mv.v_actual:.0%}"
+    if mv.loss <= 0.01:
+        mistake = (f"None. {spot} was {'the best play found' if mv.label in ('best', 'brilliant') else 'as good as the best option'}"
+                   f" ({swing}).")
+    elif b.is_wait:
+        mistake = (f"Played too early: {spot} spent elixir when holding it was worth more ({swing}; waiting "
+                   f"{mv.v_wait:.0%}). It left you short for their next push and gave nothing back.")
+    elif b.card_id == a.card_id:
+        mistake = (f"Right card, wrong spot: {spot} is {_shift(a, b)}, costing {mv.loss:.0%} win chance ({swing}).")
+    else:
+        mistake = (f"Wrong card for this moment: {spot} cost {mv.loss:.0%} win chance ({swing}); "
+                   f"{names(b.card_id)} handles this situation better.")
+    if mv.loss > 0.01 and not b.is_wait and mv.v_wait > mv.v_actual + 0.03:
+        mistake += f" Even waiting would have been better ({mv.v_wait:.0%})."
+
+    others = [(c, v) for c, v in mv.alternatives if not c.is_wait and c != b and c != a]
+    if b.is_wait:
+        alt = f"Wait: keep your elixir and cycle, then answer their next play (win chance {mv.v_wait:.0%})."
+        cards = [(c, v) for c, v in mv.alternatives if not c.is_wait]
+        if cards:
+            c, v = cards[0]
+            alt += f" If you must play: {names(c.card_id)} at ({c.x:.1f}, {c.y:.1f}), {where(c.x, c.y)} ({v:.0%})."
+    elif mv.loss <= 0.01:
+        alt = "Your play was already the best option."
+        if others:
+            c, v = others[0]
+            alt += f" Also fine: {names(c.card_id)} at ({c.x:.1f}, {c.y:.1f}), {where(c.x, c.y)} ({v:.0%})."
+    else:
+        alt = (f"{names(b.card_id)} at ({b.x:.1f}, {b.y:.1f}), {where(b.x, b.y)} "
+               f"(win chance {mv.v_best:.0%}, +{mv.loss:.0%} over your play).")
+        if others:
+            c, v = others[0]
+            alt += f" Next best: {names(c.card_id)} at ({c.x:.1f}, {c.y:.1f}) ({v:.0%})."
+    return mistake, alt
+
+
+def tooltip_html(mv: MoveReview, names: Callable[[str], str]) -> str:
+    """Hover text for a graded play (graph dot / list row): Mistake + Alternative."""
+    mistake, alt = explain(mv, names)
+    col = LABEL_COLOR[mv.label].name()
+    return (f"<div style='max-width:340px'><b>{mmss(mv.t_ms)} · {names(mv.actual.card_id)}</b> "
+            f"<span style='color:{col}'>{mv.symbol} {mv.label_text}</span> (−{mv.loss:.0%})<br>"
+            f"<b>Mistake:</b> {mistake}<br><b style='color:#5ad15a'>Alternative:</b> {alt}<br>"
+            f"<span style='color:#8b93a1'>{mv.n_candidates} options simulated 8 s ahead</span></div>")
+
+
 def describe(mv: MoveReview, names: Callable[[str], str]) -> str:
     """Rich-text explanation of one graded play: win chance before/after, the recommendation, and why."""
     a = mv.actual
+    mistake, alt = explain(mv, names)
     lines = [f"<b>{mmss(mv.t_ms)} · {names(a.card_id)} at ({a.x:.1f}, {a.y:.1f})</b> — "
              f"<span style='color:{LABEL_COLOR[mv.label].name()}'>{mv.label_text} {mv.symbol}</span>",
-             f"Win chance: {mv.v_before:.0%} before → {mv.v_actual:.0%} after your play · best {mv.v_best:.0%}"]
-    if mv.best.is_wait:
-        lines.append("<span style='color:#5ad15a'>Best: wait — don't play here (keep your elixir and cycle)</span>")
-    elif mv.loss > 0.01:
-        b = mv.best
-        lines.append(f"<span style='color:#5ad15a'>Recommended: {names(b.card_id)} at ({b.x:.1f}, {b.y:.1f})"
-                     "</span> (green ghost) · yours in red")
-    if mv.loss > 0.01 and not mv.best.is_wait and mv.v_wait > mv.v_actual + 0.03:
-        lines.append(f"Even waiting would be better ({mv.v_wait:.0%})")
+             f"<b>Mistake:</b> {mistake}",
+             f"<b style='color:#5ad15a'>Alternative:</b> {alt}"]
+    if not mv.best.is_wait and mv.loss > 0.01:
+        lines.append(f"<span style='color:{C['muted']}'>On the board: yours in red, recommended in green</span>")
     lines.append(f"<span style='color:{C['muted']}'>{mv.n_candidates} options simulated 8 s ahead</span>")
     return "<br>".join(lines)
