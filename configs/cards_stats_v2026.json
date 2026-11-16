@@ -226,7 +226,6 @@
       "mass": 6,
       "variants": {
         "evo": {
-          "cycles_required": 2,
           "mechanics": [
             {
               "kind": "damage_reduction_while_not_attacking",
@@ -236,9 +235,55 @@
             }
           ],
           "stat_mods": {},
-          "sc_key": "Knight_EV1"
+          "level_overrides": {},
+          "cycles_required": 2,
+          "sc_key": "Knight_EV1",
+          "data_source": "wiki-fandom-html:Evolved Knight",
+          "wiki_as_of": "2026-11-16"
         },
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "triumphant_taunt",
+                "elixir": 2,
+                "uses": 1,
+                "delay_ms": 1000,
+                "taunt_tiles": 7.5,
+                "duration_ms": 5000,
+                "shield_stat": "shield_hitpoints"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "shield_hitpoints": 512
+            },
+            "12": {
+              "shield_hitpoints": 563
+            },
+            "13": {
+              "shield_hitpoints": 620
+            },
+            "14": {
+              "shield_hitpoints": 681
+            },
+            "15": {
+              "shield_hitpoints": 750
+            },
+            "16": {
+              "shield_hitpoints": 825
+            }
+          },
+          "data_source": "wiki-fandom-html:Knight_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "enemy towers are taunted too",
+            "enemies keep the lock until he is defeated (the taunt itself lasts 5 s)"
+          ]
+        }
       },
       "wiki_as_of": "2026-11-16"
     },
@@ -403,8 +448,65 @@
       "data_as_of": "2023-10-18",
       "mass": 5,
       "variants": {
-        "evo": null,
-        "hero": null
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_sniper",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Musketeer",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "trusty_turret",
+                "elixir": 3,
+                "uses": 1,
+                "delay_ms": 1000,
+                "forward_tiles": 3.0,
+                "spawn_radius_tiles": 1.5,
+                "spawn_damage_stat": "turret_spawn_damage",
+                "token": "trusty_turret",
+                "deploy_ms": 1000
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "turret_spawn_damage": 204
+            },
+            "12": {
+              "turret_spawn_damage": 224
+            },
+            "13": {
+              "turret_spawn_damage": 247
+            },
+            "14": {
+              "turret_spawn_damage": 272
+            },
+            "15": {
+              "turret_spawn_damage": 299
+            },
+            "16": {
+              "turret_spawn_damage": 329
+            }
+          },
+          "data_source": "wiki-fandom-html:Heroic Musketeer",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "spawn damage radius 1.5",
+            "turret hitpoints = 10 x its hitpoints-lost-per-second (the page's 'Turret Hitpoints' at L11 equals the Musketeer's own hp, an apparent copy error)",
+            "turret hit speed 0.5 s from damage / dps"
+          ]
+        }
       },
       "wiki_as_of": "2026-11-16"
     },
@@ -491,7 +593,19 @@
       "data_as_of": "2023-10-18",
       "mass": 0,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_barrage",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Cannon",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "wiki_as_of": "2026-11-16"
@@ -738,7 +852,19 @@
       "data_as_of": "2023-10-18",
       "mass": 1,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_multiply",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Skeletons",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "wiki_as_of": "2026-11-16"
@@ -818,7 +944,19 @@
       "data_as_of": "2023-10-18",
       "mass": 3,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_power_shot",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Archers",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "wiki_as_of": "2026-11-16"
@@ -967,7 +1105,39 @@
         "name": "Zap"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_double_zap",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "crown_tower_damage": 58
+            },
+            "12": {
+              "damage": 211,
+              "crown_tower_damage": 64
+            },
+            "13": {
+              "crown_tower_damage": 70
+            },
+            "14": {
+              "crown_tower_damage": 77
+            },
+            "15": {
+              "crown_tower_damage": 85
+            },
+            "16": {
+              "crown_tower_damage": 93
+            }
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Zap",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "crown_tower_damage_pct": -70,
@@ -1040,7 +1210,19 @@
         "name": "IceSpirits"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_ice_blast",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Ice Spirit",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1313,7 +1495,64 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "snowstorm",
+                "elixir": 2,
+                "uses": 1,
+                "delay_ms": 1000,
+                "radius_tiles": 4.0,
+                "pulses": 3,
+                "pulse_every_ms": 500,
+                "slow_ms": 2000,
+                "damage_stat": "blizzard_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "damage": 84,
+              "death_damage": 84,
+              "blizzard_damage": 69
+            },
+            "12": {
+              "damage": 92,
+              "death_damage": 92,
+              "blizzard_damage": 76
+            },
+            "13": {
+              "damage": 102,
+              "death_damage": 102,
+              "blizzard_damage": 83
+            },
+            "14": {
+              "damage": 112,
+              "death_damage": 112,
+              "blizzard_damage": 92
+            },
+            "15": {
+              "damage": 123,
+              "death_damage": 123,
+              "blizzard_damage": 101
+            },
+            "16": {
+              "damage": 135,
+              "death_damage": 135,
+              "blizzard_damage": 111
+            }
+          },
+          "data_source": "wiki-fandom-html:Ice Golem_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "pulse spacing 0.5 s",
+            "the blizzard stays where he stood when it started",
+            "towers take the pulse damage in full"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -1391,7 +1630,72 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "breakfast_boost",
+                "elixir": 1,
+                "uses": 1,
+                "delay_ms": 1000,
+                "heal_pct": 30,
+                "levels": 1
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "hitpoints": 1433
+            },
+            "12": {
+              "hitpoints": 1576,
+              "damage": 831
+            },
+            "13": {
+              "hitpoints": 1734,
+              "damage": 914
+            },
+            "14": {
+              "hitpoints": 1907,
+              "damage": 1005
+            },
+            "15": {
+              "hitpoints": 2098,
+              "damage": 1105
+            },
+            "16": {
+              "hitpoints": 2308
+            },
+            "17": {
+              "hitpoints": 2539,
+              "damage": 1338
+            },
+            "18": {
+              "hitpoints": 2793,
+              "damage": 1471
+            },
+            "19": {
+              "hitpoints": 3072,
+              "damage": 1618
+            },
+            "20": {
+              "hitpoints": 3379,
+              "damage": 1780
+            },
+            "21": {
+              "hitpoints": 3717,
+              "damage": 1958
+            }
+          },
+          "data_source": "wiki-fandom-html:Heroic Mini P.E.K.K.A.",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "pancake meter not simulated: the ability always gives the 0-bar bonus (+1 level)",
+            "the heal applies on top of the level gain"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -1475,8 +1779,64 @@
         "name": "Valkyrie"
       },
       "variants": {
-        "evo": null,
-        "hero": null
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_tornado",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Valkyrie",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "whirl_power",
+                "elixir": 3,
+                "uses": 1,
+                "duration_ms": 3500,
+                "hit_every_ms": 250,
+                "radius_tiles": 2.5,
+                "damage_reduction_pct": 15,
+                "tower_damage_pct": 50,
+                "damage_stat": "ability_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "ability_damage": 97
+            },
+            "12": {
+              "ability_damage": 107
+            },
+            "13": {
+              "ability_damage": 117
+            },
+            "14": {
+              "ability_damage": 129
+            },
+            "15": {
+              "ability_damage": 142
+            },
+            "16": {
+              "ability_damage": 156
+            }
+          },
+          "data_source": "wiki-fandom-html:Valkyrie_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "the 5.5-tile dash at the start is not simulated",
+            "hits ground troops, buildings and towers"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -1555,7 +1915,19 @@
         "name": "SkeletonArmy"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_general_gerry",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Skeleton Army",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1633,7 +2005,19 @@
         "name": "BlowdartGoblin"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_poison_darts",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Dart Goblin",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1793,7 +2177,43 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "hero_rowdy_reroll",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "damage": 232,
+              "crown_tower_damage": 116
+            },
+            "12": {
+              "damage": 255,
+              "crown_tower_damage": 128
+            },
+            "13": {
+              "damage": 281,
+              "crown_tower_damage": 140
+            },
+            "14": {
+              "damage": 309,
+              "crown_tower_damage": 154
+            },
+            "15": {
+              "damage": 340,
+              "crown_tower_damage": 170
+            },
+            "16": {
+              "damage": 374,
+              "crown_tower_damage": 187
+            }
+          },
+          "data_source": "wiki-fandom-html:Barbarian Barrel_Hero",
+          "wiki_as_of": "2026-11-16"
+        }
       },
       "spell": {
         "travel_speed_tiles_s": 3.3333333333333335,
@@ -1863,7 +2283,19 @@
         "name": "Ghost"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_souldiers",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Royal Ghost",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -2051,7 +2483,18 @@
       ],
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "hero_dismount",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "data_source": "wiki-fandom-html:Dark Prince_Hero",
+          "wiki_as_of": "2026-11-16"
+        }
       },
       "base_stats": {
         "hitpoints": 1200,
@@ -2455,7 +2898,19 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_sparks",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Firecracker",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "base_stats": {
@@ -2543,7 +2998,19 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_pulse",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Tesla",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "base_stats": {
@@ -3013,7 +3480,38 @@
       "collision_radius_tiles": 0.4,
       "mechanics": [],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_heal_pulse",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "hitpoints": 122
+            },
+            "12": {
+              "hitpoints": 134
+            },
+            "13": {
+              "hitpoints": 148
+            },
+            "14": {
+              "hitpoints": 162
+            },
+            "15": {
+              "hitpoints": 179
+            },
+            "16": {
+              "hitpoints": 196
+            }
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Bats",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "base_stats": {
@@ -3609,6 +4107,74 @@
       "name": "Guardienne",
       "rarity": "champion",
       "elixir": 3
+    },
+    "trusty_turret": {
+      "name": "Trusty Turret",
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1536,
+          "damage": 140
+        },
+        "12": {
+          "hitpoints": 1690,
+          "damage": 154
+        },
+        "13": {
+          "hitpoints": 1859,
+          "damage": 169
+        },
+        "14": {
+          "hitpoints": 2044,
+          "damage": 186
+        },
+        "15": {
+          "hitpoints": 2249,
+          "damage": 205
+        },
+        "16": {
+          "hitpoints": 2474,
+          "damage": 225
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [],
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 4.0,
+        "hit_speed_s": 0.5,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 4.0
+      },
+      "base_stats": {
+        "hitpoints": 1536,
+        "damage": 140
+      },
+      "data_source": "wiki-fandom-html:Heroic Musketeer (hero turret columns)",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "hit speed 0.5 s (damage 140 / dps 280)",
+        "hitpoints = 10 x hitpoints lost per second, so it ends exactly at its 10 s lifetime"
+      ],
+      "lifetime_s": 10.0,
+      "deploy_time_s": 1.0,
+      "footprint_tiles": [
+        1,
+        1
+      ],
+      "collision_radius_tiles": 0.5,
+      "mass": 0
     }
   }
 }

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 STUN, FREEZE, SLOW, ROOT, INVISIBLE = "stun", "freeze", "slow", "root", "invisible"
 SLOW50 = "slow50"      # Earthquake: speed and hit speed -50%
+SLOW30 = "slow30"      # Hero Ice Golem blizzard: speed and hit speed -30%
 SLOW15 = "slow15"      # Poison: speed and hit speed -15% (slows never stack: the strongest one counts)
 SLOW_FACTOR = 0.65      # game buff IceWizardSlowDown: speed and hit speed -35% (2023-10 data); duration is per card
 SLOW_PCT = 65           # same factor in integer percent, for attack-timer arithmetic
@@ -49,6 +50,8 @@ def _slow_pct(u) -> int:
         pct = 50
     if SLOW in u.status:
         pct = min(pct, SLOW_PCT)
+    if SLOW30 in u.status:
+        pct = min(pct, 70)
     if SLOW15 in u.status:
         pct = min(pct, 85)
     return pct

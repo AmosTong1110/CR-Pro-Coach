@@ -271,18 +271,16 @@ New mechanics (grouped; each needs a unit test + golden scenario like Phase 1):
 8. `arrows` = area spell, no new mechanic; `skeleton_dragons`, `baby_dragon`, `mega_minion`, `goblin_gang`, `princess` are projectile/splash (existing).
 
 ### Evolutions and heroes (~20 variants)
-Which evo/hero each deck runs is not in our data, except Hero Electro Wizard (deck 1) and evo bats / evo skeletons
-(Phase 1). Proposal: implement each variant only when its deck is wired; confirm the exact loadouts before Phase 2.
-* Evo pages already saved (14): archers, bats, cannon, dart_goblin, firecracker, ice_spirit, knight, musketeer,
-  royal_ghost, skeleton_army, skeletons, tesla, valkyrie, zap. Evo knight is already simulated.
-* Hero pages already saved (7): barbarian_barrel, dark_prince, ice_golem, knight, mini_pekka, musketeer, valkyrie.
-* Evo pages to save for Phase 2 (official list says these cards have an evo): baby_dragon, battle_ram, goblin_barrel,
-  goblin_cage, goblin_drill, inferno_dragon, lumberjack, princess, royal_giant.
-* Hero pages to save for Phase 2: electro_wizard, balloon, magic_archer, mega_minion, tombstone.
-* Variant mechanics: knight/ice_spirit/skeletons/musketeer first (cheap); then the ones that add a new entity
-  (cannon barrage, tesla pulse, firecracker sparks, dart_goblin poison, royal_ghost soldiers, bats heal).
-  Heroes are single-use abilities (Aug 2026 patch): one `hero_ability` mechanic with per-card params.
-* Hero level offset is unknown (`rarity_offset.hero = null`); needed before any hero card can be levelled.
+Which evo/hero each deck runs is not in our data, except Hero Electro Wizard (deck 1) and evo bats / evo skeletons.
+**Status 2026-11-16**: all 21 saved evo / hero pages are in the card data and verified (`sync_meta --variants`); simulated:
+Evo Knight and the heroes Knight, Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie (`use_ability`). The other 13
+evolutions and the Barbarian Barrel / Dark Prince heroes are data with a planned mechanic (handoff issue 18).
+* Pages still to save for Phase 2 (official list says these cards have an evo): baby_dragon, battle_ram, goblin_barrel,
+  goblin_cage, goblin_drill, inferno_dragon, lumberjack, princess, royal_giant. Hero pages: electro_wizard, balloon,
+  magic_archer, mega_minion, tombstone.
+* Next evolution mechanics, cheapest first: skeletons (multiply), bats (heal pulse), tesla (stun pulse), zap (double),
+  ice spirit, archers, then the ones that add a new entity (cannon barrage, firecracker sparks, dart goblin poison,
+  royal ghost soldiers, skeleton army General Gerry).
 
 ### Stats source (new, 2026-11-16)
 `sync_meta --html-dir data/raw_sources/cards` parses the saved Fandom pages (current numbers, L1–L16) and checks

@@ -32,7 +32,10 @@ def fill_spawn_params(params: dict, stats) -> None:
     if "ramp_damage" in params:
         params["ramp_damage"]["damages"] = [st[k] for k in params["ramp_damage"]["stats"]]
     if "champion_ability" in params:
-        params["champion_ability"]["damage"] = st.get(params["champion_ability"].get("damage_stat", "damage"), 0)
+        ca = params["champion_ability"]
+        ca["damage"] = st.get(ca.get("damage_stat", "damage"), 0)
+        for k in [k for k in ca if k.endswith("_stat") and k != "damage_stat"]:    # e.g. shield_stat -> shield
+            ca[k[: -len("_stat")]] = st.get(ca[k], 0)
     if "enchant" in params:
         params["enchant"]["bonus"] = st.get(params["enchant"].get("bonus_stat", "bonus_damage"), 0)
     if "form_change" in params:
@@ -80,6 +83,13 @@ class Shield(Mechanic):
 
     def on_spawn(self, m, u) -> None:
         u.mstate["shield"] = float(u.params.get("shield", {}).get("hp", 0))
+
+    def on_tick(self, m, u, dt: int) -> bool:
+        until = u.mstate.get("shield_until")              # a temporary shield (Hero Knight's taunt)
+        if until is not None and m.t_ms >= until:
+            u.mstate["shield"] = 0.0
+            del u.mstate["shield_until"]
+        return False
 
     def on_damaged(self, m, u, amount: float, source) -> float:
         sh = u.mstate.get("shield", 0.0)

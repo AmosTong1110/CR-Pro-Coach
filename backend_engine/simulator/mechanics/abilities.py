@@ -13,7 +13,7 @@ from typing import Dict, Optional
 
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.mechanics import status as S
-from backend_engine.simulator.mechanics.base import Mechanic, register, register_spell
+from backend_engine.simulator.mechanics.base import Mechanic, SpellKind, register, register_spell
 from backend_engine.simulator.mechanics.core import AreaSpell
 
 ABILITY_SUFFIX = "#ability"   # action-log marker: `golden_knight#ability` (cf. `card#evo` in the card refs)
@@ -130,7 +130,144 @@ class Rescue:
         return False
 
 
-ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape, "royal_rescue": Rescue}
+class _Delayed:
+    """Base for abilities that act once after `delay_ms` (the wiki's 1 s cast delay)."""
+    phase = ""
+
+    @classmethod
+    def start(cls, m, u, p) -> None:
+        u.mstate["ab"].update(phase=cls.phase, ms=0)
+
+    @classmethod
+    def tick(cls, m, u, p, dt: int) -> bool:
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        if ab["ms"] >= int(p.get("delay_ms", 1000)):
+            ab["phase"] = None
+            cls.fire(m, u, p)
+        return False
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        raise NotImplementedError
+
+
+class Taunt(_Delayed):
+    """Hero Knight, Triumphant Taunt (2 elixir): after the delay he gains a `shield` for `duration_ms` and every enemy
+    troop, building and tower within `taunt_tiles` locks onto him until he is defeated."""
+    phase = "taunt"
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        hp = float(p.get("shield", 0))
+        u.params["shield"] = {"hp": hp}
+        u.mstate["shield"], u.mstate["shield_until"] = hp, m.t_ms + int(p.get("duration_ms", 5000))
+        u.mechanics = tuple(dict.fromkeys(u.mechanics + ("shield",)))
+        for e in _foes(m, u):
+            if G.dist(e.x, e.y, u.x, u.y) <= float(p.get("taunt_tiles", 7.5)):
+                e.mstate["taunt"] = u.uid
+
+
+class BreakfastBoost(_Delayed):
+    """Hero Mini P.E.K.K.A., Breakfast Boost (1 elixir): heals `heal_pct` of his hitpoints and gains `levels` levels
+    (stats from the hero's own level table, which runs up to level 21). The pancake meter is not simulated: the
+    ability always gives the 0-bar bonus (+1 level)."""
+    phase = "boost"
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        lvl = m.sides[u.side].level + int(p.get("levels", 1))
+        if lvl in m.db.levels:
+            st = m.db.stats(u.card_id, lvl, "hero").stats
+        else:                                                      # above 16 only the hero's own table has numbers
+            st = (m.db.variant(u.card_id, "hero") or {}).get("level_overrides", {}).get(str(lvl))
+        if st:
+            new_max = float(st["hitpoints"])
+            u.hp = min(new_max, u.hp + (new_max - u.max_hp))       # keeps the missing hitpoints
+            u.max_hp, u.damage = new_max, int(st["damage"])
+        u.hp = min(u.max_hp, u.hp + u.max_hp * float(p.get("heal_pct", 30)) / 100.0)
+
+
+class Snowstorm(_Delayed):
+    """Hero Ice Golem, Snowstorm (2 elixir): a blizzard of `radius_tiles` where he stands: `pulses` pulses, each damages
+    every enemy in it and slows troops by 30% for `slow_ms`."""
+    phase = "snow"
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        from backend_engine.simulator.entities import AreaEffect
+        every, n = int(p.get("pulse_every_ms", 500)), int(p.get("pulses", 3))
+        dmg = float(p.get("damage", 0))
+        m.effects.append(AreaEffect(m._uid(), u.side, u.card_id, u.x, u.y, float(p.get("radius_tiles", 4.0)), dmg, dmg,
+                                    every * n, every, 0.0, u.source_event_id or 0, kind="snowstorm", next_hit_ms=every,
+                                    params={"state": {"slow_ms": int(p.get("slow_ms", 2000))}}))
+
+
+@register_spell("snowstorm")
+class SnowstormEffect(SpellKind):
+    def cast(self, m, side, card_id, x, y, eid, stats, params) -> None:
+        raise NotImplementedError("only started by the Hero Ice Golem ability")
+
+    def advance(self, m, ef, dt: int) -> None:
+        ef.elapsed_ms += dt
+        while ef.next_hit_ms <= ef.elapsed_ms and ef.next_hit_ms <= ef.duration_ms:
+            ef.next_hit_ms += ef.hit_every_ms
+            for e in _foes_of(m, ef.side):
+                if G.dist(e.x, e.y, ef.x, ef.y) <= ef.radius + e.radius:
+                    m._deal(e, ef.damage, ef)
+                    if e.hp > 0 and not e.is_structure:
+                        m.apply_status(e, S.SLOW30, int(ef.params["state"]["slow_ms"]))
+
+
+class TrustyTurret(_Delayed):
+    """Hero Musketeer, Trusty Turret (3 elixir): `forward_tiles` ahead of her a short-lived turret building appears
+    (`token`, 10 s) and hits enemies around it for `spawn_damage`."""
+    phase = "turret"
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        from backend_engine.simulator.mechanics.core import land
+        x, y = land(u.x, min(max(u.y + G.forward(u.side) * float(p.get("forward_tiles", 3.0)), 0.0), G.H - 0.01))
+        for e in _foes(m, u):
+            if G.dist(e.x, e.y, x, y) <= float(p.get("spawn_radius_tiles", 1.5)) + e.radius:
+                m._deal(e, float(p.get("spawn_damage", 0)), u)
+        m._spawn_card_units(u.side, p["token"], x, y, u.source_event_id or 0, False, deploy_ms=int(p.get("deploy_ms", 1000)))
+
+
+class WhirlPower:
+    """Hero Valkyrie, Whirl Power (3 elixir): for `duration_ms` she spins, hitting every enemy troop and building within
+    `radius_tiles` each `hit_every_ms` (towers take `tower_damage_pct`%) and takes `damage_reduction_pct`% less damage.
+    The initial 5.5-tile dash is not simulated."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        u.mstate["ab"].update(phase="whirl", ms=0, next=int(p.get("hit_every_ms", 250)),
+                              dr=float(p.get("damage_reduction_pct", 15)))
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        while ab["next"] <= ab["ms"] and ab["next"] <= int(p.get("duration_ms", 3500)):
+            ab["next"] += int(p.get("hit_every_ms", 250))
+            for e in _foes(m, u):
+                if (e.is_structure or e.layer == "ground") and G.dist(e.x, e.y, u.x, u.y) <= float(
+                        p.get("radius_tiles", 2.5)) + e.radius:
+                    pct = float(p.get("tower_damage_pct", 50)) / 100.0 if e.kind == "tower" else 1.0
+                    m._deal(e, float(p.get("damage", 0)) * pct, u)
+        if ab["ms"] >= int(p.get("duration_ms", 3500)):
+            ab["phase"] = None
+            ab.pop("dr", None)
+        return False
+
+
+def _foes_of(m, side):
+    return [e for e in sorted(m.units.values(), key=lambda e: e.uid) if e.side != side and e.hp > 0]
+
+
+ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape, "royal_rescue": Rescue,
+                              "triumphant_taunt": Taunt, "breakfast_boost": BreakfastBoost, "snowstorm": Snowstorm,
+                              "trusty_turret": TrustyTurret, "whirl_power": WhirlPower}
 
 
 @register("champion_ability")
@@ -147,7 +284,11 @@ class ChampionAbility(Mechanic):
 
     def on_damaged(self, m, u, amount: float, source) -> float:
         ab = u.mstate.get("ab")
-        return 0.0 if ab and ab["phase"] == "dash" else amount
+        if ab and ab["phase"] == "dash":
+            return 0.0
+        if ab and ab.get("dr"):
+            return amount * (1.0 - ab["dr"] / 100.0)
+        return amount
 
 
 @register_spell("escape_bomb")

@@ -1,0 +1,58 @@
+{
+  "_doc": "Evolution and hero variants, built from the saved wiki pages by tools/add_variants.py. Stats: every headline column that differs from the base card (hitpoints, damage, ...) is stored as variants.<v>.level_overrides for L11-L21 (the hero tables run to 21); 'stats_extra' adds ability numbers. Evolutions whose behaviour is not simulated carry a planned kind (mechanics.base.PLANNED): their cycles and stats are data, `CardDB.variant_simulated` is false and they can't be picked. Heroes that are simulated carry a champion_ability (see mechanics/abilities.py).",
+  "evo": {
+    "archers": {"mechanics": [{"kind": "evo_power_shot", "params": {}}]},
+    "bats": {"mechanics": [{"kind": "evo_heal_pulse", "params": {}}]},
+    "cannon": {"mechanics": [{"kind": "evo_barrage", "params": {}}]},
+    "dart_goblin": {"mechanics": [{"kind": "evo_poison_darts", "params": {}}]},
+    "firecracker": {"mechanics": [{"kind": "evo_sparks", "params": {}}]},
+    "ice_spirit": {"mechanics": [{"kind": "evo_ice_blast", "params": {}}]},
+    "knight": {"keep_mechanics": true},
+    "musketeer": {"mechanics": [{"kind": "evo_sniper", "params": {}}]},
+    "royal_ghost": {"mechanics": [{"kind": "evo_souldiers", "params": {}}]},
+    "skeleton_army": {"mechanics": [{"kind": "evo_general_gerry", "params": {}}]},
+    "skeletons": {"mechanics": [{"kind": "evo_multiply", "params": {}}]},
+    "tesla": {"mechanics": [{"kind": "evo_pulse", "params": {}}]},
+    "valkyrie": {"mechanics": [{"kind": "evo_tornado", "params": {}}]},
+    "zap": {"mechanics": [{"kind": "evo_double_zap", "params": {}}]}
+  },
+  "hero": {
+    "knight": {
+      "stats_extra": {"shield_hitpoints": "Shield Hitpoints"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "triumphant_taunt", "elixir": 2, "uses": 1, "delay_ms": 1000, "taunt_tiles": 7.5, "duration_ms": 5000, "shield_stat": "shield_hitpoints"}}],
+      "assumed": ["enemy towers are taunted too", "enemies keep the lock until he is defeated (the taunt itself lasts 5 s)"]
+    },
+    "mini_pekka": {
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "breakfast_boost", "elixir": 1, "uses": 1, "delay_ms": 1000, "heal_pct": 30, "levels": 1}}],
+      "assumed": ["pancake meter not simulated: the ability always gives the 0-bar bonus (+1 level)", "the heal applies on top of the level gain"]
+    },
+    "ice_golem": {
+      "stats_extra": {"blizzard_damage": "Blizzard Pulse Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "snowstorm", "elixir": 2, "uses": 1, "delay_ms": 1000, "radius_tiles": 4.0, "pulses": 3, "pulse_every_ms": 500, "slow_ms": 2000, "damage_stat": "blizzard_damage"}}],
+      "assumed": ["pulse spacing 0.5 s", "the blizzard stays where he stood when it started", "towers take the pulse damage in full"]
+    },
+    "musketeer": {
+      "stats_extra": {"turret_spawn_damage": "Turret Spawn Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "trusty_turret", "elixir": 3, "uses": 1, "delay_ms": 1000, "forward_tiles": 3.0, "spawn_radius_tiles": 1.5, "spawn_damage_stat": "turret_spawn_damage", "token": "trusty_turret", "deploy_ms": 1000}}],
+      "assumed": ["spawn damage radius 1.5", "turret hitpoints = 10 x its hitpoints-lost-per-second (the page's 'Turret Hitpoints' at L11 equals the Musketeer's own hp, an apparent copy error)", "turret hit speed 0.5 s from damage / dps"]
+    },
+    "valkyrie": {
+      "stats_extra": {"ability_damage": "Ability Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "whirl_power", "elixir": 3, "uses": 1, "duration_ms": 3500, "hit_every_ms": 250, "radius_tiles": 2.5, "damage_reduction_pct": 15, "tower_damage_pct": 50, "damage_stat": "ability_damage"}}],
+      "assumed": ["the 5.5-tile dash at the start is not simulated", "hits ground troops, buildings and towers"]
+    },
+    "barbarian_barrel": {"mechanics": [{"kind": "hero_rowdy_reroll", "params": {}}]},
+    "dark_prince": {"mechanics": [{"kind": "hero_dismount", "params": {}}]}
+  },
+  "tokens": {
+    "trusty_turret": {
+      "from": {"card": "musketeer", "variant": "hero"},
+      "rarity": "rare", "elixir": 3, "type": "building",
+      "stats": {"hitpoints": "Turret Hitpoints lost per second", "damage": "Turret Damage"},
+      "scale": {"hitpoints": 10},
+      "attack": {"targets": ["ground", "air"], "range_tiles": 4.0, "hit_speed_s": 0.5, "first_hit_s": 0.5, "splash_radius_tiles": 0.0, "sight_tiles": 4.0},
+      "extra": {"name": "Trusty Turret", "lifetime_s": 10.0, "deploy_time_s": 1.0, "footprint_tiles": [1, 1], "collision_radius_tiles": 0.5},
+      "assumed": ["hit speed 0.5 s (damage 140 / dps 280)", "hitpoints = 10 x hitpoints lost per second, so it ends exactly at its 10 s lifetime"]
+    }
+  }
+}

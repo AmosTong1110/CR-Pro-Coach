@@ -314,7 +314,7 @@ class DeckDialog(QDialog):
 
 
 class CustomDeckDialog(QDialog):
-    """Build your own deck for one side: tick exactly 8 cards, optionally one evolution."""
+    """Build your own deck for one side: tick exactly 8 cards, optionally one evolution or hero."""
 
     def __init__(self, db, deck, evo, title: str, parent=None):
         super().__init__(parent)
@@ -334,12 +334,13 @@ class CustomDeckDialog(QDialog):
         self.lw.itemChanged.connect(lambda _: self._count())
         lay.addWidget(self.lw, 1)
         self.evo_box = QComboBox()
-        self.evo_box.addItem("No evolution", None)
+        self.evo_box.addItem("No evolution / hero", None)
         for cid, c in db.cards.items():
-            if db.has_variant(cid, "evo"):
-                self.evo_box.addItem(f"Evo {c['name']}", cid)
-                if cid in evo:
-                    self.evo_box.setCurrentIndex(self.evo_box.count() - 1)
+            for var, tag, slot in (("evo", "Evo", cid), ("hero", "Hero", f"{cid}#hero")):
+                if db.variant_simulated(cid, var):
+                    self.evo_box.addItem(f"{tag} {c['name']}", slot)
+                    if slot in evo:
+                        self.evo_box.setCurrentIndex(self.evo_box.count() - 1)
         lay.addWidget(self.evo_box)
         bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.accepted.connect(self._accept)
@@ -362,8 +363,8 @@ class CustomDeckDialog(QDialog):
             QMessageBox.warning(self, "Deck", f"A deck needs exactly 8 cards (you have {len(deck)}).")
             return
         evo = self.evo_box.currentData()
-        if evo and evo not in deck:
-            QMessageBox.warning(self, "Deck", "The evolution card must be in the deck.")
+        if evo and evo.split("#")[0] not in deck:
+            QMessageBox.warning(self, "Deck", "The evolution / hero card must be in the deck.")
             return
         self.accept()
 

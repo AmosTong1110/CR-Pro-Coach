@@ -473,6 +473,79 @@ def print_attribute_rows(rows: List[Dict[str, Any]]) -> int:
     return len(diffs)
 
 
+# ---- evolution / hero pages ---------------------------------------------------------------------------
+VARIANT_LEVELS = tuple(range(11, 22))            # hero tables run to level 21 (Hero Mini P.E.K.K.A.'s level-ups)
+
+
+def variant_overrides(base: WikiPage, pg: WikiPage, entry: Dict[str, Any], extra: Dict[str, str]) -> Dict[str, Dict[str, int]]:
+    """level -> {stat: value} for the headline columns of a variant page that differ from the base card's page, plus
+    the `extra` ability columns (always kept). Only levels the page lists."""
+    out: Dict[str, Dict[str, int]] = {}
+    cols = headline_columns(pg, entry)
+    for L in VARIANT_LEVELS:
+        row = {}
+        for col, stat, token in cols:
+            if token or L not in pg.levels or col not in pg.levels[L]:
+                continue
+            bv = None if L not in base.levels else base.levels[L].get(next((c for c, st, tk in headline_columns(base, entry)
+                                                                          if st == stat and not tk), ""), None)
+            if bv is None or int(pg.levels[L][col]) != int(bv):
+                row[stat] = int(pg.levels[L][col])
+        for stat, col in extra.items():
+            if L in pg.levels and col in pg.levels[L]:
+                row[stat] = int(pg.levels[L][col])
+        if row:
+            out[str(L)] = row
+    return out
+
+
+def page_cycles(pg: WikiPage) -> Optional[int]:
+    for t in pg.tables:
+        if "Cycles" in t and wiki_number(t["Cycles"]) is not None:
+            return int(wiki_number(t["Cycles"]))
+    return None
+
+
+def verify_variants(db: CardDB, pages: List[WikiPage]) -> List[Dict[str, Any]]:
+    """One row per evolution / hero page: what the DB has for it and how the page's L11 numbers differ from the base."""
+    base = {p.card_id: p for p in pages if p.variant == "base"}
+    rows = []
+    for pg in pages:
+        if pg.variant == "base":
+            continue
+        row: Dict[str, Any] = {"card": pg.card_id, "variant": pg.variant, "cycles_wiki": page_cycles(pg)}
+        if pg.card_id not in db.cards:
+            row["status"] = "card not simulated"
+            rows.append(row)
+            continue
+        entry = db.entry(pg.card_id)
+        v = db.variant(pg.card_id, pg.variant)
+        row["in_db"] = bool(v)
+        row["cycles_db"] = (v or {}).get("cycles_required")
+        row["simulated"] = db.variant_simulated(pg.card_id, pg.variant)
+        b = base.get(pg.card_id)
+        row["delta_l11"] = (variant_overrides(b, pg, entry, {}).get("11", {}) if b else {})
+        if not v:
+            row["status"] = "missing"
+        elif pg.variant == "evo" and row["cycles_db"] != row["cycles_wiki"]:
+            row["status"] = "cycles differ"
+        else:
+            ok = all(db.stats(pg.card_id, 11, pg.variant).stats.get(k) == val for k, val in row["delta_l11"].items())
+            row["status"] = ("ok" if ok else "stats differ") + ("" if row["simulated"] else " (behaviour planned)")
+        rows.append(row)
+    return rows
+
+
+def print_variant_rows(rows: List[Dict[str, Any]]) -> None:
+    print(f"{'card':<18}{'variant':<6}{'cycles wiki/db':<16}{'simulated':<10}{'status':<30}L11 stats that differ from the base card")
+    for r in rows:
+        cyc = f"{r['cycles_wiki']}/{r.get('cycles_db')}" if r["variant"] == "evo" else "-"
+        print(f"{r['card']:<18}{r['variant']:<6}{cyc:<16}{str(r.get('simulated', '-')):<10}{r['status']:<30}{r.get('delta_l11', {})}")
+    n = len(rows)
+    print(f"[i] {n} pages: {sum(r.get('in_db', False) for r in rows)} in the DB, "
+          f"{sum(bool(r.get('simulated')) for r in rows)} simulated")
+
+
 def dump_wiki(pages: List[WikiPage], out: Path) -> None:
     data = {f"{p.card_id}#{p.variant}": {"title": p.title, "attributes": p.attrs,
                                            "levels": {str(L): v for L, v in sorted(p.levels.items())}}
@@ -489,6 +562,7 @@ def main() -> None:
     ap.add_argument("--config", type=Path, default=DEFAULT_PATH)
     ap.add_argument("--as-of", help="date the source data reflects, e.g. 2023-10-18")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--variants", action="store_true", help="with --html-dir: report evolution / hero pages vs the DB")
     ap.add_argument("--attrs", action="store_true", help="with --html-dir: compare cost / timings / range / speed instead")
     ap.add_argument("--apply-wiki", action="store_true",
                     help="with --html-dir, --as-of and --write: store the wiki's L11-L16 numbers as level_overrides")
@@ -502,6 +576,10 @@ def main() -> None:
         apply_attributes(new, pages, verify_attributes(CardDB(new), pages))
         a.config.write_text(json.dumps(new, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"[+] wrote {a.config}; verify with --html-dir (no --apply-wiki)")
+        return
+    if a.html_dir and a.variants:
+        cfg = json.loads(a.config.read_text(encoding="utf-8"))
+        print_variant_rows(verify_variants(CardDB(cfg), load_wiki_dir(a.html_dir)))
         return
     if a.html_dir and a.attrs:
         cfg = json.loads(a.config.read_text(encoding="utf-8"))

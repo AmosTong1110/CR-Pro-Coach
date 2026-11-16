@@ -19,7 +19,7 @@ from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from backend_engine.contracts import PublicDeployEvent, TilePos
 from backend_engine.simulator import geometry as G
-from backend_engine.simulator.card_db import CardDB
+from backend_engine.simulator.card_db import CardDB, split_slot
 from backend_engine.simulator.entities import AreaEffect, Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
 from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
 from backend_engine.simulator.mechanics import status as S
@@ -56,6 +56,7 @@ class SideState:
     elixir: float                  # 当前圣水存量 (浮点数累加，最大 10)
     evo_cards: Set[str] = field(default_factory=set)    # 携带了觉醒形态的卡牌集合
     evo_counter: Dict[str, int] = field(default_factory=dict) # 每张觉醒卡当前的过牌充能计数
+    hero_cards: Set[str] = field(default_factory=set)   # cards in the hero slot (always played as the hero variant)
     crowns: int = 0                # 当前获得的皇冠数 (0 ~ 3)
     leaked_elixir: float = 0.0     # 圣水满 10 后由于未及时出牌而白白浪费的漏水量
     plays: int = 0                 # 本局总出牌次数
@@ -142,12 +143,15 @@ class Match:
         if self.cfg.shuffle:
             self.rng.shuffle(deck)
         hs = self.db.rules["hand_size"]
-        evo = set(self.cfg.evo_cards[side])
-        for c in evo:
-            if c not in deck or not self.db.has_variant(c, "evo"):
-                raise ValueError(f"side {side}: '{c}' cannot be an evolution slot")
+        evo, hero = set(), set()
+        for slot in self.cfg.evo_cards[side]:                     # "knight" = evolution, "knight#hero" = hero
+            c, var = split_slot(slot)
+            if c not in deck or var not in ("evo", "hero") or not self.db.variant_simulated(c, var):
+                raise ValueError(f"side {side}: '{slot}' cannot be an evolution / hero slot "
+                                 f"(not in the deck, no such variant, or its behaviour is not simulated yet)")
+            (hero if var == "hero" else evo).add(c)
         return SideState(self.cfg.levels[side], deck[:hs], deck[hs:], start_elixir,
-                         evo_cards=evo, evo_counter={c: 0 for c in evo})
+                         evo_cards=evo, evo_counter={c: 0 for c in evo}, hero_cards=hero)
 
     def _uid(self) -> int:
         """生成全局唯一的实体自增 ID"""
@@ -239,9 +243,10 @@ class Match:
             else:
                 st.evo_counter[card_id] += 1
 
+        variant = "evo" if evolved else ("hero" if card_id in st.hero_cards else "base")
         ev = PublicDeployEvent(self.next_event_id, self.t_ms, side, card_id, cost, TilePos(x, y),
                                is_evolved=evolved, is_threat=self._is_threat(side, card["type"], y),
-                               variant="evo" if evolved else "base")
+                               variant=variant)
         self.next_event_id += 1
         self.events.append(ev)
         self.action_log.append((self.t_ms, side, card_id, x, y))
@@ -249,24 +254,30 @@ class Match:
         if card["type"] == "spell":
             self._cast_spell(side, card_id, x, y, ev.event_id)
         else:
-            self._spawn_card_units(side, card_id, x, y, ev.event_id, evolved)
+            self._spawn_card_units(side, card_id, x, y, ev.event_id, evolved, variant=variant)
         return PlayResult(True, event=ev)
 
     # -- champion abilities ----------------------------------------------------
     def check_ability(self, side: int, card_id: str) -> Optional[str]:
-        """Read-only: None if `side` can use the ability of its champion `card_id` now, else a reason code."""
+        """Read-only: None if `side` can use the ability of its champion / hero `card_id` now, else a reason code."""
         if self.result is not None:
             return "match_over"
         card = self.db.cards.get(card_id)
-        ab = next((m for m in (card or {}).get("mechanics", []) if m["kind"] == "champion_ability"), None)
-        if ab is None:
+        if card is None or not any(m["kind"] == "champion_ability" for m in
+                                   [*card["mechanics"], *(m for v in card["variants"].values() if v
+                                                          for m in v.get("mechanics", []))]):
             return "no_ability"
         u = ability_unit(self, side, card_id)
         if u is None:
             return "ability_not_ready"
-        if self.sides[side].elixir + 1e-9 < float(ab["params"].get("elixir", 1)):
+        if self.sides[side].elixir + 1e-9 < float(u.params["champion_ability"].get("elixir", 1)):
             return "not_enough_elixir"
         return None
+
+    def ability_cost(self, side: int, card_id: str) -> Optional[int]:
+        """Elixir cost of the ready ability of that card (None if no unit of it can use one)."""
+        u = ability_unit(self, side, card_id)
+        return None if u is None else int(u.params["champion_ability"].get("elixir", 1))
 
     def use_ability(self, side: int, card_id: str) -> PlayResult:
         """Spend the ability's elixir and start it on the oldest ready champion of that card. Recorded as a
@@ -295,11 +306,11 @@ class Match:
         return depth_to_river < THREAT_DEPTH or G.region(y) == enemy_home
 
     def _spawn_card_units(self, side: int, card_id: str, x: float, y: float, eid: int, evolved: bool,
-                          deploy_ms: Optional[int] = None) -> None:
+                          deploy_ms: Optional[int] = None, variant: Optional[str] = None) -> None:
         """在指定网格生成军队或建筑实体 (支持多单位阵型散开生成，如骷髅军团/三枪)；
         card_id 也可以是 token (由卡牌生成的单位)，deploy_ms 覆盖其部署时间"""
         card = self.db.entry(card_id)
-        variant = "evo" if evolved else "base"
+        variant = variant or ("evo" if evolved else "base")
         s = self.db.stats(card_id, self.sides[side].level, variant)
         atk, mov = s.attack, s.movement
         mechs = [m for m in self.db.mechanics_for(card_id, variant) if m["kind"] in REGISTRY]
@@ -452,6 +463,13 @@ class Match:
         若已有存活目标且仍处于攻击范围内，保持攻击该目标（不频繁转火）。
         否则按照优先顺序（视野内最近敌人、或全图最近建筑）进行搜索。
         """
+        if u.mstate and "taunt" in u.mstate:                 # Hero Knight's taunt: locked on him until he is gone
+            tn = self.units.get(u.mstate["taunt"])
+            if tn is None or tn.hp <= 0:
+                del u.mstate["taunt"]
+            elif self._can_target(u, tn) and (not u.is_structure or self._in_range(u, tn)):
+                u.target_uid = tn.uid
+                return tn
         cur = self.units.get(u.target_uid) if u.target_uid is not None else None
         if cur is not None and cur.hp > 0 and self._in_range(u, cur) and (not cur.status or S.targetable(cur)):
             return cur
@@ -650,6 +668,8 @@ class Match:
         ]
         spells = [{"side": s.side, "card_id": s.card_id, "x": s.x, "y": s.y}
                   for s in [*self.spells, *self.effects] if seen(s.source_event_id, s.side)]
+        ready = [c for c in dict.fromkeys(u.card_id for u in self.units.values() if u.side == side)
+                 if self.check_ability(side, c) is None]
         return {
             "side": side,
             "t_ms": self.t_ms,
@@ -664,8 +684,9 @@ class Match:
             "crowns": (st.crowns, opp.crowns),
             "units": units,
             "spells": spells,
-            "abilities": [c for c in dict.fromkeys(u.card_id for u in self.units.values() if u.side == side)
-                          if self.check_ability(side, c) is None],      # own champions that can use their ability now
+            "abilities": ready,                          # own champions / heroes that can use their ability now
+            "ability_info": {c: {"name": ability_unit(self, side, c).params["champion_ability"]["name"],
+                                 "elixir": self.ability_cost(side, c)} for c in ready},
         }
 
     # -- 快照保存、回溯与确定性哈希 (Snapshots & Determinism) -------------------

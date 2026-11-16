@@ -37,7 +37,7 @@ def foe(m, card, x, y):
 # ------------------------------------------------------------------ the action
 def test_use_ability_rules_event_and_log(db):
     m = mk(db)
-    assert m.check_ability(0, "knight") == "no_ability" and m.check_ability(0, "golden_knight") == "ability_not_ready"
+    assert m.check_ability(0, "miner") == "no_ability" and m.check_ability(0, "golden_knight") == "ability_not_ready"
     (gk,) = play(m, 0, "golden_knight", 9.5, 12.0)
     m.sides[0].elixir = 0.5
     assert m.use_ability(0, "golden_knight").reason == "not_enough_elixir"

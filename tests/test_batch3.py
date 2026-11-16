@@ -42,7 +42,7 @@ def hits(target, m, ms):
 # ------------------------------------------------------------------ data
 def test_the_plan_and_modern_cards_are_all_simulated(db):
     assert set(NEW) <= set(db.cards) and "guardienne" in db.tokens and "guardienne" not in db.cards
-    assert db.unsimulated_tags() == {}
+    assert all(k.startswith(("evo_", "hero_")) for ks in db.unsimulated_tags().values() for k in ks)   # base cards: all simulated
 
 
 @pytest.mark.parametrize("cid,level,expected", [

@@ -35,19 +35,22 @@ class ScriptedBot:
         return ActionIntent(ActionKind.DEPLOY, card, TilePos(ax, ay), self.db.cards[card]["elixir"], source="script")
 
     def _ability(self, obs: dict) -> Optional[ActionIntent]:
-        """Champion ability: Dashing Dash when 2+ enemy troops / buildings are within its reach; Explosive Escape when
-        the Miner is hurt (below 60%) with an enemy on top of it. Single use, so the bot just waits for the moment."""
+        """Champion / hero abilities (single use, so the bot waits for the moment): Dashing Dash with 2+ enemies in
+        reach, Royal Rescue / Trusty Turret with an enemy troop close, Triumphant Taunt / Snowstorm / Whirl Power
+        with 2+ enemies around, Explosive Escape / Breakfast Boost when the unit is hurt with an enemy on top."""
+        info = obs.get("ability_info", {})
         for c in obs.get("abilities", ()):
-            ab = next((m["params"] for m in self._card(c)["mechanics"] if m["kind"] == "champion_ability"), {})
-            name, cost = ab.get("name"), int(ab.get("elixir", 1))
+            name, cost = info[c]["name"], int(info[c]["elixir"])
+            reach = {"dash": 5.0, "royal_rescue": 4.0, "trusty_turret": 6.0, "triumphant_taunt": 7.5,
+                     "snowstorm": 4.0, "whirl_power": 2.5}.get(name, 2.0)
+            need = {"dash": 2, "triumphant_taunt": 2, "snowstorm": 2, "whirl_power": 2}.get(name, 1)
             for u in obs["units"]:
                 if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
                     continue
-                reach = {"dash": 5.0, "royal_rescue": 4.0}.get(name, 2.0)
                 near = [e for e in obs["units"] if e["side"] != self.side and e["kind"] != "tower"
                         and G.dist(e["x"], e["y"], u["x"], u["y"]) <= reach]
-                if ((name == "dash" and len(near) >= 2) or (name == "royal_rescue" and near)
-                        or (name == "explosive_escape" and near and u["hp"] < 0.6 * u["max_hp"])):
+                hurt = {"explosive_escape": 0.6, "breakfast_boost": 0.7}.get(name)
+                if len(near) >= need and (hurt is None or u["hp"] < hurt * u["max_hp"]):
                     return ActionIntent(ActionKind.ABILITY, c, None, cost, source="script")
         return None
 
