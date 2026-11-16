@@ -65,10 +65,12 @@ class DeckView(QWidget):
                 continue
             c = cards[i]
             cost = cost_of(c)
-            evo_tag = f"<span style='color:{C['violet']}'>Evo </span>" if c in evo else ""
+            hero = f"{c}#hero" in evo
+            evo_tag = (f"<span style='color:{C['violet']}'>Hero </span>" if hero else
+                       f"<span style='color:{C['violet']}'>Evo </span>" if c in evo else "")
             cost_tag = f"<span style='color:{C['elixir']}; font-weight:700'>{cost}</span>&nbsp;" if cost else ""
             lab.setText(f"{cost_tag}{evo_tag}{name_of(c)}")
-            style = CHIP_EVO_STYLE if c in evo else CHIP_STYLE
+            style = CHIP_EVO_STYLE if (c in evo or hero) else CHIP_STYLE
             if lab.styleSheet() != style:
                 lab.setStyleSheet(style)
             lab.setVisible(True)

@@ -190,6 +190,103 @@ def tornado_pull(db: CardDB) -> List[str]:
     return _sampled(m, 15_000)
 
 
+B2_A = ("dark_prince", "miner", "tesla", "firecracker", "goblin_demolisher", "mighty_miner", "golden_knight",
+        "royal_delivery")
+B2_B = ("earthquake", "lightning", "vines", "knight", "archers", "musketeer", "valkyrie", "hog_rider")
+
+
+def dark_prince_charge(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_B), shuffle=False), db)
+    _play(m, 1, "knight", 3.5, 21.0)
+    _play(m, 1, "archers", 3.5, 23.5)
+    _play(m, 0, "dark_prince", 3.5, 10.0)
+    return _sampled(m, 14_000)
+
+
+def spells_batch2(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_B, B2_A), shuffle=False), db)      # side 0 casts, side 1 fields the targets
+    for card, x, y in (("goblin_demolisher", 9.5, 21.0), ("dark_prince", 8.5, 22.5), ("golden_knight", 11.0, 22.5),
+                       ("tesla", 9.5, 24.0), ("mighty_miner", 10.5, 20.5)):
+        _play(m, 1, card, x, y)
+    for t, card in ((1000, "lightning"), (3500, "vines"), (7000, "earthquake")):
+        m.run_until(t)
+        _play(m, 0, card, 9.5, 22.0)
+    return _sampled(m, 14_000)
+
+
+def tesla_demolisher_miner(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_A), shuffle=False), db)
+    _play(m, 0, "tesla", 9.5, 12.0)
+    _play(m, 1, "goblin_demolisher", 3.5, 22.0)
+    _play(m, 0, "miner", 11.5, 27.5)
+    m.run_until(8000)
+    _play(m, 1, "dark_prince", 9.5, 22.0)
+    return _sampled(m, 24_000)
+
+
+def delivery_ramp_firecracker(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_A), shuffle=False), db)
+    _play(m, 1, "golden_knight", 9.5, 21.0)
+    _play(m, 0, "royal_delivery", 9.5, 21.0)
+    _play(m, 0, "firecracker", 9.5, 10.0)
+    _play(m, 0, "mighty_miner", 3.5, 12.0)
+    return _sampled(m, 16_000)
+
+
+CHAMPIONS = ("golden_knight", "mighty_miner", "hog_rider", "knight", "musketeer", "fireball", "the_log", "skeletons")
+
+
+def champion_abilities(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_B), shuffle=False), db)
+    for card, x, y in (("knight", 9.5, 21.0), ("valkyrie", 11.0, 22.0), ("musketeer", 7.5, 22.0)):
+        _play(m, 1, card, x, y)
+    _play(m, 0, "golden_knight", 9.5, 14.0)
+    _play(m, 0, "mighty_miner", 4.5, 12.0)
+    m.run_until(3000)
+    m.sides[0].elixir = 6.0
+    m.use_ability(0, "golden_knight")
+    m.run_until(5000)
+    m.use_ability(0, "mighty_miner")
+    return _sampled(m, 14_000)
+
+
+MODERN = ("rune_giant", "little_prince", "bats", "minion_giant", "poison", "knight", "musketeer", "valkyrie")
+
+
+def modern_meta(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((MODERN, MODERN), shuffle=False), db)
+    for card, x, y in (("minion_giant", 3.5, 22.0), ("valkyrie", 9.5, 21.0), ("bats", 11.0, 22.0)):
+        _play(m, 1, card, x, y)
+    _play(m, 0, "rune_giant", 9.5, 12.0)
+    _play(m, 0, "knight", 8.0, 12.0)
+    _play(m, 0, "little_prince", 11.0, 10.0)
+    m.run_until(3000)
+    _play(m, 0, "poison", 9.5, 22.0)
+    m.run_until(5000)
+    m.sides[0].elixir = 6.0
+    m.use_ability(0, "little_prince")
+    return _sampled(m, 16_000)
+
+
+HERO_DECK = ("knight", "mini_pekka", "ice_golem", "musketeer", "valkyrie", "skeletons", "cannon", "fireball")
+HERO_SLOTS = ("knight#hero", "mini_pekka#hero", "ice_golem#hero", "musketeer#hero", "valkyrie#hero")
+
+
+def hero_abilities(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((HERO_DECK, HERO_DECK), shuffle=False, evo_cards=(HERO_SLOTS, ())), db)
+    for card, x, y in (("valkyrie", 9.5, 21.0), ("musketeer", 11.0, 22.0), ("knight", 8.0, 22.0)):
+        _play(m, 1, card, x, y)
+    for card, x, y in (("knight", 9.5, 12.0), ("ice_golem", 8.0, 13.0), ("valkyrie", 11.0, 13.0), ("musketeer", 9.5, 9.0),
+                       ("mini_pekka", 12.5, 11.0)):
+        _play(m, 0, card, x, y)
+    m.run_until(3000)
+    for i, card in enumerate(("knight", "mini_pekka", "ice_golem", "musketeer", "valkyrie")):
+        m.sides[0].elixir = 6.0
+        m.use_ability(0, card)
+        m.run_until(3000 + (i + 1) * 1500)
+    return _sampled(m, 16_000)
+
+
 def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out: Dict[str, Callable[[], List[str]]] = {}
     for seed in (1, 2, 3, 4):
@@ -198,8 +295,12 @@ def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out["bots_evo_knight"] = lambda: bot_match(db, 9, 11, (("knight",), ("knight",)))
     for fn in (log_vs_swarm, fireball_king, cannon_pulls_hog, hog_river_jump, crowd, evo_knight_tank,
                zap_stun, ice_spirit_freeze, electro_chain, ice_golem_burst, valkyrie_swarm, skeleton_army_fireball,
-               barrel_spawn, ghost_stealth, tornado_pull):
+               barrel_spawn, ghost_stealth, tornado_pull, dark_prince_charge, spells_batch2, tesla_demolisher_miner,
+               delivery_ramp_firecracker, champion_abilities, modern_meta, hero_abilities):
         out[fn.__name__] = lambda fn=fn: fn(db)
     out["bots_hog26_s5"] = lambda: bot_match(db, 5, 11, deck=HOG_26)
     out["bots_stealth_s6"] = lambda: bot_match(db, 6, 11, deck=STEALTH)
+    out["bots_heroes_s9"] = lambda: bot_match(db, 9, 11, (HERO_SLOTS, HERO_SLOTS), deck=HERO_DECK)
+    out["bots_modern_s8"] = lambda: bot_match(db, 8, 11, deck=MODERN)
+    out["bots_champions_s7"] = lambda: bot_match(db, 7, 11, deck=CHAMPIONS)
     return out

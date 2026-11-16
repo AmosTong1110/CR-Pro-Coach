@@ -25,7 +25,13 @@ DESCRIPTIVE = frozenset({"building_targeting", "swarm", "ground_only", "reduced_
                          "pulls_building_targeters", "air_unit", "knockback", "apply_status",
                          "spawn_on_end"})
 # Known game mechanics that are not simulated yet (listed so data can mention them).
-PLANNED: frozenset = frozenset()
+PLANNED: frozenset = frozenset({
+    # evolutions whose special behaviour is not simulated yet (data: cycles + stats are in the card)
+    "evo_power_shot", "evo_heal_pulse", "evo_barrage", "evo_poison_darts", "evo_sparks", "evo_ice_blast",
+    "evo_sniper", "evo_souldiers", "evo_general_gerry", "evo_multiply", "evo_pulse", "evo_tornado", "evo_double_zap",
+    # heroes whose ability is not simulated yet
+    "hero_rowdy_reroll", "hero_dismount",
+})
 
 
 class Mechanic:

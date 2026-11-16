@@ -33,8 +33,12 @@ def test_tokens_are_separate_from_cards(db):
 
 
 def test_token_scales_with_the_parent_cards_rarity(db):
-    assert db.stats("barbarian", 11).stats == {"hitpoints": 419, "damage": 120}      # epic L11, not common L11
-    assert db.stats("barbarian", 16).stats == {"hitpoints": 670, "damage": 192}
+    # Wiki values (2026-11-16): the spawned Barbarian is at the same tournament-standard level as the barrel.
+    assert db.stats("barbarian", 11).stats == {"hitpoints": 670, "damage": 191}
+    assert db.stats("barbarian", 16).stats == {"hitpoints": 1079, "damage": 308}
+    raw = copy.deepcopy(db.raw)                      # without the wiki overrides the parent's rarity still decides
+    raw["tokens"]["barbarian"].pop("level_overrides")
+    assert CardDB(raw).stats("barbarian", 11).hitpoints == 419
 
 
 def test_card_naming_an_unknown_token_is_rejected(db):
@@ -51,9 +55,9 @@ def test_barrel_rolls_hits_and_spawns_a_barbarian_where_it_stops(db):
     play(m, 0, "barbarian_barrel", 9.5, 8.5)
     assert not [u for u in m.units.values() if u.card_id == "barbarian"]       # nothing yet: it is still rolling
     run(m, 1500)
-    assert BIG - k.hp == db.stats("barbarian_barrel", 11).stats["damage"] == 241
+    assert BIG - k.hp == db.stats("barbarian_barrel", 11).stats["damage"] == 215
     (b,) = [u for u in m.units.values() if u.card_id == "barbarian"]
-    assert b.side == 0 and b.hp <= b.max_hp == 419 and b.kind == "troop"
+    assert b.side == 0 and b.hp <= b.max_hp == 670 and b.kind == "troop"
     assert b.x == pytest.approx(9.5) and b.y == pytest.approx(13.0, abs=0.6)    # 8.5 + 4.5, then it starts walking
     assert not m.rolling
 
@@ -158,7 +162,7 @@ def test_tornado_hits_towers_for_less_and_never_moves_them(db):
     play(m, 0, "tornado", 3.5, 22.0)
     run(m, 1100)
     st = db.stats("tornado", 11).stats
-    assert (tw.x, tw.y) == (x0, y0) and hp0 - tw.hp == 2 * st["crown_tower_damage"] == 28
+    assert (tw.x, tw.y) == (x0, y0) and hp0 - tw.hp == 2 * st["crown_tower_damage"] == 58
 
 
 def test_tornado_effect_is_deterministic_across_snapshot(db):
@@ -178,9 +182,9 @@ def test_tornado_effect_is_deterministic_across_snapshot(db):
 
 # ------------------------------------------------------------------ data of the three cards
 @pytest.mark.parametrize("cid,expected", [
-    ("barbarian_barrel", {"damage": 241}),
+    ("barbarian_barrel", {"damage": 215}),
     ("royal_ghost", {"hitpoints": 1210, "damage": 261}),
-    ("tornado", {"damage": 84, "crown_tower_damage": 14}),
+    ("tornado", {"damage": 84, "crown_tower_damage": 29}),
 ])
 def test_values_at_level_11(db, cid, expected):
     assert db.stats(cid, 11).stats == expected

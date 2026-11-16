@@ -1,0 +1,56 @@
+{
+  "_doc": "Batch-3 cards (the five modern meta cards), built from the saved wiki pages by tools/add_wiki_cards.py (see batch2.json for the format). Rune Giant's enchantment, Little Prince's ramp + Royal Rescue and Poison are simulated; fields the wiki does not list are in each card's `assumed`.",
+  "bats": {
+    "wiki": "Bats", "type": "troop", "layer": "air", "internal_name": "Bats",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [],
+    "extra": {"mass": 1, "collision_radius_tiles": 0.4},
+    "assumed": ["mass", "collision_radius_tiles"]
+  },
+  "minion_giant": {
+    "wiki": "Minion Giant", "type": "troop", "layer": "air", "internal_name": "MinionGiant",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["buildings"], "first_hit_s": 0.5},
+    "mechanics": [],
+    "extra": {"mass": 7, "collision_radius_tiles": 0.8},
+    "assumed": ["flies: the page text says 'ranged air troop' but its table says Transport Ground (the page is under construction)", "first_hit_s (page says Unknown)", "no projectile travel time", "mass", "collision_radius_tiles", "internal_name"]
+  },
+  "rune_giant": {
+    "wiki": "Rune Giant", "type": "troop", "layer": "ground", "internal_name": "RuneGiant",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "bonus_damage": "Bonus Damage"},
+    "attack": {"targets": ["buildings"]},
+    "mechanics": [{"kind": "enchant", "params": {"range_tiles": 8.5, "limit": 2, "every": 3, "linger_ms": 5000, "bonus_stat": "bonus_damage"}}],
+    "extra": {"mass": 8, "collision_radius_tiles": 0.8},
+    "assumed": ["enchantments are handed out as soon as a slot is free (no throw delay)", "the bonus lands on the target at once, also for projectile attackers", "mass", "collision_radius_tiles", "internal_name"]
+  },
+  "poison": {
+    "wiki": "Poison", "type": "spell", "internal_name": "Poison",
+    "stats": {"damage": "Area Damage", "building_damage": "Area Damage", "crown_tower_damage": "Crown Tower Damage"},
+    "attr_override": {"elixir": 4, "spell.radius_tiles": 3.5},
+    "spell": {"duration_ms": 8000, "hit_every_ms": 1000, "slow_pct": 15, "hits_air": true},
+    "mechanics": [{"kind": "dot_spell", "params": {}}],
+    "assumed": ["radius 3.5 (the saved page has no attribute table)", "8 pulses at 1 s .. 8 s", "buildings take the troop damage"]
+  },
+  "little_prince": {
+    "wiki": "Little Prince", "type": "troop", "layer": "ground", "internal_name": "LittlePrince",
+    "stats": {"hitpoints": "Little Prince Hitpoints", "damage": "Little Prince Damage", "rescue_damage": "Royal Rescue Damage"},
+    "attack": {"targets": ["ground", "air"]},
+    "attr_override": {"attack.hit_speed_s": 1.2},
+    "mechanics": [
+      {"kind": "ramp_hit_speed", "params": {"hit_speeds_ms": [1200, 600, 400], "hits_per_stage": 2}},
+      {"kind": "champion_ability", "params": {"name": "royal_rescue", "elixir": 3, "uses": 1, "damage_stat": "rescue_damage", "token": "guardienne", "delay_ms": 1000, "dash_tiles": 4.0, "radius_tiles": 2.0, "knockback_tiles": 2.0, "deploy_ms": 300}}],
+    "extra": {"mass": 3, "collision_radius_tiles": 0.5},
+    "assumed": ["the page gives no stage lengths for the 1.2 / 0.6 / 0.4 s hit speeds: stage up every 2 hits on the same target", "Guardienne lands 4 tiles ahead (dash range), damages ground troops within 2 tiles and knocks them up to 2 tiles", "mass", "collision_radius_tiles"]
+  },
+  "tokens": {
+    "guardienne": {
+      "wiki": "Little Prince", "table": 2, "rarity": "champion", "elixir": 3,
+      "stats": {"hitpoints": "Guardienne Hitpoints", "damage": "Guardienne Damage"},
+      "attack": {"targets": ["ground"]},
+      "mechanics": [],
+      "extra": {"mass": 6, "collision_radius_tiles": 0.5, "name": "Guardienne"},
+      "assumed": ["mass", "collision_radius_tiles"]
+    }
+  }
+}

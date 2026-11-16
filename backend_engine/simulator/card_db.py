@@ -235,6 +235,8 @@ class CardDB:
         for k, pct in ((v or {}).get("stat_mods") or {}).items():
             if k in stats:
                 stats[k] = int(math.floor(stats[k] * pct / 100 + 1e-9))
+        for k, val in (((v or {}).get("level_overrides") or {}).get(str(level)) or {}).items():
+            stats[k] = int(val)               # exact per-level numbers of the variant (wiki), win over stat_mods
         return ResolvedCardStats(
             card_id=card_id,
             level=level,
@@ -273,8 +275,19 @@ class CardDB:
             raise KeyError(f"'{card_id}' has no evolution")
         return int(v["cycles_required"])
 
+    def variant_simulated(self, card_id: str, variant: str) -> bool:
+        """The card has this variant and every mechanic of it is simulated (planned-only variants can't be picked)."""
+        v = self.variant(card_id, variant) if card_id in self.cards else None
+        if not v:
+            return False
+        from backend_engine.simulator.mechanics import PLANNED
+        return not any(m["kind"] in PLANNED for m in v.get("mechanics", []))
+
     def evo_capable(self) -> List[str]:
-        return [cid for cid in self.cards if self.has_variant(cid, "evo")]
+        return [cid for cid in self.cards if self.variant_simulated(cid, "evo")]
+
+    def hero_capable(self) -> List[str]:
+        return [cid for cid in self.cards if self.variant_simulated(cid, "hero")]
 
     def mechanics_for(self, card_id: str, variant: str = "base") -> List[Dict[str, Any]]:
         """Explicit mechanics (base + variant) plus ones derived from stats, deduplicated by kind:
@@ -336,3 +349,9 @@ class CardDB:
     def unverified(self) -> List[str]:
         """返回尚未进行官方完全核验的卡牌列表"""
         return [cid for cid, c in self.cards.items() if not c.get("verified", False)]
+
+
+def split_slot(slot: str) -> tuple:
+    """Evolution / hero slot entry -> (card id, variant): "knight" = evolution, "knight#hero" = hero (CardRef form)."""
+    cid, _, var = slot.partition("#")
+    return cid, (var or "evo")

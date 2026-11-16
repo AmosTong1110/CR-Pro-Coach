@@ -34,6 +34,26 @@ class ScriptedBot:
         ax, ay = G.to_side(self.side, x, y)
         return ActionIntent(ActionKind.DEPLOY, card, TilePos(ax, ay), self.db.cards[card]["elixir"], source="script")
 
+    def _ability(self, obs: dict) -> Optional[ActionIntent]:
+        """Champion / hero abilities (single use, so the bot waits for the moment): Dashing Dash with 2+ enemies in
+        reach, Royal Rescue / Trusty Turret with an enemy troop close, Triumphant Taunt / Snowstorm / Whirl Power
+        with 2+ enemies around, Explosive Escape / Breakfast Boost when the unit is hurt with an enemy on top."""
+        info = obs.get("ability_info", {})
+        for c in obs.get("abilities", ()):
+            name, cost = info[c]["name"], int(info[c]["elixir"])
+            reach = {"dash": 5.0, "royal_rescue": 4.0, "trusty_turret": 6.0, "triumphant_taunt": 7.5,
+                     "snowstorm": 4.0, "whirl_power": 2.5}.get(name, 2.0)
+            need = {"dash": 2, "triumphant_taunt": 2, "snowstorm": 2, "whirl_power": 2}.get(name, 1)
+            for u in obs["units"]:
+                if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
+                    continue
+                near = [e for e in obs["units"] if e["side"] != self.side and e["kind"] != "tower"
+                        and G.dist(e["x"], e["y"], u["x"], u["y"]) <= reach]
+                hurt = {"explosive_escape": 0.6, "breakfast_boost": 0.7}.get(name)
+                if len(near) >= need and (hurt is None or u["hp"] < hurt * u["max_hp"]):
+                    return ActionIntent(ActionKind.ABILITY, c, None, cost, source="script")
+        return None
+
     def _card(self, c: str) -> dict:
         return self.db.cards[c]
 
@@ -48,6 +68,9 @@ class ScriptedBot:
         优先级 4: 圣水满费防漏水沉底过牌
         """
         elixir, hand = obs["elixir"], obs["hand"]
+        ab = self._ability(obs)
+        if ab:
+            return [ab]
         affordable = [c for c in hand if self._card(c)["elixir"] <= elixir + 1e-9]
         if not affordable:
             return []

@@ -181,11 +181,36 @@
         ],
         "range_tiles": 1.2,
         "hit_speed_s": 1.2,
-        "first_hit_s": 0.7,
+        "first_hit_s": 0.5,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1766,
+          "damage": 202
+        },
+        "12": {
+          "hitpoints": 1943,
+          "damage": 222
+        },
+        "13": {
+          "hitpoints": 2137,
+          "damage": 244
+        },
+        "14": {
+          "hitpoints": 2351,
+          "damage": 269
+        },
+        "15": {
+          "hitpoints": 2586,
+          "damage": 296
+        },
+        "16": {
+          "hitpoints": 2844,
+          "damage": 325
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -196,12 +221,11 @@
         "hitpoints": 690,
         "damage": 79
       },
-      "data_source": "royaleapi-cr-api-data:troop/Knight",
+      "data_source": "royaleapi-cr-api-data:troop/Knight + wiki-fandom-html:Knight",
       "data_as_of": "2023-10-18",
       "mass": 6,
       "variants": {
         "evo": {
-          "cycles_required": 2,
           "mechanics": [
             {
               "kind": "damage_reduction_while_not_attacking",
@@ -211,10 +235,57 @@
             }
           ],
           "stat_mods": {},
-          "sc_key": "Knight_EV1"
+          "level_overrides": {},
+          "cycles_required": 2,
+          "sc_key": "Knight_EV1",
+          "data_source": "wiki-fandom-html:Evolved Knight",
+          "wiki_as_of": "2026-11-16"
         },
-        "hero": null
-      }
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "triumphant_taunt",
+                "elixir": 2,
+                "uses": 1,
+                "delay_ms": 1000,
+                "taunt_tiles": 7.5,
+                "duration_ms": 5000,
+                "shield_stat": "shield_hitpoints"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "shield_hitpoints": 512
+            },
+            "12": {
+              "shield_hitpoints": 563
+            },
+            "13": {
+              "shield_hitpoints": 620
+            },
+            "14": {
+              "shield_hitpoints": 681
+            },
+            "15": {
+              "shield_hitpoints": 750
+            },
+            "16": {
+              "shield_hitpoints": 825
+            }
+          },
+          "data_source": "wiki-fandom-html:Knight_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "enemy towers are taunted too",
+            "enemies keep the lock until he is defeated (the taunt itself lasts 5 s)"
+          ]
+        }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "hog_rider": {
       "name": "Hog Rider",
@@ -244,11 +315,36 @@
         ],
         "range_tiles": 0.8,
         "hit_speed_s": 1.6,
-        "first_hit_s": 1.0,
+        "first_hit_s": 0.6,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 9.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1697,
+          "damage": 317
+        },
+        "12": {
+          "hitpoints": 1867,
+          "damage": 349
+        },
+        "13": {
+          "hitpoints": 2053,
+          "damage": 384
+        },
+        "14": {
+          "hitpoints": 2259,
+          "damage": 422
+        },
+        "15": {
+          "hitpoints": 2485,
+          "damage": 464
+        },
+        "16": {
+          "hitpoints": 2733,
+          "damage": 511
+        }
+      },
       "mechanics": [
         {
           "kind": "building_targeting",
@@ -268,13 +364,14 @@
         "hitpoints": 800,
         "damage": 150
       },
-      "data_source": "royaleapi-cr-api-data:troop/HogRider",
+      "data_source": "royaleapi-cr-api-data:troop/HogRider + wiki-fandom-html:Hog Rider",
       "data_as_of": "2023-10-18",
       "mass": 4,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "musketeer": {
       "name": "Musketeer",
@@ -306,12 +403,37 @@
         ],
         "range_tiles": 6.0,
         "hit_speed_s": 1.0,
-        "first_hit_s": 0.2,
+        "first_hit_s": 0.7,
         "splash_radius_tiles": 0.0,
         "projectile_speed_tiles_s": 16.666666666666668,
         "sight_tiles": 6.0
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 721,
+          "damage": 217
+        },
+        "12": {
+          "hitpoints": 793,
+          "damage": 239
+        },
+        "13": {
+          "hitpoints": 872,
+          "damage": 263
+        },
+        "14": {
+          "hitpoints": 960,
+          "damage": 289
+        },
+        "15": {
+          "hitpoints": 1056,
+          "damage": 318
+        },
+        "16": {
+          "hitpoints": 1161,
+          "damage": 349
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -322,13 +444,71 @@
         "hitpoints": 340,
         "damage": 103
       },
-      "data_source": "royaleapi-cr-api-data:troop/Musketeer",
+      "data_source": "royaleapi-cr-api-data:troop/Musketeer + wiki-fandom-html:Musketeer",
       "data_as_of": "2023-10-18",
       "mass": 5,
       "variants": {
-        "evo": null,
-        "hero": null
-      }
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_sniper",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Musketeer",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "trusty_turret",
+                "elixir": 3,
+                "uses": 1,
+                "delay_ms": 1000,
+                "forward_tiles": 3.0,
+                "spawn_radius_tiles": 1.5,
+                "spawn_damage_stat": "turret_spawn_damage",
+                "token": "trusty_turret",
+                "deploy_ms": 1000
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "turret_spawn_damage": 204
+            },
+            "12": {
+              "turret_spawn_damage": 224
+            },
+            "13": {
+              "turret_spawn_damage": 247
+            },
+            "14": {
+              "turret_spawn_damage": 272
+            },
+            "15": {
+              "turret_spawn_damage": 299
+            },
+            "16": {
+              "turret_spawn_damage": 329
+            }
+          },
+          "data_source": "wiki-fandom-html:Heroic Musketeer",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "spawn damage radius 1.5",
+            "turret hitpoints = 10 x its hitpoints-lost-per-second (the page's 'Turret Hitpoints' at L11 equals the Musketeer's own hp, an apparent copy error)",
+            "turret hit speed 0.5 s from damage / dps"
+          ]
+        }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "cannon": {
       "name": "Cannon",
@@ -358,13 +538,38 @@
           "ground"
         ],
         "range_tiles": 5.5,
-        "hit_speed_s": 0.9,
-        "first_hit_s": 0.0,
+        "hit_speed_s": 1.0,
+        "first_hit_s": 1.0,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 16.666666666666668
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 824,
+          "damage": 212
+        },
+        "12": {
+          "hitpoints": 906,
+          "damage": 233
+        },
+        "13": {
+          "hitpoints": 997,
+          "damage": 257
+        },
+        "14": {
+          "hitpoints": 1097,
+          "damage": 282
+        },
+        "15": {
+          "hitpoints": 1206,
+          "damage": 310
+        },
+        "16": {
+          "hitpoints": 1327,
+          "damage": 341
+        }
+      },
       "mechanics": [
         {
           "kind": "decay",
@@ -384,13 +589,26 @@
         "hitpoints": 322,
         "damage": 83
       },
-      "data_source": "royaleapi-cr-api-data:building/Cannon",
+      "data_source": "royaleapi-cr-api-data:building/Cannon + wiki-fandom-html:Cannon",
       "data_as_of": "2023-10-18",
       "mass": 0,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_barrage",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Cannon",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "fireball": {
       "name": "Fireball",
@@ -413,7 +631,32 @@
         "travel_speed_tiles_s": 10.0,
         "knockback": true
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 688,
+          "crown_tower_damage": 159
+        },
+        "12": {
+          "damage": 757,
+          "crown_tower_damage": 175
+        },
+        "13": {
+          "damage": 832,
+          "crown_tower_damage": 192
+        },
+        "14": {
+          "damage": 916,
+          "crown_tower_damage": 210
+        },
+        "15": {
+          "damage": 1007,
+          "crown_tower_damage": 233
+        },
+        "16": {
+          "damage": 1108,
+          "crown_tower_damage": 256
+        }
+      },
       "mechanics": [
         {
           "kind": "knockback",
@@ -435,12 +678,13 @@
       "base_stats": {
         "damage": 325
       },
-      "data_source": "royaleapi-cr-api-data:projectile/FireballSpell",
+      "data_source": "royaleapi-cr-api-data:projectile/FireballSpell + wiki-fandom-html:Fireball",
       "data_as_of": "2023-10-18",
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "the_log": {
       "name": "The Log",
@@ -467,7 +711,32 @@
           "ground"
         ]
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 268,
+          "crown_tower_damage": 35
+        },
+        "12": {
+          "damage": 294,
+          "crown_tower_damage": 39
+        },
+        "13": {
+          "damage": 322,
+          "crown_tower_damage": 42
+        },
+        "14": {
+          "damage": 354,
+          "crown_tower_damage": 47
+        },
+        "15": {
+          "damage": 390,
+          "crown_tower_damage": 51
+        },
+        "16": {
+          "damage": 428,
+          "crown_tower_damage": 56
+        }
+      },
       "mechanics": [
         {
           "kind": "rolling_spell",
@@ -497,12 +766,13 @@
       "base_stats": {
         "damage": 240
       },
-      "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling",
+      "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling + wiki-fandom-html:The Log",
       "data_as_of": "2023-10-18",
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "skeletons": {
       "name": "Skeletons",
@@ -532,12 +802,37 @@
           "ground"
         ],
         "range_tiles": 0.5,
-        "hit_speed_s": 1.0,
+        "hit_speed_s": 1.1,
         "first_hit_s": 0.5,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
       "mechanics": [
         {
           "kind": "swarm",
@@ -553,13 +848,26 @@
         "hitpoints": 32,
         "damage": 32
       },
-      "data_source": "royaleapi-cr-api-data:troop/Skeletons",
+      "data_source": "royaleapi-cr-api-data:troop/Skeletons + wiki-fandom-html:Skeletons",
       "data_as_of": "2023-10-18",
       "mass": 1,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_multiply",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Skeletons",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "archers": {
       "name": "Archers",
@@ -591,12 +899,37 @@
         ],
         "range_tiles": 5.0,
         "hit_speed_s": 0.9,
-        "first_hit_s": 0.4,
+        "first_hit_s": 0.5,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 10.0
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 304,
+          "damage": 112
+        },
+        "12": {
+          "hitpoints": 334,
+          "damage": 123
+        },
+        "13": {
+          "hitpoints": 368,
+          "damage": 136
+        },
+        "14": {
+          "hitpoints": 405,
+          "damage": 149
+        },
+        "15": {
+          "hitpoints": 445,
+          "damage": 164
+        },
+        "16": {
+          "hitpoints": 490,
+          "damage": 180
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -607,13 +940,26 @@
         "hitpoints": 119,
         "damage": 42
       },
-      "data_source": "royaleapi-cr-api-data:troop/Archer",
+      "data_source": "royaleapi-cr-api-data:troop/Archer + wiki-fandom-html:Archers",
       "data_as_of": "2023-10-18",
       "mass": 3,
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_power_shot",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Archers",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "minions": {
       "name": "Minions",
@@ -642,14 +988,39 @@
           "ground",
           "air"
         ],
-        "range_tiles": 1.6,
-        "hit_speed_s": 1.0,
+        "range_tiles": 2.5,
+        "hit_speed_s": 1.2,
         "first_hit_s": 0.5,
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 16.666666666666668
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 230,
+          "damage": 107
+        },
+        "12": {
+          "hitpoints": 253,
+          "damage": 118
+        },
+        "13": {
+          "hitpoints": 278,
+          "damage": 129
+        },
+        "14": {
+          "hitpoints": 306,
+          "damage": 142
+        },
+        "15": {
+          "hitpoints": 337,
+          "damage": 157
+        },
+        "16": {
+          "hitpoints": 370,
+          "damage": 172
+        }
+      },
       "mechanics": [
         {
           "kind": "air_unit",
@@ -665,13 +1036,14 @@
         "hitpoints": 90,
         "damage": 46
       },
-      "data_source": "royaleapi-cr-api-data:troop/Minions",
+      "data_source": "royaleapi-cr-api-data:troop/Minions + wiki-fandom-html:Minions",
       "data_as_of": "2023-10-18",
       "mass": 2,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "zap": {
       "name": "Zap",
@@ -689,7 +1061,32 @@
       "rarity": "common",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 192,
+          "crown_tower_damage": 48
+        },
+        "12": {
+          "damage": 210,
+          "crown_tower_damage": 53
+        },
+        "13": {
+          "damage": 232,
+          "crown_tower_damage": 58
+        },
+        "14": {
+          "damage": 256,
+          "crown_tower_damage": 64
+        },
+        "15": {
+          "damage": 281,
+          "crown_tower_damage": 71
+        },
+        "16": {
+          "damage": 309,
+          "crown_tower_damage": 78
+        }
+      },
       "mechanics": [
         {
           "kind": "apply_status",
@@ -708,7 +1105,39 @@
         "name": "Zap"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_double_zap",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "crown_tower_damage": 58
+            },
+            "12": {
+              "damage": 211,
+              "crown_tower_damage": 64
+            },
+            "13": {
+              "crown_tower_damage": 70
+            },
+            "14": {
+              "crown_tower_damage": 77
+            },
+            "15": {
+              "crown_tower_damage": 85
+            },
+            "16": {
+              "crown_tower_damage": 93
+            }
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Zap",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "crown_tower_damage_pct": -70,
@@ -718,8 +1147,9 @@
       "base_stats": {
         "damage": 75
       },
-      "data_source": "royaleapi-cr-api-data:spell/Zap",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:spell/Zap + wiki-fandom-html:Zap",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "ice_spirit": {
       "name": "Ice Spirit",
@@ -738,7 +1168,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 110
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 121
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 133
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 146
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 161
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 177
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -755,7 +1210,19 @@
         "name": "IceSpirits"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_ice_blast",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Ice Spirit",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -781,8 +1248,9 @@
         "hitpoints": 90,
         "damage": 43
       },
-      "data_source": "royaleapi-cr-api-data:troop/IceSpirits",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/IceSpirits + wiki-fandom-html:Ice Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "fire_spirit": {
       "name": "Fire Spirit",
@@ -800,7 +1268,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 207
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 228
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 250
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 276
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 303
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 333
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -826,7 +1319,7 @@
         ],
         "hit_speed_s": 0.3,
         "first_hit_s": 0.1,
-        "range_tiles": 2.0,
+        "range_tiles": 2.5,
         "sight_tiles": 5.5,
         "splash_radius_tiles": 2.3
       },
@@ -838,8 +1331,9 @@
         "hitpoints": 90,
         "damage": 81
       },
-      "data_source": "royaleapi-cr-api-data:troop/FireSpirits",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/FireSpirits + wiki-fandom-html:Fire Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "electro_spirit": {
       "name": "Electro Spirit",
@@ -857,7 +1351,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 99
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 109
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 120
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 132
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 145
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 159
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -905,8 +1424,9 @@
         "hitpoints": 90,
         "damage": 39
       },
-      "data_source": "royaleapi-cr-api-data:troop/ElectroSpirit",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/ElectroSpirit + wiki-fandom-html:Electro Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "ice_golem": {
       "name": "Ice Golem",
@@ -924,7 +1444,38 @@
       "rarity": "rare",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1315,
+          "damage": 92,
+          "death_damage": 92
+        },
+        "12": {
+          "hitpoints": 1447,
+          "damage": 102,
+          "death_damage": 102
+        },
+        "13": {
+          "hitpoints": 1591,
+          "damage": 112,
+          "death_damage": 112
+        },
+        "14": {
+          "hitpoints": 1750,
+          "damage": 123,
+          "death_damage": 123
+        },
+        "15": {
+          "hitpoints": 1925,
+          "damage": 135,
+          "death_damage": 135
+        },
+        "16": {
+          "hitpoints": 2118,
+          "damage": 149,
+          "death_damage": 149
+        }
+      },
       "mechanics": [
         {
           "kind": "death_damage",
@@ -944,7 +1495,64 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "snowstorm",
+                "elixir": 2,
+                "uses": 1,
+                "delay_ms": 1000,
+                "radius_tiles": 4.0,
+                "pulses": 3,
+                "pulse_every_ms": 500,
+                "slow_ms": 2000,
+                "damage_stat": "blizzard_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "damage": 84,
+              "death_damage": 84,
+              "blizzard_damage": 69
+            },
+            "12": {
+              "damage": 92,
+              "death_damage": 92,
+              "blizzard_damage": 76
+            },
+            "13": {
+              "damage": 102,
+              "death_damage": 102,
+              "blizzard_damage": 83
+            },
+            "14": {
+              "damage": 112,
+              "death_damage": 112,
+              "blizzard_damage": 92
+            },
+            "15": {
+              "damage": 123,
+              "death_damage": 123,
+              "blizzard_damage": 101
+            },
+            "16": {
+              "damage": 135,
+              "death_damage": 135,
+              "blizzard_damage": 111
+            }
+          },
+          "data_source": "wiki-fandom-html:Ice Golem_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "pulse spacing 0.5 s",
+            "the blizzard stays where he stood when it started",
+            "towers take the pulse damage in full"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -955,7 +1563,7 @@
           "buildings"
         ],
         "hit_speed_s": 2.5,
-        "first_hit_s": 1.5,
+        "first_hit_s": 1.0,
         "range_tiles": 0.75,
         "sight_tiles": 7.0,
         "splash_radius_tiles": 0.0
@@ -969,8 +1577,9 @@
         "damage": 40,
         "death_damage": 40
       },
-      "data_source": "royaleapi-cr-api-data:troop/IceGolemite",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/IceGolemite + wiki-fandom-html:Ice Golem",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "mini_pekka": {
       "name": "Mini P.E.K.K.A",
@@ -988,7 +1597,32 @@
       "rarity": "rare",
       "elixir": 4,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1390,
+          "damage": 755
+        },
+        "12": {
+          "hitpoints": 1529,
+          "damage": 828
+        },
+        "13": {
+          "hitpoints": 1682,
+          "damage": 911
+        },
+        "14": {
+          "hitpoints": 1850,
+          "damage": 1000
+        },
+        "15": {
+          "hitpoints": 2035,
+          "damage": 1097
+        },
+        "16": {
+          "hitpoints": 2239,
+          "damage": 1216
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -996,7 +1630,72 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "breakfast_boost",
+                "elixir": 1,
+                "uses": 1,
+                "delay_ms": 1000,
+                "heal_pct": 30,
+                "levels": 1
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "hitpoints": 1433
+            },
+            "12": {
+              "hitpoints": 1576,
+              "damage": 831
+            },
+            "13": {
+              "hitpoints": 1734,
+              "damage": 914
+            },
+            "14": {
+              "hitpoints": 1907,
+              "damage": 1005
+            },
+            "15": {
+              "hitpoints": 2098,
+              "damage": 1105
+            },
+            "16": {
+              "hitpoints": 2308
+            },
+            "17": {
+              "hitpoints": 2539,
+              "damage": 1338
+            },
+            "18": {
+              "hitpoints": 2793,
+              "damage": 1471
+            },
+            "19": {
+              "hitpoints": 3072,
+              "damage": 1618
+            },
+            "20": {
+              "hitpoints": 3379,
+              "damage": 1780
+            },
+            "21": {
+              "hitpoints": 3717,
+              "damage": 1958
+            }
+          },
+          "data_source": "wiki-fandom-html:Heroic Mini P.E.K.K.A.",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "pancake meter not simulated: the ability always gives the 0-bar bonus (+1 level)",
+            "the heal applies on top of the level gain"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -1007,7 +1706,7 @@
           "ground"
         ],
         "hit_speed_s": 1.6,
-        "first_hit_s": 1.1,
+        "first_hit_s": 0.5,
         "range_tiles": 0.8,
         "sight_tiles": 5.5,
         "splash_radius_tiles": 0.0
@@ -1020,8 +1719,9 @@
         "hitpoints": 642,
         "damage": 340
       },
-      "data_source": "royaleapi-cr-api-data:troop/MiniPekka",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/MiniPekka + wiki-fandom-html:Mini P.E.K.K.A.",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "valkyrie": {
       "name": "Valkyrie",
@@ -1040,7 +1740,32 @@
       "rarity": "rare",
       "elixir": 4,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1907,
+          "damage": 266
+        },
+        "12": {
+          "hitpoints": 2098,
+          "damage": 293
+        },
+        "13": {
+          "hitpoints": 2307,
+          "damage": 322
+        },
+        "14": {
+          "hitpoints": 2538,
+          "damage": 354
+        },
+        "15": {
+          "hitpoints": 2792,
+          "damage": 389
+        },
+        "16": {
+          "hitpoints": 3071,
+          "damage": 428
+        }
+      },
       "mechanics": [
         {
           "kind": "splash",
@@ -1054,8 +1779,64 @@
         "name": "Valkyrie"
       },
       "variants": {
-        "evo": null,
-        "hero": null
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_tornado",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Valkyrie",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "whirl_power",
+                "elixir": 3,
+                "uses": 1,
+                "duration_ms": 3500,
+                "hit_every_ms": 250,
+                "radius_tiles": 2.5,
+                "damage_reduction_pct": 15,
+                "tower_damage_pct": 50,
+                "damage_stat": "ability_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "ability_damage": 97
+            },
+            "12": {
+              "ability_damage": 107
+            },
+            "13": {
+              "ability_damage": 117
+            },
+            "14": {
+              "ability_damage": 129
+            },
+            "15": {
+              "ability_damage": 142
+            },
+            "16": {
+              "ability_damage": 156
+            }
+          },
+          "data_source": "wiki-fandom-html:Valkyrie_Hero",
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "the 5.5-tile dash at the start is not simulated",
+            "hits ground troops, buildings and towers"
+          ]
+        }
       },
       "movement": {
         "layer": "ground",
@@ -1066,7 +1847,7 @@
           "ground"
         ],
         "hit_speed_s": 1.5,
-        "first_hit_s": 1.4,
+        "first_hit_s": 0.1,
         "range_tiles": 1.2,
         "sight_tiles": 5.5,
         "splash_radius_tiles": 2.0
@@ -1079,8 +1860,9 @@
         "hitpoints": 900,
         "damage": 126
       },
-      "data_source": "royaleapi-cr-api-data:troop/Valkyrie",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/Valkyrie + wiki-fandom-html:Valkyrie",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "skeleton_army": {
       "name": "Skeleton Army",
@@ -1096,7 +1878,32 @@
       "rarity": "epic",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
       "mechanics": [
         {
           "kind": "swarm",
@@ -1108,7 +1915,19 @@
         "name": "SkeletonArmy"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_general_gerry",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Skeleton Army",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1119,7 +1938,7 @@
         "targets": [
           "ground"
         ],
-        "hit_speed_s": 1.0,
+        "hit_speed_s": 1.1,
         "first_hit_s": 0.5,
         "range_tiles": 0.5,
         "sight_tiles": 5.5,
@@ -1133,8 +1952,9 @@
         "hitpoints": 32,
         "damage": 32
       },
-      "data_source": "royaleapi-cr-api-data:troop/SkeletonArmy",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/SkeletonArmy + wiki-fandom-html:Skeleton Army",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "dart_goblin": {
       "name": "Dart Goblin",
@@ -1153,14 +1973,51 @@
       "rarity": "rare",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 261,
+          "damage": 156
+        },
+        "12": {
+          "hitpoints": 287,
+          "damage": 172
+        },
+        "13": {
+          "hitpoints": 316,
+          "damage": 189
+        },
+        "14": {
+          "hitpoints": 347,
+          "damage": 208
+        },
+        "15": {
+          "hitpoints": 382,
+          "damage": 228
+        },
+        "16": {
+          "hitpoints": 420,
+          "damage": 251
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
         "name": "BlowdartGoblin"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_poison_darts",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Dart Goblin",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1172,7 +2029,7 @@
           "ground",
           "air"
         ],
-        "hit_speed_s": 0.7,
+        "hit_speed_s": 0.8,
         "first_hit_s": 0.35,
         "range_tiles": 6.5,
         "sight_tiles": 7.5,
@@ -1187,8 +2044,9 @@
         "hitpoints": 123,
         "damage": 62
       },
-      "data_source": "royaleapi-cr-api-data:troop/BlowdartGoblin",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/BlowdartGoblin + wiki-fandom-html:Dart Goblin",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "rocket": {
       "name": "Rocket",
@@ -1206,7 +2064,32 @@
       "rarity": "rare",
       "elixir": 6,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 1484,
+          "crown_tower_damage": 371
+        },
+        "12": {
+          "damage": 1632,
+          "crown_tower_damage": 408
+        },
+        "13": {
+          "damage": 1796,
+          "crown_tower_damage": 449
+        },
+        "14": {
+          "damage": 1975,
+          "crown_tower_damage": 494
+        },
+        "15": {
+          "damage": 2173,
+          "crown_tower_damage": 543
+        },
+        "16": {
+          "damage": 2390,
+          "crown_tower_damage": 597
+        }
+      },
       "mechanics": [
         {
           "kind": "knockback",
@@ -1235,8 +2118,9 @@
       "base_stats": {
         "damage": 700
       },
-      "data_source": "royaleapi-cr-api-data:projectile/RocketSpell",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:projectile/RocketSpell + wiki-fandom-html:Rocket",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "barbarian_barrel": {
       "name": "Barbarian Barrel",
@@ -1254,7 +2138,26 @@
       "rarity": "epic",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 215
+        },
+        "12": {
+          "damage": 237
+        },
+        "13": {
+          "damage": 260
+        },
+        "14": {
+          "damage": 286
+        },
+        "15": {
+          "damage": 315
+        },
+        "16": {
+          "damage": 346
+        }
+      },
       "mechanics": [
         {
           "kind": "spawn_on_end",
@@ -1274,7 +2177,43 @@
       },
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "hero_rowdy_reroll",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "damage": 232,
+              "crown_tower_damage": 116
+            },
+            "12": {
+              "damage": 255,
+              "crown_tower_damage": 128
+            },
+            "13": {
+              "damage": 281,
+              "crown_tower_damage": 140
+            },
+            "14": {
+              "damage": 309,
+              "crown_tower_damage": 154
+            },
+            "15": {
+              "damage": 340,
+              "crown_tower_damage": 170
+            },
+            "16": {
+              "damage": 374,
+              "crown_tower_damage": 187
+            }
+          },
+          "data_source": "wiki-fandom-html:Barbarian Barrel_Hero",
+          "wiki_as_of": "2026-11-16"
+        }
       },
       "spell": {
         "travel_speed_tiles_s": 3.3333333333333335,
@@ -1284,8 +2223,9 @@
       "base_stats": {
         "damage": 151
       },
-      "data_source": "royaleapi-cr-api-data:projectile/BarbLogProjectileRolling",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:projectile/BarbLogProjectileRolling + wiki-fandom-html:Barbarian Barrel",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "royal_ghost": {
       "name": "Royal Ghost",
@@ -1304,7 +2244,32 @@
       "rarity": "legendary",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1210,
+          "damage": 261
+        },
+        "12": {
+          "hitpoints": 1331,
+          "damage": 287
+        },
+        "13": {
+          "hitpoints": 1464,
+          "damage": 316
+        },
+        "14": {
+          "hitpoints": 1611,
+          "damage": 347
+        },
+        "15": {
+          "hitpoints": 1772,
+          "damage": 382
+        },
+        "16": {
+          "hitpoints": 1949,
+          "damage": 420
+        }
+      },
       "mechanics": [
         {
           "kind": "invisible_when_idle",
@@ -1318,7 +2283,19 @@
         "name": "Ghost"
       },
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_souldiers",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Royal Ghost",
+          "wiki_as_of": "2026-11-16"
+        },
         "hero": null
       },
       "movement": {
@@ -1330,7 +2307,7 @@
           "ground"
         ],
         "hit_speed_s": 1.8,
-        "first_hit_s": 1.2,
+        "first_hit_s": 0.6,
         "range_tiles": 1.2,
         "sight_tiles": 5.5,
         "splash_radius_tiles": 1.0
@@ -1343,8 +2320,9 @@
         "hitpoints": 1000,
         "damage": 216
       },
-      "data_source": "royaleapi-cr-api-data:troop/Ghost",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/Ghost + wiki-fandom-html:Royal Ghost",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "tornado": {
       "name": "Tornado",
@@ -1362,7 +2340,32 @@
       "rarity": "epic",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 84,
+          "crown_tower_damage": 29
+        },
+        "12": {
+          "damage": 92,
+          "crown_tower_damage": 32
+        },
+        "13": {
+          "damage": 102,
+          "crown_tower_damage": 35
+        },
+        "14": {
+          "damage": 112,
+          "crown_tower_damage": 39
+        },
+        "15": {
+          "damage": 123,
+          "crown_tower_damage": 42
+        },
+        "16": {
+          "damage": 135,
+          "crown_tower_damage": 47
+        }
+      },
       "mechanics": [
         {
           "kind": "pull_spell",
@@ -1387,9 +2390,1512 @@
       "base_stats": {
         "damage": 53
       },
-      "data_source": "royaleapi-cr-api-data:spell/Tornado+character_buff/Tornado",
+      "data_source": "royaleapi-cr-api-data:spell/Tornado+character_buff/Tornado + wiki-fandom-html:Tornado",
       "data_as_of": "2023-10-18",
-      "crown_tower_damage_pct": -83
+      "crown_tower_damage_pct": -83,
+      "wiki_as_of": "2026-11-16"
+    },
+    "dark_prince": {
+      "name": "Dark Prince",
+      "internal_name": "DarkPrince",
+      "game_id": 26000027,
+      "aliases": {
+        "display": "Dark Prince",
+        "hf": "dark_prince",
+        "royaleapi": "dark-prince",
+        "detector": [
+          "dark-prince"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1200,
+          "damage": 266,
+          "shield_hitpoints": 256,
+          "charge_damage": 532
+        },
+        "12": {
+          "hitpoints": 1320,
+          "damage": 293,
+          "shield_hitpoints": 282,
+          "charge_damage": 585
+        },
+        "13": {
+          "hitpoints": 1452,
+          "damage": 322,
+          "shield_hitpoints": 310,
+          "charge_damage": 644
+        },
+        "14": {
+          "hitpoints": 1597,
+          "damage": 354,
+          "shield_hitpoints": 341,
+          "charge_damage": 708
+        },
+        "15": {
+          "hitpoints": 1757,
+          "damage": 389,
+          "shield_hitpoints": 375,
+          "charge_damage": 779
+        },
+        "16": {
+          "hitpoints": 1933,
+          "damage": 428,
+          "shield_hitpoints": 412,
+          "charge_damage": 857
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.4,
+        "first_hit_s": 0.6,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 1.1,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 5,
+      "collision_radius_tiles": 0.6,
+      "mechanics": [
+        {
+          "kind": "charge",
+          "params": {
+            "charge_tiles": 3.0,
+            "speed_tiles_s": 2.0,
+            "damage_stat": "charge_damage"
+          }
+        },
+        {
+          "kind": "shield",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "hero_dismount",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "data_source": "wiki-fandom-html:Dark Prince_Hero",
+          "wiki_as_of": "2026-11-16"
+        }
+      },
+      "base_stats": {
+        "hitpoints": 1200,
+        "damage": 266,
+        "shield_hitpoints": 256,
+        "charge_damage": 532
+      },
+      "data_source": "wiki-fandom-html:Dark Prince",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles",
+        "charge_tiles: wiki 'Charge Range 3' read as 3 tiles of straight running"
+      ]
+    },
+    "golden_knight": {
+      "name": "Golden Knight",
+      "internal_name": "GoldenKnight",
+      "game_id": 26000074,
+      "aliases": {
+        "display": "Golden Knight",
+        "hf": "golden_knight",
+        "royaleapi": "golden-knight",
+        "detector": [
+          "golden-knight"
+        ]
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1799,
+          "damage": 161,
+          "dash_damage": 335
+        },
+        "12": {
+          "hitpoints": 1979,
+          "damage": 177,
+          "dash_damage": 369
+        },
+        "13": {
+          "hitpoints": 2177,
+          "damage": 195,
+          "dash_damage": 405
+        },
+        "14": {
+          "hitpoints": 2394,
+          "damage": 214,
+          "dash_damage": 446
+        },
+        "15": {
+          "hitpoints": 2634,
+          "damage": 236,
+          "dash_damage": 490
+        },
+        "16": {
+          "hitpoints": 2897,
+          "damage": 259,
+          "dash_damage": 540
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 0.9,
+        "first_hit_s": 0.2,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 6,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "champion_ability",
+          "params": {
+            "name": "dash",
+            "elixir": 1,
+            "uses": 1,
+            "max_dashes": 10,
+            "max_dash_tiles": 5.5,
+            "dash_speed_tiles_s": 6.0,
+            "damage_stat": "dash_damage"
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1799,
+        "damage": 161,
+        "dash_damage": 335
+      },
+      "data_source": "wiki-fandom-html:Golden Knight",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles",
+        "dash speed 6 tiles/s, towers are not dash targets, immune while dashing (wiki: the immunity can be extended by dashing again)"
+      ]
+    },
+    "mighty_miner": {
+      "name": "Mighty Miner",
+      "internal_name": "MightyMiner",
+      "game_id": 26000065,
+      "aliases": {
+        "display": "Mighty Miner",
+        "hf": "mighty_miner",
+        "royaleapi": "mighty-miner",
+        "detector": [
+          "mighty-miner"
+        ]
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 2250,
+          "damage": 40,
+          "damage_stage2": 204,
+          "damage_stage3": 409,
+          "escape_damage": 332
+        },
+        "12": {
+          "hitpoints": 2475,
+          "damage": 44,
+          "damage_stage2": 224,
+          "damage_stage3": 450,
+          "escape_damage": 365
+        },
+        "13": {
+          "hitpoints": 2723,
+          "damage": 48,
+          "damage_stage2": 247,
+          "damage_stage3": 495,
+          "escape_damage": 402
+        },
+        "14": {
+          "hitpoints": 2995,
+          "damage": 53,
+          "damage_stage2": 272,
+          "damage_stage3": 544,
+          "escape_damage": 442
+        },
+        "15": {
+          "hitpoints": 3294,
+          "damage": 59,
+          "damage_stage2": 299,
+          "damage_stage3": 599,
+          "escape_damage": 486
+        },
+        "16": {
+          "hitpoints": 3624,
+          "damage": 64,
+          "damage_stage2": 329,
+          "damage_stage3": 659,
+          "escape_damage": 535
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 0.4,
+        "range_tiles": 1.6,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 8,
+      "collision_radius_tiles": 0.6,
+      "mechanics": [
+        {
+          "kind": "ramp_damage",
+          "params": {
+            "stage_ms": 2000,
+            "stats": [
+              "damage",
+              "damage_stage2",
+              "damage_stage3"
+            ]
+          }
+        },
+        {
+          "kind": "champion_ability",
+          "params": {
+            "name": "explosive_escape",
+            "elixir": 1,
+            "uses": 1,
+            "damage_stat": "escape_damage",
+            "radius_tiles": 2.5,
+            "knockback_tiles": 1.0,
+            "dig_ms": 933,
+            "bomb_ms": 1000
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 2250,
+        "damage": 40,
+        "damage_stage2": 204,
+        "damage_stage3": 409,
+        "escape_damage": 332
+      },
+      "data_source": "wiki-fandom-html:Mighty Miner",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles",
+        "first_hit_s (not on the page; engine default 0.5)",
+        "bomb radius 2.5 and knockback 1 tile ('medium area'), bomb hits towers for full damage, knockback immunity not simulated"
+      ]
+    },
+    "miner": {
+      "name": "Miner",
+      "internal_name": "Miner",
+      "game_id": 26000032,
+      "aliases": {
+        "display": "Miner",
+        "hf": "miner",
+        "royaleapi": "miner",
+        "detector": [
+          "miner"
+        ]
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1210,
+          "damage": 194,
+          "crown_tower_damage": 48
+        },
+        "12": {
+          "hitpoints": 1331,
+          "damage": 213,
+          "crown_tower_damage": 53
+        },
+        "13": {
+          "hitpoints": 1464,
+          "damage": 235,
+          "crown_tower_damage": 58
+        },
+        "14": {
+          "hitpoints": 1611,
+          "damage": 258,
+          "crown_tower_damage": 64
+        },
+        "15": {
+          "hitpoints": 1772,
+          "damage": 284,
+          "crown_tower_damage": 70
+        },
+        "16": {
+          "hitpoints": 1949,
+          "damage": 312,
+          "crown_tower_damage": 77
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.3,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 4,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "burrow",
+          "params": {}
+        },
+        {
+          "kind": "tower_damage",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1210,
+        "damage": 194,
+        "crown_tower_damage": 48
+      },
+      "data_source": "wiki-fandom-html:Miner",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ]
+    },
+    "firecracker": {
+      "name": "Firecracker",
+      "internal_name": "Firecracker",
+      "game_id": 26000064,
+      "aliases": {
+        "display": "Firecracker",
+        "hf": "firecracker",
+        "royaleapi": "firecracker",
+        "detector": [
+          "firecracker",
+          "firecracker-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 304,
+          "damage": 320
+        },
+        "12": {
+          "hitpoints": 334,
+          "damage": 350
+        },
+        "13": {
+          "hitpoints": 368,
+          "damage": 385
+        },
+        "14": {
+          "hitpoints": 405,
+          "damage": 425
+        },
+        "15": {
+          "hitpoints": 445,
+          "damage": 470
+        },
+        "16": {
+          "hitpoints": 490,
+          "damage": 515
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 3.0,
+        "first_hit_s": 0.65,
+        "range_tiles": 6.0,
+        "projectile_speed_tiles_s": 9.166666666666666,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 6.0
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 3,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "recoil",
+          "params": {
+            "tiles": 1.0
+          }
+        }
+      ],
+      "variants": {
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_sparks",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Firecracker",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 304,
+        "damage": 320
+      },
+      "data_source": "wiki-fandom-html:Firecracker",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "recoil distance 1.0 tile",
+        "damage = all 5 sparks (64 x5) landing on one target; the real spread pattern is not simulated",
+        "mass",
+        "collision_radius_tiles"
+      ]
+    },
+    "tesla": {
+      "name": "Tesla",
+      "internal_name": "Tesla",
+      "game_id": 27000006,
+      "aliases": {
+        "display": "Tesla",
+        "hf": "tesla",
+        "royaleapi": "tesla",
+        "detector": [
+          "tesla",
+          "tesla-evolution"
+        ]
+      },
+      "type": "building",
+      "rarity": "common",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1152,
+          "damage": 220
+        },
+        "12": {
+          "hitpoints": 1267,
+          "damage": 242
+        },
+        "13": {
+          "hitpoints": 1394,
+          "damage": 266
+        },
+        "14": {
+          "hitpoints": 1533,
+          "damage": 293
+        },
+        "15": {
+          "hitpoints": 1687,
+          "damage": 322
+        },
+        "16": {
+          "hitpoints": 1855,
+          "damage": 354
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.5,
+        "range_tiles": 5.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground"
+      },
+      "deploy_time_s": 1.0,
+      "lifetime_s": 25.0,
+      "footprint_tiles": [
+        2,
+        2
+      ],
+      "collision_radius_tiles": 0.6,
+      "mechanics": [
+        {
+          "kind": "hide_underground",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_pulse",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Tesla",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1152,
+        "damage": 220
+      },
+      "data_source": "wiki-fandom-html:Tesla",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "footprint_tiles",
+        "collision_radius_tiles",
+        "hides when no troop is within its range"
+      ]
+    },
+    "earthquake": {
+      "name": "Earthquake",
+      "internal_name": "Earthquake",
+      "game_id": 28000014,
+      "aliases": {
+        "display": "Earthquake",
+        "hf": "earthquake",
+        "royaleapi": "earthquake",
+        "detector": [
+          "earthquake"
+        ]
+      },
+      "type": "spell",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 84,
+          "crown_tower_damage": 53,
+          "building_damage": 287
+        },
+        "12": {
+          "damage": 92,
+          "crown_tower_damage": 58,
+          "building_damage": 316
+        },
+        "13": {
+          "damage": 102,
+          "crown_tower_damage": 64,
+          "building_damage": 347
+        },
+        "14": {
+          "damage": 112,
+          "crown_tower_damage": 71,
+          "building_damage": 382
+        },
+        "15": {
+          "damage": 123,
+          "crown_tower_damage": 78,
+          "building_damage": 420
+        },
+        "16": {
+          "damage": 135,
+          "crown_tower_damage": 85,
+          "building_damage": 462
+        }
+      },
+      "spell": {
+        "radius_tiles": 3.5,
+        "duration_ms": 3000,
+        "hit_every_ms": 1000,
+        "slow_pct": 50
+      },
+      "mechanics": [
+        {
+          "kind": "dot_spell",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 84,
+        "crown_tower_damage": 53,
+        "building_damage": 287
+      },
+      "data_source": "wiki-fandom-html:Earthquake",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "pulses at 1 s, 2 s, 3 s (the page says 'x3')",
+        "slow also slows attack speed"
+      ]
+    },
+    "lightning": {
+      "name": "Lightning",
+      "internal_name": "Lightning",
+      "game_id": 28000007,
+      "aliases": {
+        "display": "Lightning",
+        "hf": "lightning",
+        "royaleapi": "lightning",
+        "detector": [
+          "lightning"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 6,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 1057,
+          "crown_tower_damage": 286
+        },
+        "12": {
+          "damage": 1163,
+          "crown_tower_damage": 315
+        },
+        "13": {
+          "damage": 1279,
+          "crown_tower_damage": 346
+        },
+        "14": {
+          "damage": 1407,
+          "crown_tower_damage": 381
+        },
+        "15": {
+          "damage": 1548,
+          "crown_tower_damage": 419
+        },
+        "16": {
+          "damage": 1702,
+          "crown_tower_damage": 461
+        }
+      },
+      "spell": {
+        "radius_tiles": 3.5
+      },
+      "mechanics": [
+        {
+          "kind": "top_n_spell",
+          "params": {
+            "n": 3,
+            "stun_ms": 500
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 1057,
+        "crown_tower_damage": 286
+      },
+      "data_source": "wiki-fandom-html:Lightning",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "radius 3.5 and stun 0.5 s (the saved page has no attribute table)",
+        "lands at once"
+      ]
+    },
+    "vines": {
+      "name": "Vines",
+      "internal_name": "Vines",
+      "game_id": 28000026,
+      "aliases": {
+        "display": "Vines",
+        "hf": "vines",
+        "royaleapi": "vines",
+        "detector": [
+          "vines"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 153,
+          "crown_tower_damage": 39
+        },
+        "12": {
+          "damage": 168,
+          "crown_tower_damage": 43
+        },
+        "13": {
+          "damage": 185,
+          "crown_tower_damage": 47
+        },
+        "14": {
+          "damage": 204,
+          "crown_tower_damage": 52
+        },
+        "15": {
+          "damage": 224,
+          "crown_tower_damage": 57
+        },
+        "16": {
+          "damage": 246,
+          "crown_tower_damage": 63
+        }
+      },
+      "spell": {
+        "radius_tiles": 2.5,
+        "duration_ms": 2000,
+        "delay_ms": 900,
+        "root_ms": 2000,
+        "hit_every_ms": 1000,
+        "targets": 3
+      },
+      "mechanics": [
+        {
+          "kind": "root_spell",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 153,
+        "crown_tower_damage": 39
+      },
+      "data_source": "wiki-fandom-html:Vines",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "picks the 3 highest-hp enemies in range, towers included",
+        "pulses 1 s and 2 s after the grab (page says 'x2')",
+        "internal_name (not in the 2023 data; guessed from the card name)"
+      ]
+    },
+    "royal_delivery": {
+      "name": "Royal Delivery",
+      "internal_name": "RoyalDelivery",
+      "game_id": 28000018,
+      "aliases": {
+        "display": "Royal Delivery",
+        "hf": "royal_delivery",
+        "royaleapi": "royal-delivery",
+        "detector": [
+          "royal-delivery"
+        ]
+      },
+      "type": "spell",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 437
+        },
+        "12": {
+          "damage": 481
+        },
+        "13": {
+          "damage": 529
+        },
+        "14": {
+          "damage": 582
+        },
+        "15": {
+          "damage": 640
+        },
+        "16": {
+          "damage": 704
+        }
+      },
+      "spell": {
+        "radius_tiles": 3.0,
+        "delay_ms": 3000
+      },
+      "mechanics": [
+        {
+          "kind": "delayed_drop",
+          "params": {
+            "token": "royal_recruit",
+            "deploy_ms": 250
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 437
+      },
+      "data_source": "wiki-fandom-html:Royal Delivery",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "no reduced tower damage listed: the drop hits towers for full damage"
+      ]
+    },
+    "goblin_demolisher": {
+      "name": "Goblin Demolisher",
+      "internal_name": "GoblinDemolisher",
+      "game_id": 26000095,
+      "aliases": {
+        "display": "Goblin Demolisher",
+        "hf": "goblin_demolisher",
+        "royaleapi": "goblin-demolisher",
+        "detector": [
+          "goblin-demolisher"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1300,
+          "damage": 186,
+          "death_damage": 404,
+          "kamikaze_hp_per_s": 65
+        },
+        "12": {
+          "hitpoints": 1430,
+          "damage": 205,
+          "death_damage": 444,
+          "kamikaze_hp_per_s": 71
+        },
+        "13": {
+          "hitpoints": 1573,
+          "damage": 225,
+          "death_damage": 489,
+          "kamikaze_hp_per_s": 78
+        },
+        "14": {
+          "hitpoints": 1730,
+          "damage": 248,
+          "death_damage": 538,
+          "kamikaze_hp_per_s": 86
+        },
+        "15": {
+          "hitpoints": 1903,
+          "damage": 272,
+          "death_damage": 591,
+          "kamikaze_hp_per_s": 95
+        },
+        "16": {
+          "hitpoints": 2094,
+          "damage": 300,
+          "death_damage": 651,
+          "kamikaze_hp_per_s": 104
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.2,
+        "first_hit_s": 0.5,
+        "range_tiles": 5.0,
+        "splash_radius_tiles": 1.5,
+        "projectile_speed_tiles_s": 6.666666666666667,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 6,
+      "collision_radius_tiles": 0.6,
+      "mechanics": [
+        {
+          "kind": "form_change",
+          "params": {
+            "at_hp_fraction": 0.5,
+            "speed_tiles_s": 2.0,
+            "range_tiles": 0.5,
+            "targets": [
+              "buildings"
+            ],
+            "death_radius_tiles": 2.5,
+            "hp_loss_stat": "kamikaze_hp_per_s"
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1300,
+        "damage": 186,
+        "death_damage": 404,
+        "kamikaze_hp_per_s": 65
+      },
+      "data_source": "wiki-fandom-html:Goblin Demolisher",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles",
+        "internal_name (not in the 2023 data; guessed from the card name)"
+      ]
+    },
+    "bats": {
+      "name": "Bats",
+      "internal_name": "Bats",
+      "game_id": 26000049,
+      "aliases": {
+        "display": "Bats",
+        "hf": "bats",
+        "royaleapi": "bats",
+        "detector": [
+          "bat",
+          "bat-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 1.3,
+        "first_hit_s": 0.6,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 2.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 5,
+      "mass": 1,
+      "collision_radius_tiles": 0.4,
+      "mechanics": [],
+      "variants": {
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_heal_pulse",
+              "params": {}
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "hitpoints": 122
+            },
+            "12": {
+              "hitpoints": 134
+            },
+            "13": {
+              "hitpoints": 148
+            },
+            "14": {
+              "hitpoints": 162
+            },
+            "15": {
+              "hitpoints": 179
+            },
+            "16": {
+              "hitpoints": 196
+            }
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Bats",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 81,
+        "damage": 81
+      },
+      "data_source": "wiki-fandom-html:Bats",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ]
+    },
+    "minion_giant": {
+      "name": "Minion Giant",
+      "internal_name": "MinionGiant",
+      "game_id": 26000107,
+      "aliases": {
+        "display": "Minion Giant",
+        "hf": "minion_giant",
+        "royaleapi": "minion-giant",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1817,
+          "damage": 168
+        },
+        "12": {
+          "hitpoints": 1995,
+          "damage": 185
+        },
+        "13": {
+          "hitpoints": 2193,
+          "damage": 203
+        },
+        "14": {
+          "hitpoints": 2406,
+          "damage": 223
+        },
+        "15": {
+          "hitpoints": 2641,
+          "damage": 245
+        },
+        "16": {
+          "hitpoints": 2903,
+          "damage": 269
+        }
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "hit_speed_s": 1.7,
+        "range_tiles": 4.0,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 7,
+      "collision_radius_tiles": 0.8,
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1817,
+        "damage": 168
+      },
+      "data_source": "wiki-fandom-html:Minion Giant",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "flies: the page text says 'ranged air troop' but its table says Transport Ground (the page is under construction)",
+        "first_hit_s (page says Unknown)",
+        "no projectile travel time",
+        "mass",
+        "collision_radius_tiles",
+        "internal_name"
+      ]
+    },
+    "rune_giant": {
+      "name": "Rune Giant",
+      "internal_name": "RuneGiant",
+      "game_id": 26000101,
+      "aliases": {
+        "display": "Rune Giant",
+        "hf": "rune_giant",
+        "royaleapi": "rune-giant",
+        "detector": [
+          "rune-giant"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 2662,
+          "damage": 120,
+          "bonus_damage": 220
+        },
+        "12": {
+          "hitpoints": 2928,
+          "damage": 132,
+          "bonus_damage": 242
+        },
+        "13": {
+          "hitpoints": 3221,
+          "damage": 145,
+          "bonus_damage": 266
+        },
+        "14": {
+          "hitpoints": 3543,
+          "damage": 160,
+          "bonus_damage": 293
+        },
+        "15": {
+          "hitpoints": 3897,
+          "damage": 176,
+          "bonus_damage": 322
+        },
+        "16": {
+          "hitpoints": 4287,
+          "damage": 193,
+          "bonus_damage": 354
+        }
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "hit_speed_s": 1.5,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 8,
+      "collision_radius_tiles": 0.8,
+      "mechanics": [
+        {
+          "kind": "enchant",
+          "params": {
+            "range_tiles": 8.5,
+            "limit": 2,
+            "every": 3,
+            "linger_ms": 5000,
+            "bonus_stat": "bonus_damage"
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 2662,
+        "damage": 120,
+        "bonus_damage": 220
+      },
+      "data_source": "wiki-fandom-html:Rune Giant",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "enchantments are handed out as soon as a slot is free (no throw delay)",
+        "the bonus lands on the target at once, also for projectile attackers",
+        "mass",
+        "collision_radius_tiles",
+        "internal_name"
+      ]
+    },
+    "poison": {
+      "name": "Poison",
+      "internal_name": "Poison",
+      "game_id": 28000009,
+      "aliases": {
+        "display": "Poison",
+        "hf": "poison",
+        "royaleapi": "poison",
+        "detector": [
+          "poison"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 92,
+          "building_damage": 92,
+          "crown_tower_damage": 22
+        },
+        "12": {
+          "damage": 101,
+          "building_damage": 101,
+          "crown_tower_damage": 24
+        },
+        "13": {
+          "damage": 111,
+          "building_damage": 111,
+          "crown_tower_damage": 27
+        },
+        "14": {
+          "damage": 122,
+          "building_damage": 122,
+          "crown_tower_damage": 29
+        },
+        "15": {
+          "damage": 135,
+          "building_damage": 135,
+          "crown_tower_damage": 32
+        },
+        "16": {
+          "damage": 148,
+          "building_damage": 148,
+          "crown_tower_damage": 35
+        }
+      },
+      "spell": {
+        "duration_ms": 8000,
+        "hit_every_ms": 1000,
+        "slow_pct": 15,
+        "hits_air": true,
+        "radius_tiles": 3.5
+      },
+      "mechanics": [
+        {
+          "kind": "dot_spell",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 92,
+        "building_damage": 92,
+        "crown_tower_damage": 22
+      },
+      "data_source": "wiki-fandom-html:Poison",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "radius 3.5 (the saved page has no attribute table)",
+        "8 pulses at 1 s .. 8 s",
+        "buildings take the troop damage"
+      ]
+    },
+    "little_prince": {
+      "name": "Little Prince",
+      "internal_name": "LittlePrince",
+      "game_id": 26000093,
+      "aliases": {
+        "display": "Little Prince",
+        "hf": "little_prince",
+        "royaleapi": "little-prince",
+        "detector": [
+          "little-prince"
+        ]
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 698,
+          "damage": 104,
+          "rescue_damage": 256
+        },
+        "12": {
+          "hitpoints": 768,
+          "damage": 114,
+          "rescue_damage": 282
+        },
+        "13": {
+          "hitpoints": 845,
+          "damage": 126,
+          "rescue_damage": 310
+        },
+        "14": {
+          "hitpoints": 929,
+          "damage": 138,
+          "rescue_damage": 341
+        },
+        "15": {
+          "hitpoints": 1022,
+          "damage": 152,
+          "rescue_damage": 375
+        },
+        "16": {
+          "hitpoints": 1124,
+          "damage": 167,
+          "rescue_damage": 412
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "first_hit_s": 0.4,
+        "range_tiles": 5.5,
+        "projectile_speed_tiles_s": 13.333333333333334,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5,
+        "hit_speed_s": 1.2
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 3,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "ramp_hit_speed",
+          "params": {
+            "hit_speeds_ms": [
+              1200,
+              600,
+              400
+            ],
+            "hits_per_stage": 2
+          }
+        },
+        {
+          "kind": "champion_ability",
+          "params": {
+            "name": "royal_rescue",
+            "elixir": 3,
+            "uses": 1,
+            "damage_stat": "rescue_damage",
+            "token": "guardienne",
+            "delay_ms": 1000,
+            "dash_tiles": 4.0,
+            "radius_tiles": 2.0,
+            "knockback_tiles": 2.0,
+            "deploy_ms": 300
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 698,
+        "damage": 104,
+        "rescue_damage": 256
+      },
+      "data_source": "wiki-fandom-html:Little Prince",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "the page gives no stage lengths for the 1.2 / 0.6 / 0.4 s hit speeds: stage up every 2 hits on the same target",
+        "Guardienne lands 4 tiles ahead (dash range), damages ground troops within 2 tiles and knocks them up to 2 tiles",
+        "mass",
+        "collision_radius_tiles"
+      ]
     }
   },
   "tokens": {
@@ -1399,7 +3905,32 @@
       "rarity": "epic",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 670,
+          "damage": 191
+        },
+        "12": {
+          "hitpoints": 737,
+          "damage": 210
+        },
+        "13": {
+          "hitpoints": 811,
+          "damage": 231
+        },
+        "14": {
+          "hitpoints": 892,
+          "damage": 254
+        },
+        "15": {
+          "hitpoints": 981,
+          "damage": 280
+        },
+        "16": {
+          "hitpoints": 1079,
+          "damage": 308
+        }
+      },
       "variants": {
         "evo": null,
         "hero": null
@@ -1428,7 +3959,222 @@
         "damage": 75
       },
       "data_source": "royaleapi-cr-api-data:troop/Barbarians",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
+    },
+    "royal_recruit": {
+      "type": "troop",
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 547,
+          "damage": 133,
+          "shield_hitpoints": 240
+        },
+        "12": {
+          "hitpoints": 602,
+          "damage": 146,
+          "shield_hitpoints": 264
+        },
+        "13": {
+          "hitpoints": 662,
+          "damage": 161,
+          "shield_hitpoints": 290
+        },
+        "14": {
+          "hitpoints": 728,
+          "damage": 177,
+          "shield_hitpoints": 319
+        },
+        "15": {
+          "hitpoints": 801,
+          "damage": 195,
+          "shield_hitpoints": 351
+        },
+        "16": {
+          "hitpoints": 881,
+          "damage": 214,
+          "shield_hitpoints": 387
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.3,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.6,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 0.25,
+      "count": 1,
+      "mass": 5,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "shield",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 547,
+        "damage": 133,
+        "shield_hitpoints": 240
+      },
+      "data_source": "wiki-fandom-html:Royal Delivery#table1",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ],
+      "name": "Royal Recruit",
+      "rarity": "common",
+      "elixir": 3
+    },
+    "guardienne": {
+      "type": "troop",
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1600,
+          "damage": 217
+        },
+        "12": {
+          "hitpoints": 1760,
+          "damage": 239
+        },
+        "13": {
+          "hitpoints": 1936,
+          "damage": 263
+        },
+        "14": {
+          "hitpoints": 2130,
+          "damage": 289
+        },
+        "15": {
+          "hitpoints": 2343,
+          "damage": 318
+        },
+        "16": {
+          "hitpoints": 2577,
+          "damage": 349
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.2,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 0.3,
+      "count": 1,
+      "mass": 6,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1600,
+        "damage": 217
+      },
+      "data_source": "wiki-fandom-html:Little Prince#table2",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ],
+      "name": "Guardienne",
+      "rarity": "champion",
+      "elixir": 3
+    },
+    "trusty_turret": {
+      "name": "Trusty Turret",
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1536,
+          "damage": 140
+        },
+        "12": {
+          "hitpoints": 1690,
+          "damage": 154
+        },
+        "13": {
+          "hitpoints": 1859,
+          "damage": 169
+        },
+        "14": {
+          "hitpoints": 2044,
+          "damage": 186
+        },
+        "15": {
+          "hitpoints": 2249,
+          "damage": 205
+        },
+        "16": {
+          "hitpoints": 2474,
+          "damage": 225
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [],
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 4.0,
+        "hit_speed_s": 0.5,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 4.0
+      },
+      "base_stats": {
+        "hitpoints": 1536,
+        "damage": 140
+      },
+      "data_source": "wiki-fandom-html:Heroic Musketeer (hero turret columns)",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "hit speed 0.5 s (damage 140 / dps 280)",
+        "hitpoints = 10 x hitpoints lost per second, so it ends exactly at its 10 s lifetime"
+      ],
+      "lifetime_s": 10.0,
+      "deploy_time_s": 1.0,
+      "footprint_tiles": [
+        1,
+        1
+      ],
+      "collision_radius_tiles": 0.5,
+      "mass": 0
     }
   }
 }

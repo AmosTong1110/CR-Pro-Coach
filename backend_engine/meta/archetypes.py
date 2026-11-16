@@ -62,13 +62,13 @@ def archetype_name(deck: Sequence[str], evo: Iterable[str] = (), costs: Optional
     if not deck:
         return ""
     costs = default_costs() if costs is None else costs
-    evo = set(evo)
+    evo, hero = {e for e in evo if "#" not in e}, {e.split("#")[0] for e in evo if e.endswith("#hero")}
     avg = avg_elixir(deck, costs)
     wc = next((c for c, _ in WIN_CONDITIONS if c in deck), None)
     if wc is None:
         top = max(deck, key=lambda c: (costs.get(c, 0), c))
         return f"{pretty(top).replace(' ', '')} Control"
-    name = ("Evo" if wc in evo else "") + _WC[wc]
+    name = ("Evo" if wc in evo else "Hero" if wc in hero else "") + _WC[wc]
     if avg is not None and avg <= CYCLE_MAX_AVG:
         return f"{name} {fmt_avg(avg)}"
     building = next((short for c, short in KEY_BUILDINGS if c in deck and c != wc), None)

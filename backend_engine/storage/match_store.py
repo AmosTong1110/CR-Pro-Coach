@@ -50,6 +50,7 @@ class SavedAction:
     evolved: bool = False
     event_id: int = 0
     variant: str = "base"
+    ability: bool = False                 # a champion ability use (card_id = the champion), not a card play
 
 
 @dataclass
@@ -261,4 +262,4 @@ def outcome_of(winner: Optional[int], finished: bool, side: int = 0) -> Optional
 def actions_from_events(events: Sequence[Any]) -> List[SavedAction]:
     """PublicDeployEvent list -> SavedAction list."""
     return [SavedAction(e.t_ms, e.side, e.card_id, float(e.tile.x), float(e.tile.y), bool(e.is_evolved), e.event_id,
-                        getattr(e, "variant", "base")) for e in events]
+                        getattr(e, "variant", "base"), bool(getattr(e, "is_ability", False))) for e in events]

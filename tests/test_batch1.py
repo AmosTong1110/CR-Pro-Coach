@@ -238,13 +238,13 @@ def test_rocket_damage_radius_knockback_and_tower_share(db):
 
 
 # ------------------------------------------------------------------ data of the 10 added cards
-EXPECTED_L11 = {            # exact values from the RoyaleAPI 2023-10 tables (damage_per_level at L11)
-    "ice_spirit": {"hitpoints": 230, "damage": 110},
-    "fire_spirit": {"hitpoints": 230, "damage": 207},
-    "electro_spirit": {"hitpoints": 230, "damage": 99},
-    "zap": {"damage": 192, "crown_tower_damage": 58},
+EXPECTED_L11 = {            # L11 values from the saved Clash Royale Wiki pages (2026-11-16), stored as level_overrides
+    "ice_spirit": {"hitpoints": 215, "damage": 110},
+    "fire_spirit": {"hitpoints": 215, "damage": 207},
+    "electro_spirit": {"hitpoints": 215, "damage": 99},
+    "zap": {"damage": 192, "crown_tower_damage": 48},
     "rocket": {"damage": 1484, "crown_tower_damage": 371},
-    "ice_golem": {"hitpoints": 1197, "damage": 84, "death_damage": 84},
+    "ice_golem": {"hitpoints": 1315, "damage": 92, "death_damage": 92},
 }
 
 

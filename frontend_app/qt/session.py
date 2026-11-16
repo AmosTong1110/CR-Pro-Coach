@@ -65,6 +65,7 @@ class LogEntry:
     evolved: bool
     ai_latency: Optional[Tuple[LatencyClass, int]] = None  # AI 经过多少毫秒才看清该出牌
     event_id: int = 0
+    ability: bool = False                                   # champion ability use (card_id = the champion)
 
 
 # 快照采样频率：每 1000 毫秒 (1秒) 记录一个全量时间线检查点，用于平滑拖拽跳转与快退
@@ -251,7 +252,7 @@ class GameSession:
         analyzer = CoachAnalyzer(self.fork, horizon_ms=horizon_ms)
         plays = []
         for ev in self.match.events:
-            if ev.side == HUMAN and ev.event_id in self.pre_play:
+            if ev.side == HUMAN and ev.event_id in self.pre_play and not ev.is_ability:
                 plays.append((self.pre_play[ev.event_id], Candidate(ev.card_id, ev.tile.x, ev.tile.y), ev.event_id))
         timeline = [cp for cp in self.timeline if cp.t_ms <= self.match.t_ms]
         self.review = analyzer.review_match(timeline, plays, final_match=self.match, progress=progress)
@@ -308,7 +309,8 @@ class GameSession:
         for ev in self.match.events[self._logged:]:
             self.opp_tracker.observe(ev)
             lat = self.ai_buffer.latency_of(ev.event_id) if ev.side == HUMAN else None
-            new.append(LogEntry(ev.t_ms, ev.side, ev.card_id, ev.tile.x, ev.tile.y, ev.is_evolved, lat, ev.event_id))
+            new.append(LogEntry(ev.t_ms, ev.side, ev.card_id, ev.tile.x, ev.tile.y, ev.is_evolved, lat, ev.event_id,
+                                ev.is_ability))
         self._logged = len(self.match.events)
         self.log.extend(new)
         return new
@@ -324,6 +326,32 @@ class GameSession:
             if self.loaded_from is not None:  # playing on a reopened match: a new branch, saved separately
                 self.match_id, self.loaded_from, self.started_at = None, None, datetime.now()
             self.redo.clear()  # 改变了历史走向，旧的未来废弃
+            self.pre_play[res.event.event_id] = before
+            if not self.timeline or self.timeline[-1].t_ms < before.t_ms:
+                self.timeline.append(before)
+        self.runner.deliver_events()
+        self._collect_log()
+        return res
+
+    def ability_cards(self) -> List[str]:
+        """Your champions whose ability can be used right now (on the field, ready, enough elixir)."""
+        m = self.match
+        cards = dict.fromkeys(u.card_id for u in m.units.values() if u.side == HUMAN)
+        return [c for c in cards if m.check_ability(HUMAN, c) is None]
+
+    def ability_cost(self, card_id: str) -> int:
+        return int(self.match.ability_cost(HUMAN, card_id) or 1)
+
+    def use_ability(self, card_id: str) -> PlayResult:
+        """Player uses a champion ability (1 elixir, single use). Mirrors `play`: checkpoint, new branch, log."""
+        if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:
+            self._checkpoint()
+        before = self._capture()
+        res = self.runner.human_ability(card_id, side=HUMAN)
+        if res.ok:
+            if self.loaded_from is not None:
+                self.match_id, self.loaded_from, self.started_at = None, None, datetime.now()
+            self.redo.clear()
             self.pre_play[res.event.event_id] = before
             if not self.timeline or self.timeline[-1].t_ms < before.t_ms:
                 self.timeline.append(before)
@@ -411,7 +439,7 @@ class GameSession:
             player_evo=tuple(c.player_evo), opp_evo=tuple(c.ai_evo), level=c.level, persona=c.persona,
             player_archetype=archetype_name(c.player_deck, c.player_evo),
             opp_archetype=archetype_name(c.ai_deck, c.ai_evo),
-            n_plays=sum(e.side == HUMAN for e in m.events),
+            n_plays=sum(e.side == HUMAN and not e.is_ability for e in m.events),
             data_version=str(self.db.raw.get("data_version", "")), engine_version=ENGINE_VERSION,
         )
         return meta, record
@@ -440,9 +468,10 @@ class GameSession:
             advance_to(a.t_ms)
             if s.match.t_ms != a.t_ms:
                 raise ReplayMismatch(f"match ended before your play at {a.t_ms} ms")
-            res = s.play(a.card_id, a.x, a.y)
+            res = s.use_ability(a.card_id) if a.ability else s.play(a.card_id, a.x, a.y)
             if not res.ok:
-                raise ReplayMismatch(f"play {a.card_id} at {a.t_ms} ms rejected: {res.reason}")
+                raise ReplayMismatch(f"{'ability of' if a.ability else 'play'} {a.card_id} at {a.t_ms} ms rejected: "
+                                     f"{res.reason}")
         advance_to(record.final_t_ms)
         if s.match.t_ms != record.final_t_ms or s.match.state_hash() != record.final_hash:
             raise ReplayMismatch("rebuilt match differs from the saved one")

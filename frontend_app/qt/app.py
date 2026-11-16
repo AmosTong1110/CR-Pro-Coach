@@ -17,7 +17,7 @@ over from just before that play.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from PySide6.QtCore import QEvent, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QShortcut
@@ -45,6 +45,8 @@ REASONS = {
     "out_of_bounds": "Out of bounds",
     "not_in_hand": "Card not in hand",
     "match_over": "Match is over",
+    "ability_not_ready": "That ability isn't ready (champion not on the field, still deploying, or already used)",
+    "no_ability": "That card has no ability",
 }
 LATENCY_NAMES = {
     LatencyClass.SURPRISE: "Surprise", LatencyClass.ANTICIPATED: "Anticipated",
@@ -113,9 +115,10 @@ class ElixirBar(QWidget):
 class HandBar(QWidget):
     """Next card + the 4 hand slots (keys 1-4) + the elixir bar."""
 
-    def __init__(self, on_select, parent=None):
+    def __init__(self, on_select, parent=None, on_ability=None):
         super().__init__(parent)
         self.on_select = on_select
+        self.on_ability = on_ability or (lambda: None)
         self.group = QButtonGroup(self)
         self.group.setExclusive(False)
         lay = QVBoxLayout(self)
@@ -143,10 +146,26 @@ class HandBar(QWidget):
             row.addWidget(b)
         lay.addLayout(row)
         self.elixir = ElixirBar()
-        lay.addWidget(self.elixir)
+        self.ability_btn = QPushButton()                  # only visible while one of your champions can use its ability
+        self.ability_btn.setCursor(Qt.PointingHandCursor)
+        self.ability_btn.setToolTip("Use your champion's ability (A): once per champion")
+        self.ability_btn.setStyleSheet(f"QPushButton{{font-size:12px; font-weight:700; border-radius:8px; padding:4px 10px;"
+                                       f"background:{C['violet']}; color:white; border:none;}}")
+        self.ability_btn.clicked.connect(lambda: self.on_ability())
+        self.ability_btn.hide()
+        bottom = QHBoxLayout()
+        bottom.setSpacing(8)
+        bottom.addWidget(self.elixir, 1)
+        bottom.addWidget(self.ability_btn)
+        lay.addLayout(bottom)
 
     def refresh(self, hand: List[str], next_card: str, names, costs, elixir: float,
-                selected: Optional[str], evo_ready: set, enabled: bool = True) -> None:
+                selected: Optional[str], evo_ready: set, enabled: bool = True,
+                abilities: Sequence[Tuple[str, int]] = ()) -> None:
+        self.ability_btn.setVisible(enabled and bool(abilities))
+        if abilities:
+            card, cost = abilities[0]
+            self.ability_btn.setText(f"⚡ {names[card]} ability · {cost}  (A)")
         for i, (b, c) in enumerate(zip(self.buttons, hand)):
             evo = c in evo_ready
             b.setText(f"{names[c]}{'  ★ Evo' if evo else ''}\n{costs[c]} elixir")
@@ -295,7 +314,7 @@ class DeckDialog(QDialog):
 
 
 class CustomDeckDialog(QDialog):
-    """Build your own deck for one side: tick exactly 8 cards, optionally one evolution."""
+    """Build your own deck for one side: tick exactly 8 cards, optionally one evolution or hero."""
 
     def __init__(self, db, deck, evo, title: str, parent=None):
         super().__init__(parent)
@@ -315,12 +334,13 @@ class CustomDeckDialog(QDialog):
         self.lw.itemChanged.connect(lambda _: self._count())
         lay.addWidget(self.lw, 1)
         self.evo_box = QComboBox()
-        self.evo_box.addItem("No evolution", None)
+        self.evo_box.addItem("No evolution / hero", None)
         for cid, c in db.cards.items():
-            if db.has_variant(cid, "evo"):
-                self.evo_box.addItem(f"Evo {c['name']}", cid)
-                if cid in evo:
-                    self.evo_box.setCurrentIndex(self.evo_box.count() - 1)
+            for var, tag, slot in (("evo", "Evo", cid), ("hero", "Hero", f"{cid}#hero")):
+                if db.variant_simulated(cid, var):
+                    self.evo_box.addItem(f"{tag} {c['name']}", slot)
+                    if slot in evo:
+                        self.evo_box.setCurrentIndex(self.evo_box.count() - 1)
         lay.addWidget(self.evo_box)
         bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.accepted.connect(self._accept)
@@ -343,8 +363,8 @@ class CustomDeckDialog(QDialog):
             QMessageBox.warning(self, "Deck", f"A deck needs exactly 8 cards (you have {len(deck)}).")
             return
         evo = self.evo_box.currentData()
-        if evo and evo not in deck:
-            QMessageBox.warning(self, "Deck", "The evolution card must be in the deck.")
+        if evo and evo.split("#")[0] not in deck:
+            QMessageBox.warning(self, "Deck", "The evolution / hero card must be in the deck.")
             return
         self.accept()
 
@@ -463,7 +483,7 @@ class MainWindow(QMainWindow):
         self.board = BoardWidget(self.session)
         self.board.tileClicked.connect(self.on_tile)
         self.board.cancelled.connect(lambda: self.select(None))
-        self.hand = HandBar(self.on_hand_slot)
+        self.hand = HandBar(self.on_hand_slot, on_ability=self.use_ability)
 
         names = lambda c: self.session.db.cards.get(c, {}).get("name", c)  # noqa: E731
         self.review_panel = ReviewPanel(names, self.run_review, self.take_over_review, self.exit_review,
@@ -557,6 +577,7 @@ class MainWindow(QMainWindow):
             key(str(i + 1), lambda i=i: self.on_hand_slot(i))
         key(Qt.Key_Space, self.start_match)
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._escape)
+        key("A", self.use_ability)
         key("N", self.new_match)
         key("E", self.quiz_guess)
         key("U", lambda: self.step(-10))
@@ -1104,6 +1125,24 @@ class MainWindow(QMainWindow):
         if i < len(hand):
             self.select(None if self.selected == hand[i] else hand[i])
 
+    def use_ability(self) -> None:
+        if self.mode != LIVE or self.analyzing:
+            return
+        if self.countdown_ms > 0:
+            self.flash("Wait for the countdown to finish")
+            return
+        cards = self.session.ability_cards()
+        if not cards:
+            self.flash("No champion ability is ready")
+            return
+        res = self.session.use_ability(cards[0])
+        if res.ok:
+            self.review_panel.mark_diverged()
+            self.flash("")
+            self.add_log([])
+        else:
+            self.flash(REASONS.get(res.reason, res.reason))
+
     def select(self, card: Optional[str]) -> None:
         self.selected = card
         self.board.set_selected(card)
@@ -1139,7 +1178,8 @@ class MainWindow(QMainWindow):
         for e in self.session.log[shown:]:
             who = "You" if e.side == HUMAN else "AI"
             evo = " ★Evo" if e.evolved else ""
-            text = f"{mmss(e.t_ms)}  {who}  {names[e.card_id]}{evo}  ({e.x:.1f}, {e.y:.1f})"
+            what = "⚡ ability" if e.ability else f"({e.x:.1f}, {e.y:.1f})"
+            text = f"{mmss(e.t_ms)}  {who}  {names[e.card_id]}{evo}  {what}"
             if e.ai_latency:
                 cls_, ms = e.ai_latency
                 text += f"\n        → AI noticed after {ms / 1000:.2f}s ({LATENCY_NAMES.get(cls_, cls_.value)})"
@@ -1162,7 +1202,8 @@ class MainWindow(QMainWindow):
             costs = {cid: c["elixir"] for cid, c in s.db.cards.items()}
             evo_ready = {c for c in st.evo_cards if st.evo_counter[c] >= s.db.evo_cycles(c)}
             self.hand.refresh(st.hand, st.queue[0], names, costs, st.elixir, self.selected, evo_ready,
-                              enabled=self.mode == LIVE)
+                              enabled=self.mode == LIVE,
+                              abilities=[(c, s.ability_cost(c)) for c in s.ability_cards()] if self.mode == LIVE else ())
         if self.mode == LIVE:
             self.counter.refresh()
         end = max(s.max_known_ms(), 1000)

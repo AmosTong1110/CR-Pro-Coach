@@ -40,7 +40,7 @@ def play(m, side, card, x, y, ready=True, still=True):
 
 
 def test_engine_version():
-    assert ENGINE_VERSION == 3
+    assert ENGINE_VERSION == 6
 
 
 # ---------------------------------------------------------------- projectiles
