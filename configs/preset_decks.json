@@ -90,6 +90,9 @@
      "tip": "Turtle up behind Cannon and win with spells. Very slow and patient."},
     {"name": "Ghost Tornado Control", "style": "Control", "evo": [],
      "cards": ["royal_ghost", "valkyrie", "musketeer", "cannon", "tornado", "ice_golem", "the_log", "fire_spirit"],
-     "tip": "Royal Ghost sneaks in while Tornado and Valkyrie hold the defence."}
+     "tip": "Royal Ghost sneaks in while Tornado and Valkyrie hold the defence."},
+    {"name": "Double Giant Miner Poison", "style": "Beatdown / Control", "evo": [],
+     "cards": ["rune_giant", "minion_giant", "little_prince", "miner", "poison", "barbarian_barrel", "bats", "skeletons"],
+     "tip": "Rune Giant buffs ground pushes while Minion Giant flies over defence. Chip towers with Miner + Poison."}
   ]
 }

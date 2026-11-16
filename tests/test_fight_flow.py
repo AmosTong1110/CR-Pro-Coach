@@ -140,7 +140,7 @@ def test_deck_builder_presets(win):
     from frontend_app.qt.app import DeckDialog
     w = win
     d = DeckDialog(w.session, w, AI)
-    assert d.list.count() == 30
+    assert d.list.count() == len(load_presets())
     assert d.p_name.text() == "CRbot Starter"                             # the current AI deck is a preset
     row = next(i for i, p in enumerate(d.presets) if not p.ai_pushes)
     d.list.setCurrentRow(row)

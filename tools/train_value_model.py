@@ -28,18 +28,23 @@ from backend_engine.simulator.card_db import CardDB  # noqa: E402
 from backend_engine.simulator.engine import ENGINE_VERSION, Match, MatchConfig  # noqa: E402
 from backend_engine.simulator.match_runner import DEFAULT_DECK, MatchRunner  # noqa: E402
 
+PRESETS_PATH = Path(__file__).resolve().parents[1] / "configs" / "preset_decks.json"
 SAMPLE_EVERY_MS = 3000
 
 
-def play_game(db, rng):
-    decks = []
-    for _ in range(2):
-        d = list(DEFAULT_DECK)
-        if rng.random() < 0.4:
-            d[d.index("skeletons")] = "minions"
-        decks.append(tuple(d))
+def load_presets():
+    if PRESETS_PATH.exists():
+        data = json.loads(PRESETS_PATH.read_text(encoding="utf-8"))
+        return data.get("decks", [])
+    return [{"cards": list(DEFAULT_DECK), "evo": []}]
+
+
+def play_game(db, rng, presets):
+    chosen = [rng.choice(presets) for _ in range(2)]
+    decks = tuple(tuple(p["cards"]) for p in chosen)
+    evos = tuple(tuple(p.get("evo", [])) for p in chosen)
     lvl = rng.choice([11, 16])
-    m = Match(MatchConfig(tuple(decks), (lvl, lvl), seed=rng.randrange(1 << 30)), db)
+    m = Match(MatchConfig(decks, (lvl, lvl), evo_cards=evos, seed=rng.randrange(1 << 30)), db)
     r = MatchRunner(m, {0: ScriptedBot(db, 0, rng.uniform(0.1, 1.0)), 1: ScriptedBot(db, 1, rng.uniform(0.1, 1.0))})
     states = []
     while m.result is None:
@@ -71,11 +76,12 @@ def main():
     a = ap.parse_args()
 
     db = CardDB.load()
+    presets = load_presets()
     rng = random.Random(a.seed)
     games, draws = [], 0
     t0 = time.perf_counter()
     for i in range(a.games):
-        states, res = play_game(db, rng)
+        states, res = play_game(db, rng, presets)
         if res.winner is None:
             draws += 1
             continue

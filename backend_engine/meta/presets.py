@@ -1,4 +1,4 @@
-"""Preset decks for the Deck Builder: 30 ready-made 8-card decks (configs/preset_decks.json).
+"""Preset decks for the Deck Builder: ready-made 8-card decks (configs/preset_decks.json).
 
 Every preset uses only cards CRbot simulates, so each one is playable for you and for the AI. Validation lives in
 tests/test_presets.py; `playable(db_cards)` filters again at runtime in case the card data changes.
@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Collection, Iterable, List, Optional, Sequence, Tuple
 
 PRESETS_PATH = Path(__file__).resolve().parents[2] / "configs" / "preset_decks.json"
-# The scripted AI attacks only with building-targeting win conditions; today that is Hog Rider.
-AI_PUSH_CARDS = ("hog_rider",)
+# The scripted AI attacks only with building-targeting win conditions.
+AI_PUSH_CARDS = ("hog_rider", "rune_giant", "minion_giant")
 
 
 @dataclass(frozen=True)
