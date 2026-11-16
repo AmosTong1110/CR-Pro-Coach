@@ -131,3 +131,4 @@ class Projectile:
     damage: float
     splash: float = 0.0            # > 0: area damage around the target on arrival
     targets: Tuple[str, ...] = ("ground",)
+    params: Dict[str, Dict[str, Any]] = field(default_factory=dict)   # payload kinds -> params (on_projectile_hit)

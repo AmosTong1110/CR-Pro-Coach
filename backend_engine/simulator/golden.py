@@ -287,6 +287,26 @@ def hero_abilities(db: CardDB) -> List[str]:
     return _sampled(m, 16_000)
 
 
+EVO2_DECK = ("firecracker", "skeletons", "zap", "valkyrie", "tesla", "knight", "hog_rider", "minions")
+EVO2_SLOTS = ("firecracker", "skeletons", "zap", "valkyrie", "tesla")
+
+
+def evolutions_batch2(db: CardDB) -> List[str]:
+    """Evo Firecracker sparks, Skeletons multiply, double Zap, Valkyrie tornado, Tesla pulse (2026-11-16)."""
+    m = Match(MatchConfig((EVO2_DECK, MODERN), shuffle=False, evo_cards=(EVO2_SLOTS, ())), db)
+    for c in EVO2_SLOTS:
+        m.sides[0].evo_counter[c] = 99                # every play below is evolved
+    for card, x, y in (("hog_rider", 3.5, 18.0), ("knight", 9.5, 19.0)):
+        if card in m.sides[1].hand or card in m.sides[1].queue:
+            _play(m, 1, card, x, y)
+    for card, x, y in (("tesla", 9.5, 8.5), ("valkyrie", 4.0, 12.0), ("skeletons", 9.5, 13.0)):
+        _play(m, 0, card, x, y)
+    m.run_until(4000)
+    for card, x, y in (("firecracker", 12.0, 9.0), ("zap", 9.5, 15.5)):
+        _play(m, 0, card, x, y)
+    return _sampled(m, 20_000)
+
+
 def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out: Dict[str, Callable[[], List[str]]] = {}
     for seed in (1, 2, 3, 4):
@@ -296,11 +316,14 @@ def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     for fn in (log_vs_swarm, fireball_king, cannon_pulls_hog, hog_river_jump, crowd, evo_knight_tank,
                zap_stun, ice_spirit_freeze, electro_chain, ice_golem_burst, valkyrie_swarm, skeleton_army_fireball,
                barrel_spawn, ghost_stealth, tornado_pull, dark_prince_charge, spells_batch2, tesla_demolisher_miner,
-               delivery_ramp_firecracker, champion_abilities, modern_meta, hero_abilities):
+               delivery_ramp_firecracker, champion_abilities, modern_meta, hero_abilities, evolutions_batch2):
         out[fn.__name__] = lambda fn=fn: fn(db)
     out["bots_hog26_s5"] = lambda: bot_match(db, 5, 11, deck=HOG_26)
     out["bots_stealth_s6"] = lambda: bot_match(db, 6, 11, deck=STEALTH)
     out["bots_heroes_s9"] = lambda: bot_match(db, 9, 11, (HERO_SLOTS, HERO_SLOTS), deck=HERO_DECK)
     out["bots_modern_s8"] = lambda: bot_match(db, 8, 11, deck=MODERN)
     out["bots_champions_s7"] = lambda: bot_match(db, 7, 11, deck=CHAMPIONS)
+    out["bots_evo2_s10"] = lambda: bot_match(db, 10, 11, (("firecracker", "tesla", "zap"), ("skeletons", "valkyrie")),
+                                             deck=("hog_rider", "firecracker", "skeletons", "zap", "valkyrie", "tesla",
+                                                   "the_log", "ice_spirit"))
     return out

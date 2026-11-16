@@ -856,14 +856,21 @@
           "mechanics": [
             {
               "kind": "evo_multiply",
-              "params": {}
+              "params": {
+                "max_alive": 8,
+                "spawn_deploy_ms": 0
+              }
             }
           ],
           "stat_mods": {},
           "level_overrides": {},
           "cycles_required": 2,
           "data_source": "wiki-fandom-html:Evolved Skeletons",
-          "wiki_as_of": "2026-11-16"
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "the new Skeleton spawns 0.5 tiles behind the attacker with no deploy time (it still waits its first-hit time)",
+            "the cap of 8 counts living Skeletons of the same play"
+          ]
         },
         "hero": null
       },
@@ -1109,7 +1116,10 @@
           "mechanics": [
             {
               "kind": "evo_double_zap",
-              "params": {}
+              "params": {
+                "delay_ms": 500,
+                "radius_growth_tiles": 0.5
+              }
             }
           ],
           "stat_mods": {},
@@ -1136,7 +1146,10 @@
           },
           "cycles_required": 2,
           "data_source": "wiki-fandom-html:Evolved Zap",
-          "wiki_as_of": "2026-11-16"
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "the second hit lands 0.5 s after the first (the wiki gives no delay)"
+          ]
         },
         "hero": null
       },
@@ -1783,14 +1796,50 @@
           "mechanics": [
             {
               "kind": "evo_tornado",
-              "params": {}
+              "params": {
+                "radius_tiles": 5.0,
+                "duration_ms": 500,
+                "pull_speed_tiles_s": 3.6,
+                "damage_stat": "tornado_damage",
+                "tower_damage_stat": "tornado_crown_tower_damage"
+              }
             }
           ],
           "stat_mods": {},
-          "level_overrides": {},
+          "level_overrides": {
+            "11": {
+              "tornado_damage": 84,
+              "tornado_crown_tower_damage": 37
+            },
+            "12": {
+              "tornado_damage": 92,
+              "tornado_crown_tower_damage": 41
+            },
+            "13": {
+              "tornado_damage": 102,
+              "tornado_crown_tower_damage": 45
+            },
+            "14": {
+              "tornado_damage": 112,
+              "tornado_crown_tower_damage": 49
+            },
+            "15": {
+              "tornado_damage": 123,
+              "tornado_crown_tower_damage": 54
+            },
+            "16": {
+              "tornado_damage": 135,
+              "tornado_crown_tower_damage": 60
+            }
+          },
           "cycles_required": 2,
           "data_source": "wiki-fandom-html:Evolved Valkyrie",
-          "wiki_as_of": "2026-11-16"
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "radius 5.0: the wiki history cut it from 5.5 to 5 (1/12/2025); the attribute table still says 5.5",
+            "one damage hit per attack at the start of the 0.5 s tornado; pull speed as the Tornado spell (3.6 tiles/s)",
+            "the table's tornado damage is taken as current (the 4/8/2026 -50% change can't be checked from the page)"
+          ]
         },
         "hero": {
           "mechanics": [
@@ -2902,14 +2951,59 @@
           "mechanics": [
             {
               "kind": "evo_sparks",
-              "params": {}
+              "params": {
+                "big_radius_tiles": 2.5,
+                "big_duration_ms": 3000,
+                "small_radius_tiles": 1.2,
+                "small_duration_ms": 2500,
+                "small_count": 5,
+                "hit_every_ms": 250,
+                "slow": "slow15",
+                "slow_ms": 350,
+                "shrapnel_range_tiles": 11.0,
+                "fan_degrees": 40,
+                "damage_stat": "spark_damage",
+                "tower_damage_stat": "spark_crown_tower_damage"
+              }
             }
           ],
           "stat_mods": {},
-          "level_overrides": {},
+          "level_overrides": {
+            "11": {
+              "spark_damage": 48,
+              "spark_crown_tower_damage": 15
+            },
+            "12": {
+              "spark_damage": 53,
+              "spark_crown_tower_damage": 17
+            },
+            "13": {
+              "spark_damage": 58,
+              "spark_crown_tower_damage": 18
+            },
+            "14": {
+              "spark_damage": 64,
+              "spark_crown_tower_damage": 20
+            },
+            "15": {
+              "spark_damage": 70,
+              "spark_crown_tower_damage": 22
+            },
+            "16": {
+              "spark_damage": 77,
+              "spark_crown_tower_damage": 24
+            }
+          },
           "cycles_required": 2,
           "data_source": "wiki-fandom-html:Evolved Firecracker",
-          "wiki_as_of": "2026-11-16"
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "the 5 shrapnel fan out over 40 degrees around the shot direction and stop 11 tiles (Projectile Range) from her",
+            "a small spark sits where each shrapnel stops (the wiki: shrapnel 'leave sparks behind')",
+            "sparks hit air and ground, troops, buildings and towers (crown-tower column)",
+            "the initial shot keeps the base card's single-target hit",
+            "spark damage read from the Small Spark columns: the wiki's L11 Big Spark Damage (12) is a typo (DPS 192 = 48 x 4)"
+          ]
         },
         "hero": null
       },
@@ -3002,14 +3096,41 @@
           "mechanics": [
             {
               "kind": "evo_pulse",
-              "params": {}
+              "params": {
+                "radius_tiles": 6.0,
+                "stun_ms": 500,
+                "damage_stat": "pulse_damage"
+              }
             }
           ],
           "stat_mods": {},
-          "level_overrides": {},
+          "level_overrides": {
+            "11": {
+              "pulse_damage": 174
+            },
+            "12": {
+              "pulse_damage": 191
+            },
+            "13": {
+              "pulse_damage": 211
+            },
+            "14": {
+              "pulse_damage": 232
+            },
+            "15": {
+              "pulse_damage": 255
+            },
+            "16": {
+              "pulse_damage": 280
+            }
+          },
           "cycles_required": 2,
           "data_source": "wiki-fandom-html:Evolved Tesla",
-          "wiki_as_of": "2026-11-16"
+          "wiki_as_of": "2026-11-16",
+          "assumed": [
+            "a pulse every time it comes up from underground (the first time right after deploying, if not hidden) and when it dies",
+            "the pulse doesn't damage crown towers (no crown-tower column on the page)"
+          ]
         },
         "hero": null
       },
