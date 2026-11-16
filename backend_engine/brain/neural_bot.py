@@ -88,14 +88,17 @@ def check_meta(meta: dict, db: CardDB) -> None:
 class NeuralBot:
     """Agent protocol of MatchRunner: decide(obs, visible_events, now_ms, buffer) -> [ActionIntent]."""
 
-    def __init__(self, db: CardDB, side: int, session, meta: dict, decide_every_ms: int = DECIDE_EVERY_MS,
+    def __init__(self, db: CardDB, side: int, session, meta: dict, decide_every_ms: Optional[int] = None,
                  gate_threshold: Optional[float] = None):
         self.db = db
         self.side = side
         self.session = session
         self.meta = meta
         self.vocab = F.card_vocab(db)
-        self.decide_every_ms = int(decide_every_ms)
+        every = int(decide_every_ms if decide_every_ms is not None else meta.get("decide_every_ms", DECIDE_EVERY_MS))
+        if every <= 0 or every % 50:
+            raise ValueError(f"decide_every_ms must be a positive multiple of the 50 ms tick, got {every}")
+        self.decide_every_ms = every
         self.gate_threshold = float(gate_threshold if gate_threshold is not None
                                     else meta.get("gate_threshold", 0.5))
         self._input = session.get_inputs()[0].name
