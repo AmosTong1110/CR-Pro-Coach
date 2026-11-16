@@ -71,18 +71,18 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 | section | % | remaining subtasks |
 |---|---|---|
 | App shell (CRbot sidebar: Fight / Analysis / Recommended deck / Account) | 92% | Mode B recordings into the store (`mode="recording"`); drills; review still runs on the UI thread (now with Stop + live progress; a worker thread would keep the board animating) |
-| UI layout (existing arena/review screens) | 88% | *Show me* playback (animate the recommended line); user feedback on the new layout; Decks page could list the 30 presets too |
+| UI layout (existing arena/review screens) | 92% | review playback (Play/Stop 1–4x), Mistake / Alternative hover explanations and the grade-marker fix done (2026-11-16); *Show me* (animate the recommended line); Mode B hints in the overlay (needs a 'my deck' picker); user feedback on the layout |
 | Card schema v4 (internal names, aliases, variants) | 95% | hero variants (data + offset) when the first hero card arrives |
 | Simulation core | 98% | hero abilities (Hero Electro Wizard etc.: reuse `use_ability`), death spawn (Phase 2 needs it) |
-| Mechanics framework + 30-card batch | 100% | all 30 cards + the 5 modern cards simulated (38 with zap, archers, minions), champion abilities included |
+| Mechanics framework + 30-card batch | 100% | all 30 cards + the 5 modern cards simulated (38 with zap, archers, minions), champion abilities, 5 heroes; **6 of 14 evolutions** (Knight + batch 2: Firecracker, Skeletons, Zap, Valkyrie, Tesla); 8 evolutions still data-only |
 | Current card stats (Nov 2026, L16) | 70% | wiki numbers + timings applied to all 38 cards (80 stats / 215 attributes match the wiki) (`sync_meta --html-dir`); evo / hero pages not compared; `verified` still false |
 | Deck link import + archetype names | 40% | naming rules done (`meta/archetypes.py`); `copyDeck` parser |
-| IL dataset + policy/value | 65% | shards built (400k samples, 35 MB), notebook ready (CPU-smoke-tested), NeuralBot wired with fallback; remaining: train on Colab T4, install the model, tune the gate threshold / cadence, gauntlet vs ScriptedBot |
-| Self-play PPO + personas | 0% | league training; persona embedding + reward shaping |
-| Coach v2 (value-net evaluator, tiers, timing ±1 s) | 40% | swap evaluator; Great/Excellent tiers; weighted accuracy; timing variants |
+| IL dataset + policy/value | 90% | `crbot_il_v1` trained (375k samples; val slot top-1 0.56, tile top-3 0.44), calibrated (gate 0.45 / 500 ms, 23-1 vs ScriptedBot), persona **Neural (IL v1)**; remaining: **value head uninformative** (Brier 0.249), IL v2 on rebuilt shards (evolutions now simulated, re-upload all 81 shards + manifest) |
+| Self-play PPO + personas | 45% | pipeline built + smoke-tested (trainer, Colab notebook, bundle, Drive checkpoints, persona **Neural (PPO v1)**); remaining: the Colab training run, install + gauntlet calibration of `crbot_ppo_v1`, persona embedding / persona-specific reward shaping, league evaluation |
+| Coach v2 (value-net evaluator, tiers, timing ±1 s) | 50% | review explanations (Mistake / Alternative) + playback done; swap the evaluator for a trained value net (blocked on a useful value head: PPO critic or IL v2); Great/Excellent tiers; weighted accuracy; timing variants |
 | Elixir counter / deck guesser / delay system | 92% | minor |
-| Mode B companion | 65% | iPad layout + crop fix done, first real-match eval done (see issue 19); review pseudo labels, fine-tune on Colab, spell detection, per-side play timeline check |
-| **Overall** | **~55%** | |
+| Mode B companion | 70% | iPad layout + crop fix, first real-match eval (issue 19), coach-hint adapter (`brain/coach_hints.py`, parity-tested) done; remaining: hints in the overlay, review pseudo labels + detector fine-tune, spell detection, per-side play timeline check |
+| **Overall** | **~60%** | (2026-11-16) |
 
 ## 3. Open issues & constraints
 
@@ -92,7 +92,7 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 3. Mode B never tested on a real match; SudhishNeel v8 on rare-card synthetic frames: 51% found, 72% right card; 14 ms/frame (CoreML). Spell-side heuristic can be wrong.
 4. Coach grades depend on a scripted-bot win model (baseline quality only).
 5. Local network is slow (~0.27 MB/s): do heavy installs/exports on Colab.
-6. Value model, personas and the AI are not yet neural.
+6. The AI is neural now (`crbot_il_v1`; PPO pending), but the **value head is uninformative** (IL val Brier 0.249 ≈ always 0.5): coach-hint win-rate deltas aren't meaningful and the coach still grades with the logistic value model + scripted rollouts. A useful value net (PPO critic / IL v2) is the next quality step.
 
 7. Code hygiene (fixed 2026-11-15): the docstring commit `b3043fd` had appended duplicate copies of methods to
    `coach_analyzer.py`, `human_delay_buffer.py` and `session.py` (the later copy silently won). Trimmed; behaviour
