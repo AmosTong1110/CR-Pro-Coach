@@ -151,7 +151,7 @@ class YoloOnnxDetector:
         from PIL import Image
 
         h, w = frame.shape[:2]
-        l, t, r, b = calibration._scaled(w, h)
+        l, t, r, b = calibration.crop_box(w, h)
         l, t = max(0, int(round(l))), max(0, int(round(t)))
         r, b = min(w, int(round(r))), min(h, int(round(b)))
         cw, ch = self.arena_crop

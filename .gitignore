@@ -52,3 +52,7 @@ pretrained_weights/**/*.onnx
 # Detector training weights (same licence)
 pretrained_weights/**/*.pt
 pretrained_weights/**/*.pth
+recordings/
+
+# Fine-tuning sets built from the user's own recordings (private gameplay)
+data/finetune/
