@@ -18,6 +18,22 @@ def db(raw):
     return CardDB(raw)
 
 
+@pytest.fixture(scope="module")
+def raw2023(raw):
+    """The config as the 2023-10 data defines it: wiki level_overrides (2026-11) removed, so the scaling
+    mechanism can be checked against RoyaleAPI's per-level arrays."""
+    r = copy.deepcopy(raw)
+    for e in [*r["cards"].values(), *r.get("tokens", {}).values()]:
+        if "wiki_as_of" in e:
+            e["level_overrides"] = {}
+    return r
+
+
+@pytest.fixture(scope="module")
+def db2023(raw2023):
+    return CardDB(raw2023)
+
+
 def test_loads_template(db):
     assert {"knight", "hog_rider", "fireball", "the_log", "minions"} <= set(db.cards)
     assert db.levels == [11, 12, 13, 14, 15, 16]
@@ -34,34 +50,47 @@ def test_loads_template(db):
     ("the_log", 11, "damage", 290), ("the_log", 11, "crown_tower_damage", 58),
     ("skeletons", 11, "hitpoints", 81),
 ])
-def test_exact_official_values(db, card, level, field, expected):
-    s = db.stats(card, level)
+def test_exact_official_values(db2023, card, level, field, expected):
+    s = db2023.stats(card, level)
     assert s.stats[field] == expected
     assert s.exact
 
 
-def test_formula_matches_definition(db, raw):
+def test_formula_matches_definition(db2023, raw):
     m = raw["level_scaling"]["multiplier_pct"]
     base = raw["cards"]["hog_rider"]["base_stats"]["hitpoints"]  # rare: offset 2
     for lvl in range(11, 17):
-        assert db.stats("hog_rider", lvl).hitpoints == math.floor(base * m[lvl - 1 - 2] / 100)
+        assert db2023.stats("hog_rider", lvl).hitpoints == math.floor(base * m[lvl - 1 - 2] / 100)
 
 
-def test_rarity_affects_scaling(db):
+def test_rarity_affects_scaling(db2023):
     # same L11 number scales differently by rarity => naive x1.1^5 is not exact
-    assert db.stats("knight", 16).hitpoints != math.floor(1766 * 1.1 ** 5)
+    assert db2023.stats("knight", 16).hitpoints != math.floor(1766 * 1.1 ** 5)
 
 
-def test_override_wins(raw):
-    r = copy.deepcopy(raw)
+# Exact per-level numbers from the saved Clash Royale Wiki pages (2026-11-16); they differ from the 2023 data
+# (L16 is ~0.8% higher; spell crown-tower damage and several balance changes), see SESSION_HANDOFF issue 13.
+@pytest.mark.parametrize("card,level,field,expected", [
+    ("knight", 11, "hitpoints", 1766), ("knight", 16, "hitpoints", 2844), ("knight", 16, "damage", 325),
+    ("hog_rider", 11, "hitpoints", 1697), ("hog_rider", 11, "damage", 317),
+    ("fireball", 11, "damage", 688), ("fireball", 11, "crown_tower_damage", 159),
+    ("the_log", 11, "damage", 268), ("the_log", 11, "crown_tower_damage", 35),
+    ("skeleton_army", 11, "hitpoints", 81), ("ice_golem", 16, "hitpoints", 2118),
+])
+def test_wiki_values_in_the_live_config(db, card, level, field, expected):
+    assert db.stats(card, level).stats[field] == expected
+
+
+def test_override_wins(raw2023):
+    r = copy.deepcopy(raw2023)
     r["cards"]["knight"]["level_overrides"] = {"16": {"hitpoints": 2900}}
     db = CardDB(r)
     assert db.stats("knight", 16).hitpoints == 2900
     assert db.stats("knight", 16).damage == 323
 
 
-def test_stats_l11_fallback_is_approximate(raw):
-    r = copy.deepcopy(raw)
+def test_stats_l11_fallback_is_approximate(raw2023):
+    r = copy.deepcopy(raw2023)
     c = r["cards"]["knight"]
     c.pop("base_stats")
     c["stats_l11"] = {"hitpoints": 1766, "damage": 202}

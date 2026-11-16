@@ -255,7 +255,7 @@ def accuracy(noise, miss, fp, seeds):
 
 
 def test_demo_accuracy_perfect_detector():
-    err, miss, extra = accuracy(0, 0, 0, range(2))
+    err, miss, extra = accuracy(0, 0, 0, range(6))     # 6 seeds: a single match can be a noisy outlier
     assert err < 0.3 and miss < 0.03 and extra == 0
 
 

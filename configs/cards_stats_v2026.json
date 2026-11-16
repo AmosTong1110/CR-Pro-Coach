@@ -185,7 +185,32 @@
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1766,
+          "damage": 202
+        },
+        "12": {
+          "hitpoints": 1943,
+          "damage": 222
+        },
+        "13": {
+          "hitpoints": 2137,
+          "damage": 244
+        },
+        "14": {
+          "hitpoints": 2351,
+          "damage": 269
+        },
+        "15": {
+          "hitpoints": 2586,
+          "damage": 296
+        },
+        "16": {
+          "hitpoints": 2844,
+          "damage": 325
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -196,7 +221,7 @@
         "hitpoints": 690,
         "damage": 79
       },
-      "data_source": "royaleapi-cr-api-data:troop/Knight",
+      "data_source": "royaleapi-cr-api-data:troop/Knight + wiki-fandom-html:Knight",
       "data_as_of": "2023-10-18",
       "mass": 6,
       "variants": {
@@ -214,7 +239,8 @@
           "sc_key": "Knight_EV1"
         },
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "hog_rider": {
       "name": "Hog Rider",
@@ -248,7 +274,32 @@
         "splash_radius_tiles": 0.0,
         "sight_tiles": 9.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1697,
+          "damage": 317
+        },
+        "12": {
+          "hitpoints": 1867,
+          "damage": 349
+        },
+        "13": {
+          "hitpoints": 2053,
+          "damage": 384
+        },
+        "14": {
+          "hitpoints": 2259,
+          "damage": 422
+        },
+        "15": {
+          "hitpoints": 2485,
+          "damage": 464
+        },
+        "16": {
+          "hitpoints": 2733,
+          "damage": 511
+        }
+      },
       "mechanics": [
         {
           "kind": "building_targeting",
@@ -268,13 +319,14 @@
         "hitpoints": 800,
         "damage": 150
       },
-      "data_source": "royaleapi-cr-api-data:troop/HogRider",
+      "data_source": "royaleapi-cr-api-data:troop/HogRider + wiki-fandom-html:Hog Rider",
       "data_as_of": "2023-10-18",
       "mass": 4,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "musketeer": {
       "name": "Musketeer",
@@ -311,7 +363,32 @@
         "projectile_speed_tiles_s": 16.666666666666668,
         "sight_tiles": 6.0
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 721,
+          "damage": 217
+        },
+        "12": {
+          "hitpoints": 793,
+          "damage": 239
+        },
+        "13": {
+          "hitpoints": 872,
+          "damage": 263
+        },
+        "14": {
+          "hitpoints": 960,
+          "damage": 289
+        },
+        "15": {
+          "hitpoints": 1056,
+          "damage": 318
+        },
+        "16": {
+          "hitpoints": 1161,
+          "damage": 349
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -322,13 +399,14 @@
         "hitpoints": 340,
         "damage": 103
       },
-      "data_source": "royaleapi-cr-api-data:troop/Musketeer",
+      "data_source": "royaleapi-cr-api-data:troop/Musketeer + wiki-fandom-html:Musketeer",
       "data_as_of": "2023-10-18",
       "mass": 5,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "cannon": {
       "name": "Cannon",
@@ -364,7 +442,32 @@
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 16.666666666666668
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 824,
+          "damage": 212
+        },
+        "12": {
+          "hitpoints": 906,
+          "damage": 233
+        },
+        "13": {
+          "hitpoints": 997,
+          "damage": 257
+        },
+        "14": {
+          "hitpoints": 1097,
+          "damage": 282
+        },
+        "15": {
+          "hitpoints": 1206,
+          "damage": 310
+        },
+        "16": {
+          "hitpoints": 1327,
+          "damage": 341
+        }
+      },
       "mechanics": [
         {
           "kind": "decay",
@@ -384,13 +487,14 @@
         "hitpoints": 322,
         "damage": 83
       },
-      "data_source": "royaleapi-cr-api-data:building/Cannon",
+      "data_source": "royaleapi-cr-api-data:building/Cannon + wiki-fandom-html:Cannon",
       "data_as_of": "2023-10-18",
       "mass": 0,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "fireball": {
       "name": "Fireball",
@@ -413,7 +517,32 @@
         "travel_speed_tiles_s": 10.0,
         "knockback": true
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 688,
+          "crown_tower_damage": 159
+        },
+        "12": {
+          "damage": 757,
+          "crown_tower_damage": 175
+        },
+        "13": {
+          "damage": 832,
+          "crown_tower_damage": 192
+        },
+        "14": {
+          "damage": 916,
+          "crown_tower_damage": 210
+        },
+        "15": {
+          "damage": 1007,
+          "crown_tower_damage": 233
+        },
+        "16": {
+          "damage": 1108,
+          "crown_tower_damage": 256
+        }
+      },
       "mechanics": [
         {
           "kind": "knockback",
@@ -435,12 +564,13 @@
       "base_stats": {
         "damage": 325
       },
-      "data_source": "royaleapi-cr-api-data:projectile/FireballSpell",
+      "data_source": "royaleapi-cr-api-data:projectile/FireballSpell + wiki-fandom-html:Fireball",
       "data_as_of": "2023-10-18",
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "the_log": {
       "name": "The Log",
@@ -467,7 +597,32 @@
           "ground"
         ]
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 268,
+          "crown_tower_damage": 35
+        },
+        "12": {
+          "damage": 294,
+          "crown_tower_damage": 39
+        },
+        "13": {
+          "damage": 322,
+          "crown_tower_damage": 42
+        },
+        "14": {
+          "damage": 354,
+          "crown_tower_damage": 47
+        },
+        "15": {
+          "damage": 390,
+          "crown_tower_damage": 51
+        },
+        "16": {
+          "damage": 428,
+          "crown_tower_damage": 56
+        }
+      },
       "mechanics": [
         {
           "kind": "rolling_spell",
@@ -497,12 +652,13 @@
       "base_stats": {
         "damage": 240
       },
-      "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling",
+      "data_source": "royaleapi-cr-api-data:projectile/LogProjectileRolling + wiki-fandom-html:The Log",
       "data_as_of": "2023-10-18",
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "skeletons": {
       "name": "Skeletons",
@@ -537,7 +693,32 @@
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
       "mechanics": [
         {
           "kind": "swarm",
@@ -553,13 +734,14 @@
         "hitpoints": 32,
         "damage": 32
       },
-      "data_source": "royaleapi-cr-api-data:troop/Skeletons",
+      "data_source": "royaleapi-cr-api-data:troop/Skeletons + wiki-fandom-html:Skeletons",
       "data_as_of": "2023-10-18",
       "mass": 1,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "archers": {
       "name": "Archers",
@@ -596,7 +778,32 @@
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 10.0
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 304,
+          "damage": 112
+        },
+        "12": {
+          "hitpoints": 334,
+          "damage": 123
+        },
+        "13": {
+          "hitpoints": 368,
+          "damage": 136
+        },
+        "14": {
+          "hitpoints": 405,
+          "damage": 149
+        },
+        "15": {
+          "hitpoints": 445,
+          "damage": 164
+        },
+        "16": {
+          "hitpoints": 490,
+          "damage": 180
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -607,13 +814,14 @@
         "hitpoints": 119,
         "damage": 42
       },
-      "data_source": "royaleapi-cr-api-data:troop/Archer",
+      "data_source": "royaleapi-cr-api-data:troop/Archer + wiki-fandom-html:Archers",
       "data_as_of": "2023-10-18",
       "mass": 3,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "minions": {
       "name": "Minions",
@@ -649,7 +857,32 @@
         "sight_tiles": 5.5,
         "projectile_speed_tiles_s": 16.666666666666668
       },
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 230,
+          "damage": 107
+        },
+        "12": {
+          "hitpoints": 253,
+          "damage": 118
+        },
+        "13": {
+          "hitpoints": 278,
+          "damage": 129
+        },
+        "14": {
+          "hitpoints": 306,
+          "damage": 142
+        },
+        "15": {
+          "hitpoints": 337,
+          "damage": 157
+        },
+        "16": {
+          "hitpoints": 370,
+          "damage": 172
+        }
+      },
       "mechanics": [
         {
           "kind": "air_unit",
@@ -665,13 +898,14 @@
         "hitpoints": 90,
         "damage": 46
       },
-      "data_source": "royaleapi-cr-api-data:troop/Minions",
+      "data_source": "royaleapi-cr-api-data:troop/Minions + wiki-fandom-html:Minions",
       "data_as_of": "2023-10-18",
       "mass": 2,
       "variants": {
         "evo": null,
         "hero": null
-      }
+      },
+      "wiki_as_of": "2026-11-16"
     },
     "zap": {
       "name": "Zap",
@@ -689,7 +923,32 @@
       "rarity": "common",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 192,
+          "crown_tower_damage": 48
+        },
+        "12": {
+          "damage": 210,
+          "crown_tower_damage": 53
+        },
+        "13": {
+          "damage": 232,
+          "crown_tower_damage": 58
+        },
+        "14": {
+          "damage": 256,
+          "crown_tower_damage": 64
+        },
+        "15": {
+          "damage": 281,
+          "crown_tower_damage": 71
+        },
+        "16": {
+          "damage": 309,
+          "crown_tower_damage": 78
+        }
+      },
       "mechanics": [
         {
           "kind": "apply_status",
@@ -718,8 +977,9 @@
       "base_stats": {
         "damage": 75
       },
-      "data_source": "royaleapi-cr-api-data:spell/Zap",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:spell/Zap + wiki-fandom-html:Zap",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "ice_spirit": {
       "name": "Ice Spirit",
@@ -738,7 +998,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 110
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 121
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 133
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 146
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 161
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 177
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -781,8 +1066,9 @@
         "hitpoints": 90,
         "damage": 43
       },
-      "data_source": "royaleapi-cr-api-data:troop/IceSpirits",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/IceSpirits + wiki-fandom-html:Ice Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "fire_spirit": {
       "name": "Fire Spirit",
@@ -800,7 +1086,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 207
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 228
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 250
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 276
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 303
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 333
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -838,8 +1149,9 @@
         "hitpoints": 90,
         "damage": 81
       },
-      "data_source": "royaleapi-cr-api-data:troop/FireSpirits",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/FireSpirits + wiki-fandom-html:Fire Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "electro_spirit": {
       "name": "Electro Spirit",
@@ -857,7 +1169,32 @@
       "rarity": "common",
       "elixir": 1,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 215,
+          "damage": 99
+        },
+        "12": {
+          "hitpoints": 237,
+          "damage": 109
+        },
+        "13": {
+          "hitpoints": 260,
+          "damage": 120
+        },
+        "14": {
+          "hitpoints": 286,
+          "damage": 132
+        },
+        "15": {
+          "hitpoints": 315,
+          "damage": 145
+        },
+        "16": {
+          "hitpoints": 346,
+          "damage": 159
+        }
+      },
       "mechanics": [
         {
           "kind": "suicide",
@@ -905,8 +1242,9 @@
         "hitpoints": 90,
         "damage": 39
       },
-      "data_source": "royaleapi-cr-api-data:troop/ElectroSpirit",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/ElectroSpirit + wiki-fandom-html:Electro Spirit",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "ice_golem": {
       "name": "Ice Golem",
@@ -924,7 +1262,38 @@
       "rarity": "rare",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1315,
+          "damage": 92,
+          "death_damage": 92
+        },
+        "12": {
+          "hitpoints": 1447,
+          "damage": 102,
+          "death_damage": 102
+        },
+        "13": {
+          "hitpoints": 1591,
+          "damage": 112,
+          "death_damage": 112
+        },
+        "14": {
+          "hitpoints": 1750,
+          "damage": 123,
+          "death_damage": 123
+        },
+        "15": {
+          "hitpoints": 1925,
+          "damage": 135,
+          "death_damage": 135
+        },
+        "16": {
+          "hitpoints": 2118,
+          "damage": 149,
+          "death_damage": 149
+        }
+      },
       "mechanics": [
         {
           "kind": "death_damage",
@@ -969,8 +1338,9 @@
         "damage": 40,
         "death_damage": 40
       },
-      "data_source": "royaleapi-cr-api-data:troop/IceGolemite",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/IceGolemite + wiki-fandom-html:Ice Golem",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "mini_pekka": {
       "name": "Mini P.E.K.K.A",
@@ -988,7 +1358,32 @@
       "rarity": "rare",
       "elixir": 4,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1390,
+          "damage": 755
+        },
+        "12": {
+          "hitpoints": 1529,
+          "damage": 828
+        },
+        "13": {
+          "hitpoints": 1682,
+          "damage": 911
+        },
+        "14": {
+          "hitpoints": 1850,
+          "damage": 1000
+        },
+        "15": {
+          "hitpoints": 2035,
+          "damage": 1097
+        },
+        "16": {
+          "hitpoints": 2239,
+          "damage": 1216
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -1020,8 +1415,9 @@
         "hitpoints": 642,
         "damage": 340
       },
-      "data_source": "royaleapi-cr-api-data:troop/MiniPekka",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/MiniPekka + wiki-fandom-html:Mini P.E.K.K.A.",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "valkyrie": {
       "name": "Valkyrie",
@@ -1040,7 +1436,32 @@
       "rarity": "rare",
       "elixir": 4,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1907,
+          "damage": 266
+        },
+        "12": {
+          "hitpoints": 2098,
+          "damage": 293
+        },
+        "13": {
+          "hitpoints": 2307,
+          "damage": 322
+        },
+        "14": {
+          "hitpoints": 2538,
+          "damage": 354
+        },
+        "15": {
+          "hitpoints": 2792,
+          "damage": 389
+        },
+        "16": {
+          "hitpoints": 3071,
+          "damage": 428
+        }
+      },
       "mechanics": [
         {
           "kind": "splash",
@@ -1079,8 +1500,9 @@
         "hitpoints": 900,
         "damage": 126
       },
-      "data_source": "royaleapi-cr-api-data:troop/Valkyrie",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/Valkyrie + wiki-fandom-html:Valkyrie",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "skeleton_army": {
       "name": "Skeleton Army",
@@ -1096,7 +1518,32 @@
       "rarity": "epic",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
       "mechanics": [
         {
           "kind": "swarm",
@@ -1133,8 +1580,9 @@
         "hitpoints": 32,
         "damage": 32
       },
-      "data_source": "royaleapi-cr-api-data:troop/SkeletonArmy",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/SkeletonArmy + wiki-fandom-html:Skeleton Army",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "dart_goblin": {
       "name": "Dart Goblin",
@@ -1153,7 +1601,32 @@
       "rarity": "rare",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 261,
+          "damage": 156
+        },
+        "12": {
+          "hitpoints": 287,
+          "damage": 172
+        },
+        "13": {
+          "hitpoints": 316,
+          "damage": 189
+        },
+        "14": {
+          "hitpoints": 347,
+          "damage": 208
+        },
+        "15": {
+          "hitpoints": 382,
+          "damage": 228
+        },
+        "16": {
+          "hitpoints": 420,
+          "damage": 251
+        }
+      },
       "mechanics": [],
       "source_ref": {
         "section": "troop",
@@ -1187,8 +1660,9 @@
         "hitpoints": 123,
         "damage": 62
       },
-      "data_source": "royaleapi-cr-api-data:troop/BlowdartGoblin",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/BlowdartGoblin + wiki-fandom-html:Dart Goblin",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "rocket": {
       "name": "Rocket",
@@ -1206,7 +1680,32 @@
       "rarity": "rare",
       "elixir": 6,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 1484,
+          "crown_tower_damage": 371
+        },
+        "12": {
+          "damage": 1632,
+          "crown_tower_damage": 408
+        },
+        "13": {
+          "damage": 1796,
+          "crown_tower_damage": 449
+        },
+        "14": {
+          "damage": 1975,
+          "crown_tower_damage": 494
+        },
+        "15": {
+          "damage": 2173,
+          "crown_tower_damage": 543
+        },
+        "16": {
+          "damage": 2390,
+          "crown_tower_damage": 597
+        }
+      },
       "mechanics": [
         {
           "kind": "knockback",
@@ -1235,8 +1734,9 @@
       "base_stats": {
         "damage": 700
       },
-      "data_source": "royaleapi-cr-api-data:projectile/RocketSpell",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:projectile/RocketSpell + wiki-fandom-html:Rocket",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "barbarian_barrel": {
       "name": "Barbarian Barrel",
@@ -1254,7 +1754,26 @@
       "rarity": "epic",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 215
+        },
+        "12": {
+          "damage": 237
+        },
+        "13": {
+          "damage": 260
+        },
+        "14": {
+          "damage": 286
+        },
+        "15": {
+          "damage": 315
+        },
+        "16": {
+          "damage": 346
+        }
+      },
       "mechanics": [
         {
           "kind": "spawn_on_end",
@@ -1284,8 +1803,9 @@
       "base_stats": {
         "damage": 151
       },
-      "data_source": "royaleapi-cr-api-data:projectile/BarbLogProjectileRolling",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:projectile/BarbLogProjectileRolling + wiki-fandom-html:Barbarian Barrel",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "royal_ghost": {
       "name": "Royal Ghost",
@@ -1304,7 +1824,32 @@
       "rarity": "legendary",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1210,
+          "damage": 261
+        },
+        "12": {
+          "hitpoints": 1331,
+          "damage": 287
+        },
+        "13": {
+          "hitpoints": 1464,
+          "damage": 316
+        },
+        "14": {
+          "hitpoints": 1611,
+          "damage": 347
+        },
+        "15": {
+          "hitpoints": 1772,
+          "damage": 382
+        },
+        "16": {
+          "hitpoints": 1949,
+          "damage": 420
+        }
+      },
       "mechanics": [
         {
           "kind": "invisible_when_idle",
@@ -1343,8 +1888,9 @@
         "hitpoints": 1000,
         "damage": 216
       },
-      "data_source": "royaleapi-cr-api-data:troop/Ghost",
-      "data_as_of": "2023-10-18"
+      "data_source": "royaleapi-cr-api-data:troop/Ghost + wiki-fandom-html:Royal Ghost",
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     },
     "tornado": {
       "name": "Tornado",
@@ -1362,7 +1908,32 @@
       "rarity": "epic",
       "elixir": 3,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "damage": 84,
+          "crown_tower_damage": 29
+        },
+        "12": {
+          "damage": 92,
+          "crown_tower_damage": 32
+        },
+        "13": {
+          "damage": 102,
+          "crown_tower_damage": 35
+        },
+        "14": {
+          "damage": 112,
+          "crown_tower_damage": 39
+        },
+        "15": {
+          "damage": 123,
+          "crown_tower_damage": 42
+        },
+        "16": {
+          "damage": 135,
+          "crown_tower_damage": 47
+        }
+      },
       "mechanics": [
         {
           "kind": "pull_spell",
@@ -1387,9 +1958,10 @@
       "base_stats": {
         "damage": 53
       },
-      "data_source": "royaleapi-cr-api-data:spell/Tornado+character_buff/Tornado",
+      "data_source": "royaleapi-cr-api-data:spell/Tornado+character_buff/Tornado + wiki-fandom-html:Tornado",
       "data_as_of": "2023-10-18",
-      "crown_tower_damage_pct": -83
+      "crown_tower_damage_pct": -83,
+      "wiki_as_of": "2026-11-16"
     }
   },
   "tokens": {
@@ -1399,7 +1971,32 @@
       "rarity": "epic",
       "elixir": 2,
       "verified": false,
-      "level_overrides": {},
+      "level_overrides": {
+        "11": {
+          "hitpoints": 670,
+          "damage": 191
+        },
+        "12": {
+          "hitpoints": 737,
+          "damage": 210
+        },
+        "13": {
+          "hitpoints": 811,
+          "damage": 231
+        },
+        "14": {
+          "hitpoints": 892,
+          "damage": 254
+        },
+        "15": {
+          "hitpoints": 981,
+          "damage": 280
+        },
+        "16": {
+          "hitpoints": 1079,
+          "damage": 308
+        }
+      },
       "variants": {
         "evo": null,
         "hero": null
@@ -1428,7 +2025,8 @@
         "damage": 75
       },
       "data_source": "royaleapi-cr-api-data:troop/Barbarians",
-      "data_as_of": "2023-10-18"
+      "data_as_of": "2023-10-18",
+      "wiki_as_of": "2026-11-16"
     }
   }
 }

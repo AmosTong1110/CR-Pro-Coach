@@ -230,3 +230,60 @@ little_prince→LP…), e.g. "EvoRoyalHogs GobHut", "Hog 2.6", "Double Giant Min
 4. **Data licence**: HF replays MIT (personal research); SudhishNeel detector "other". Fine for personal
    training, not for redistribution.
 5. **IL from event streams** has no unit-state history; the value head is weaker until self-play adds sim states.
+
+## 10. Phased card expansion to 8 complete meta decks (added 2026-11-16)
+
+Target decks = the 8 archetypes in `configs/meta_decks_top200.json` (season 2026 top-200). Their 8 decks use
+**51 distinct base cards**. Only Hog 2.6 is complete today.
+
+### Phase 1 (current batch, keeps AI training unblocked)
+* The plan's 30 cards + the 5 modern cards (`rune_giant`, `minion_giant`, `little_prince`, `bats`, `poison`) = 35,
+  plus `zap`, `archers`, `minions` (already simulated, extras) = 38 cards.
+* Wiki pages for all 35 are saved in `data/raw_sources/cards/` (30/30 + 5/5). Simulated now: 22 of 38.
+* Meta decks completed: Hog 2.6 (now). After the remaining 11 batch cards: still only Hog 2.6 of the 8
+  (the other 7 each miss 2–7 Phase 2 cards). In the HF replay data: 33 of 932 decks (337 of 3,184 listings).
+  The 5 modern cards add `poison` and unlock 3 more HF decks; they are 2 cards short of Rune Giant Miner Control
+  (`inferno_dragon`, `goblin_cage`) and of Goblin Drill Poison (`goblin_drill`, `magic_archer`).
+
+### Phase 2: 28 extra base cards → all 8 decks
+| deck | Phase 2 cards it needs |
+|---|---|
+| PEKKA Bridge Spam (Hero E-Wiz) | battle_ram, electro_wizard, bandit, arrows, lumberjack, giant_skeleton, healing_spirit |
+| Rune Giant Miner Control | inferno_dragon, goblin_cage |
+| Golem Beatdown Night Witch | golem, night_witch, baby_dragon, mega_minion (+ lumberjack) |
+| Royal Giant Monk Fisherman | royal_giant, monk, fisherman, phoenix |
+| Lavaloon Guards | lava_hound, balloon, guards, tombstone, skeleton_dragons (+ mega_minion) |
+| Classic Princess Logbait | goblin_barrel, princess, goblin_gang, inferno_tower |
+| Goblin Drill Poison Marcher | goblin_drill, magic_archer |
+
+Total after Phase 2: 38 + 28 = 66 simulated base cards (the 8 decks use 51; 12 Phase 1 cards are not in any of the
+8, but they complete other HF decks and are already researched). Id note: the top-200 file says `healing_spirit`,
+the HF data and the game say `heal_spirit`: add an alias before importing.
+
+New mechanics (grouped; each needs a unit test + golden scenario like Phase 1):
+1. **Building-only targeting**: royal_giant (range 5), giant_skeleton, balloon, lava_hound, battle_ram, golem.
+2. **Death effects**: golem (golemites + death damage), lava_hound (pups), giant_skeleton (bomb), balloon (bomb), tombstone and goblin_cage (spawn on destruction), night_witch (bats on death).
+3. **Spawners**: tombstone, goblin_cage, goblin_drill (burrow + spawn), night_witch (periodic bats), goblin_barrel (spell that drops units).
+4. **Ramp damage**: inferno_tower, inferno_dragon. **Piercing projectile**: magic_archer. **Pull**: fisherman.
+5. **Charge / dash**: battle_ram (charge, then barbarians), bandit (dash + brief invulnerability); Dark Prince from Phase 1 shares the charge code.
+6. **Shield / heal / rage**: guards (shield), healing_spirit (area heal), lumberjack (rage on death), electro_wizard (stun on spawn, two targets).
+7. **Rebirth**: phoenix (egg). **Champion ability**: monk (reflect). Little Prince and Golden Knight come from Phase 1.
+8. `arrows` = area spell, no new mechanic; `skeleton_dragons`, `baby_dragon`, `mega_minion`, `goblin_gang`, `princess` are projectile/splash (existing).
+
+### Evolutions and heroes (~20 variants)
+Which evo/hero each deck runs is not in our data, except Hero Electro Wizard (deck 1) and evo bats / evo skeletons
+(Phase 1). Proposal: implement each variant only when its deck is wired; confirm the exact loadouts before Phase 2.
+* Evo pages already saved (14): archers, bats, cannon, dart_goblin, firecracker, ice_spirit, knight, musketeer,
+  royal_ghost, skeleton_army, skeletons, tesla, valkyrie, zap. Evo knight is already simulated.
+* Hero pages already saved (7): barbarian_barrel, dark_prince, ice_golem, knight, mini_pekka, musketeer, valkyrie.
+* Evo pages to save for Phase 2 (official list says these cards have an evo): baby_dragon, battle_ram, goblin_barrel,
+  goblin_cage, goblin_drill, inferno_dragon, lumberjack, princess, royal_giant.
+* Hero pages to save for Phase 2: electro_wizard, balloon, magic_archer, mega_minion, tombstone.
+* Variant mechanics: knight/ice_spirit/skeletons/musketeer first (cheap); then the ones that add a new entity
+  (cannon barrage, tesla pulse, firecracker sparks, dart_goblin poison, royal_ghost soldiers, bats heal).
+  Heroes are single-use abilities (Aug 2026 patch): one `hero_ability` mechanic with per-card params.
+* Hero level offset is unknown (`rarity_offset.hero = null`); needed before any hero card can be levelled.
+
+### Stats source (new, 2026-11-16)
+`sync_meta --html-dir data/raw_sources/cards` parses the saved Fandom pages (current numbers, L1–L16) and checks
+L11 / L16 against the DB (read-only); `--apply-wiki` stores the numbers as `level_overrides` (done for the 22 simulated cards, engine v4; see SESSION_HANDOFF open issue 13).
