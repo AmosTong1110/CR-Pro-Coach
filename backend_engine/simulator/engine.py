@@ -14,22 +14,24 @@ from __future__ import annotations
 import copy
 import hashlib
 import math
-import random
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from backend_engine.contracts import PublicDeployEvent, TilePos
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
-from backend_engine.simulator.entities import Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
+from backend_engine.simulator.entities import AreaEffect, Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
 from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
 from backend_engine.simulator.mechanics import status as S
 from backend_engine.simulator.mechanics.core import advance_projectile
+from backend_engine.simulator.rng import Pcg32
+from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
 
 # Bumped whenever gameplay changes on purpose (golden hashes re-recorded). Saved matches made with another
 # version can't be rebuilt, only shown from their saved summary / review.
 #   1: initial engine   2: projectiles with travel time, knockback (Fireball, Log), Evo Knight damage reduction
-ENGINE_VERSION = 2
+#   3: portable arithmetic (PCG32 RNG, constant trig tables, sqrt instead of hypot) for the C++ core
+ENGINE_VERSION = 3
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
@@ -104,12 +106,13 @@ class Match:
         self.regulation_ms = int(r["regulation_s"] * 1000) # 常规比赛时长 (如 3 分钟 = 180,000ms)
         self.end_ms = self.regulation_ms + int(r["overtime_s"] * 1000) # 加上加时赛后的总时长上限 (5 分钟)
 
-        self.rng = random.Random(cfg.seed)
+        self.rng = Pcg32(cfg.seed)
         self.t_ms = 0
         self.units: Dict[int, Unit] = {}
         self.spells: List[Spell] = []
         self.rolling: List[RollingSpell] = []
         self.projectiles: List[Projectile] = []
+        self.effects: List[AreaEffect] = []
         self.tower_uid: Dict[Tuple[int, str], int] = {}
         self.next_uid = 1
         self.next_event_id = 1
@@ -245,9 +248,11 @@ class Match:
         depth_to_river = (G.RIVER_Y0 - y) if side == 0 else (y - G.RIVER_Y1)
         return depth_to_river < THREAT_DEPTH or G.region(y) == enemy_home
 
-    def _spawn_card_units(self, side: int, card_id: str, x: float, y: float, eid: int, evolved: bool) -> None:
-        """在指定网格生成军队或建筑实体 (支持多单位阵型散开生成，如骷髅军团/三枪)"""
-        card = self.db.cards[card_id]
+    def _spawn_card_units(self, side: int, card_id: str, x: float, y: float, eid: int, evolved: bool,
+                          deploy_ms: Optional[int] = None) -> None:
+        """在指定网格生成军队或建筑实体 (支持多单位阵型散开生成，如骷髅军团/三枪)；
+        card_id 也可以是 token (由卡牌生成的单位)，deploy_ms 覆盖其部署时间"""
+        card = self.db.entry(card_id)
         variant = "evo" if evolved else "base"
         s = self.db.stats(card_id, self.sides[side].level, variant)
         atk, mov = s.attack, s.movement
@@ -262,12 +267,13 @@ class Match:
         decay = 0.0
         if kind == "building" and card.get("lifetime_s"):
             decay = s.hitpoints / (card["lifetime_s"] * 1000 / G.TICK_MS)
+        params = {m["kind"]: dict(m["params"]) for m in mechs}
+        if "death_damage" in params:       # the burst scales with level like any other damage stat
+            params["death_damage"]["damage"] = s.stats.get("death_damage", 0)
         for i in range(n):
-            if n == 1:
-                ox = oy = 0.0
-            else:
-                a = 2 * math.pi * i / n + math.pi / 2
-                ox, oy = 0.7 * math.cos(a), 0.7 * math.sin(a)
+            if n > MAX_SPAWN:
+                raise ValueError(f"{card_id}: count {n} > MAX_SPAWN {MAX_SPAWN}")
+            ox, oy = SPAWN_RING[n][i] if n > 1 else (0.0, 0.0)
             u = Unit(
                 self._uid(), side, card_id, kind, mov.get("layer", "ground"),
                 min(max(x + ox, 0.0), G.W - 0.01), min(max(y + oy, 0.0), G.H - 0.01), radius,
@@ -277,11 +283,11 @@ class Match:
                 splash=float(atk.get("splash_radius_tiles", 0.0)),
                 speed=float(mov.get("speed_tiles_s", 0.0)),
                 sight=float(atk.get("sight_tiles", TROOP_SIGHT)),
-                deploy_ms=int(card.get("deploy_time_s", 1.0) * 1000),
+                deploy_ms=int(card.get("deploy_time_s", 1.0) * 1000) if deploy_ms is None else deploy_ms,
                 cooldown_ms=int(atk.get("first_hit_s", 0.5) * 1000),
                 decay_per_tick=decay, source_event_id=eid, evolved=evolved,
                 mass=0.0 if kind == "building" else float(card.get("mass") or 1),
-                variant=variant, mechanics=kinds, params={m["kind"]: dict(m["params"]) for m in mechs},
+                variant=variant, mechanics=kinds, params=copy.deepcopy(params),
             )
             self.units[u.uid] = u
             for mech in hooks_for(u.mechanics, "on_spawn"):
@@ -319,6 +325,13 @@ class Match:
             SPELLS["rolling_spell"].advance(self, rs, dt)
             if rs.remaining <= 0:
                 self.rolling.remove(rs)
+                SPELLS["rolling_spell"].finish(self, rs)
+
+        # 3a. 持续区域效果 (龙卷风)：拉拽敌方单位并按间隔造成伤害
+        for ef in list(self.effects):
+            SPELLS[ef.kind].advance(self, ef, dt)
+            if ef.elapsed_ms >= ef.duration_ms:
+                self.effects.remove(ef)
 
         # 3b. 弹道飞行物 (火枪手、弓箭手、加农炮、防御塔…) 追踪目标，抵达时结算伤害
         if self.projectiles:
@@ -341,7 +354,7 @@ class Match:
                 continue
             if u.status and not S.can_attack(u) and not S.can_move(u):
                 continue
-            u.cooldown_ms = max(0, u.cooldown_ms - dt)
+            u.cooldown_ms = max(0, u.cooldown_ms - (S.cooldown_dt(u, dt) if u.status else dt))
             # 索敌锁定目标
             tgt = self._acquire(u)
             if tgt is None:
@@ -393,7 +406,7 @@ class Match:
         否则按照优先顺序（视野内最近敌人、或全图最近建筑）进行搜索。
         """
         cur = self.units.get(u.target_uid) if u.target_uid is not None else None
-        if cur is not None and cur.hp > 0 and self._in_range(u, cur):
+        if cur is not None and cur.hp > 0 and self._in_range(u, cur) and (not cur.status or S.targetable(cur)):
             return cur
         enemies = [e for e in self.units.values() if e.side != u.side and e.hp > 0 and self._can_target(u, e)]
         if self.status_used:
@@ -482,8 +495,8 @@ class Match:
                     continue
                 d = math.sqrt(d2)
                 if d < 1e-6:  # 若完全重合，基于 uid 生成伪随机方向分散
-                    ang = ((min(a.uid, b.uid) * 0.6180339887) % 1.0) * 2 * math.pi
-                    nx, ny, d = math.cos(ang), math.sin(ang), 0.0
+                    k = ((min(a.uid, b.uid) * 2654435761) & 0xFFFFFFFF) >> 26   # 0..63, golden-ratio hash
+                    (nx, ny), d = UNIT_DIRS[k], 0.0
                 else:
                     nx, ny = dx / d, dy / d
                 overlap = (r - d) * COLLISION_STIFFNESS
@@ -505,7 +518,7 @@ class Match:
         for uid in sorted(push):
             u = self.units[uid]
             px, py = push[uid]
-            n = math.hypot(px, py)
+            n = math.sqrt(px * px + py * py)
             if n > MAX_PUSH_PER_TICK:
                 px, py = px * MAX_PUSH_PER_TICK / n, py * MAX_PUSH_PER_TICK / n
             self._move_clamped(u, u.x + px, u.y + py)
@@ -589,7 +602,7 @@ class Match:
             for u in sorted(self.units.values(), key=lambda u: u.uid) if seen(u.source_event_id, u.side)
         ]
         spells = [{"side": s.side, "card_id": s.card_id, "x": s.x, "y": s.y}
-                  for s in self.spells if seen(s.source_event_id, s.side)]
+                  for s in [*self.spells, *self.effects] if seen(s.source_event_id, s.side)]
         return {
             "side": side,
             "t_ms": self.t_ms,
@@ -618,7 +631,7 @@ class Match:
     def restore(self, snap: dict) -> None:
         """从先前保存的快照中完全还原整个战斗引擎状态"""
         snap = dict(snap)
-        self.rng = random.Random()
+        self.rng = Pcg32()
         self.rng.setstate(snap.pop("_rng_state"))
         for k, v in snap.items():
             setattr(self, k, copy.deepcopy(v))
@@ -633,6 +646,11 @@ class Match:
         rolling = tuple((s.uid, r(s.y), r(s.remaining), tuple(sorted(s.hit))) for s in self.rolling)
         projectiles = tuple((p.uid, p.target_uid, r(p.x), r(p.y)) for p in self.projectiles)
         blob = repr((self.t_ms, sides, units, spells, rolling, projectiles, self.result))
+        if self.effects:                   # lingering areas join the hash only while one exists
+            blob += repr(tuple((e.uid, r(e.x), r(e.y), e.elapsed_ms) for e in self.effects))
+        if self.status_used:               # statuses join the hash only once one exists: older hashes stay valid
+            blob += repr(tuple((u.uid, tuple(sorted(u.status.items())))
+                               for u in sorted(self.units.values(), key=lambda u: u.uid) if u.status))
         return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
     @classmethod

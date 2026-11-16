@@ -96,6 +96,28 @@ class RollingSpell:
 
 
 @dataclass
+class AreaEffect:
+    """Lingering area (Tornado): for `duration_ms` it pulls enemy troops to its centre and damages everything
+    in range every `hit_every_ms`."""
+    uid: int
+    side: int
+    card_id: str
+    x: float
+    y: float
+    radius: float
+    damage: float
+    tower_damage: float
+    duration_ms: int
+    hit_every_ms: int
+    pull_speed: float              # tiles / s
+    source_event_id: int
+    kind: str = "pull_spell"
+    elapsed_ms: int = 0
+    next_hit_ms: int = 0
+    params: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+
+
+@dataclass
 class Projectile:
     """Homing shot (Musketeer, Archers, Cannon, towers ...): flies to its target, damage lands on arrival."""
     uid: int

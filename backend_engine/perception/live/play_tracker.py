@@ -16,7 +16,10 @@ Rules
     being counted as a second play.
   * Cycle rule (the game's own rule, the strongest filter): a card can only be played again
     after `hand_size` other plays. A 'new' unit of a card that can't be back in hand yet is
-    a duplicate of the previous play (lost track in a crowd). Conversely, if the card *is*
+    a duplicate of the previous play (lost track in a crowd) -- but only if that play could own it:
+    one of its units was seen within `dup_window_ms`. Otherwise an
+    earlier play of that side was missed (the cycle count is short), and this unit is a new play; this stops
+    one missed play from cascading into rejecting every following play. Conversely, if the card *is*
     back in hand and a unit reappears after a gap >= reborn_gap_ms, it is a fresh copy
     (e.g. a new Cannon on the tile where the old one just expired).
   * The event time is when the unit was *first* seen, not when it was confirmed.
@@ -49,6 +52,7 @@ class _Track:
 class _Play:
     event: PublicDeployEvent
     units: int = 1
+    last_ms: int = 0          # last frame any unit of this play was seen
 
 
 @dataclass
@@ -56,6 +60,15 @@ class PlayTracker:
     costs: Dict[str, int]
     units_per_play: Dict[str, int] = field(default_factory=dict)
     match_radius: float = 1.75
+    # speed gate, applied only after a sighting gap (>= gap_ms): a unit that was dropped where the old one just died
+    # looks like a continuation of its track only after the old one vanished. While a track is seen every frame, a
+    # second unit is simply unmatched and becomes a new track, so the jitter-tolerant match_radius is enough.
+    # After a gap the track may move gate_base + speed * gap tiles (capped at match_radius), with speed = the card's
+    # top speed (`speeds`, tiles/s) or `gate_speed` for unknown cards; gate_base is the detector-jitter allowance.
+    gap_ms: int = 250
+    gate_base: float = 1.0
+    gate_speed: float = 3.0
+    speeds: Dict[str, float] = field(default_factory=dict)
     confirm_hits: int = 2
     expire_ms: int = 1200
     group_ms: int = 900
@@ -64,6 +77,7 @@ class PlayTracker:
     reid_radius: float = 2.5
     hand_size: int = 4
     reborn_gap_ms: int = 800
+    dup_window_ms: int = 3000  # a "duplicate" must belong to a play seen this recently
     lifetimes_ms: Dict[str, int] = field(default_factory=dict)   # buildings: card -> lifetime
     lifetime_margin_ms: int = 200
     # units that other cards also produce: card -> parent cards (Skeletons <- Graveyard, Witch, ...)
@@ -82,6 +96,7 @@ class PlayTracker:
         self._eid = 1
         self.suppressed = 0   # duplicates rejected by the cycle rule (diagnostics)
         self.spawns = 0       # units attributed to a spawner card instead of counted as plays
+        self.cycle_overrides = 0  # cycle rule overruled because the old play can't own the unit
 
     def update(self, t_ms: int, detections: Sequence[TileDetection]) -> List[PublicDeployEvent]:
         # 1) match detections to live tracks (greedy by distance, deterministic)
@@ -92,7 +107,12 @@ class PlayTracker:
                     if self._reborn(tr, t_ms):
                         continue   # long gap + card back in hand: a fresh copy, not the old unit
                     d = math.hypot(tr.x - x, tr.y - y)
-                    if d <= self.match_radius:
+                    gap = t_ms - tr.last_ms
+                    gate = self.match_radius
+                    if gap >= self.gap_ms:
+                        speed = self.speeds.get(tr.card, self.gate_speed)
+                        gate = min(gate, self.gate_base + speed * gap / 1000)
+                    if d <= gate:
                         pairs.append((d, di, tr.tid))
         pairs.sort()
         used_d, used_t = set(), set()
@@ -105,6 +125,8 @@ class PlayTracker:
             tr = by_id[tid]
             _, _, tr.x, tr.y = detections[di]
             tr.last_ms, tr.hits = t_ms, tr.hits + 1
+            if tr.play is not None:
+                self.plays[tr.play].last_ms = t_ms
 
         # 2) unmatched detections: revive a recently lost track or start a new one
         for di, (card, side, x, y) in enumerate(detections):
@@ -159,6 +181,9 @@ class PlayTracker:
                 self.spawns += 1
                 continue
             dup = self._cycle_impossible(tr)
+            if dup is not None and not self._could_own(dup, tr):
+                self.cycle_overrides += 1   # cycle count is short: an earlier play was missed
+                dup = None
             if dup is not None:   # can't be a new play: the card is still cycling -> a duplicate unit
                 tr.play = dup
                 self.suppressed += 1
@@ -167,7 +192,7 @@ class PlayTracker:
                                    TilePos(round(tr.x, 2), round(tr.y, 2)),
                                    is_threat=self._is_threat(tr))
             self._eid += 1
-            self.plays.append(_Play(ev))
+            self.plays.append(_Play(ev, last_ms=t_ms))
             tr.play = len(self.plays) - 1
             new_events.append(ev)
         return new_events
@@ -219,6 +244,12 @@ class PlayTracker:
                 return i if since < self.hand_size else None
             since += 1
         return None
+
+    def _could_own(self, i: int, tr: _Track) -> bool:
+        """Can play i plausibly own this unit as a lost-and-found duplicate?"""
+        # Only recency is used: counting live units is unreliable, because detector jitter can split one
+        # unit's track in two for a few frames.
+        return tr.first_ms - self.plays[i].last_ms <= self.dup_window_ms
 
     def _reidentify(self, card: str, side: int, x: float, y: float, t_ms: int) -> Optional[_Track]:
         best, best_d = None, self.reid_radius

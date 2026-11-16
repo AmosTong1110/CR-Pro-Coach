@@ -129,7 +129,7 @@ def test_review_panel_offscreen():
     w.show()
     w.run_review()
     panel = w.review_panel
-    assert w.review_dock.isVisible() and panel.review is not None
+    assert w.mode == "review" and panel.isVisible() and panel.review is not None
     assert panel.list.count() == len(panel.review.moves)
     i = max(range(len(panel.review.moves)), key=lambda k: panel.review.moves[k].loss)
     panel.select(i)

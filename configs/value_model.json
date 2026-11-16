@@ -12,30 +12,30 @@
     "princess_late"
   ],
   "weights": [
-    0.74885,
-    0.32162,
-    1.99226,
-    0.00998,
-    2.58744,
-    2.24739,
-    0.98945,
-    1.10685,
-    0.70723,
-    1.79311
+    0.6986,
+    0.32783,
+    1.76654,
+    0.0027,
+    2.05255,
+    2.12931,
+    0.81096,
+    1.13851,
+    0.71655,
+    2.03449
   ],
   "meta": {
     "trained": true,
     "games": 400,
-    "decisive_games": 400,
-    "draws": 0,
-    "train_states": 60738,
-    "test_states": 14750,
-    "test_accuracy": 0.7815,
-    "test_log_loss": 0.4477,
+    "decisive_games": 397,
+    "draws": 3,
+    "train_states": 59628,
+    "test_states": 14492,
+    "test_accuracy": 0.7773,
+    "test_log_loss": 0.4486,
     "coin_flip_log_loss": 0.6931,
     "sample_every_ms": 3000,
     "opponents": "ScriptedBot vs ScriptedBot",
-    "engine_version": 2,
+    "engine_version": 3,
     "seed": 0
   }
 }

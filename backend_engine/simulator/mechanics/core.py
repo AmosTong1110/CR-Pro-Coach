@@ -26,9 +26,11 @@ class Splash(Mechanic):
     """Each hit damages every valid enemy within `u.splash` of the target."""
 
     def on_attack(self, m, u, target) -> bool:
+        # params {"center": "self"}: the area is around the attacker (Valkyrie), not around the target
+        c = u if u.params.get("splash", {}).get("center") == "self" else target
         for e in sorted(m.units.values(), key=lambda e: e.uid):
             if e.side != u.side and e.hp > 0 and m._can_target(u, e) \
-                    and G.dist(e.x, e.y, target.x, target.y) <= u.splash + e.radius:
+                    and G.dist(e.x, e.y, c.x, c.y) <= u.splash + e.radius:
                 m._deal(e, u.damage, u)
         return True
 
@@ -61,6 +63,9 @@ class AreaSpell(SpellKind):
         for e in sorted(m.units.values(), key=lambda e: e.uid):
             if e.side != sp.side and e.hp > 0 and G.dist(e.x, e.y, sp.x, sp.y) <= sp.radius + e.radius:
                 m._deal(e, sp.tower_damage if e.kind == "tower" else sp.damage, sp)
+                st = sp.params.get("apply_status")      # Zap: stun
+                if st and e.hp > 0:
+                    m.apply_status(e, st["tag"], int(st["ms"]))
                 kb = sp.params.get("knockback")
                 if kb and e.hp > 0:
                     dx, dy = e.x - sp.x, e.y - sp.y
@@ -95,6 +100,20 @@ class Rolling(SpellKind):
                 if kb and e.hp > 0:
                     knockback(m, e, 0.0, float(rs.direction), float(kb.get("distance_tiles", 0)))
         rs.y, rs.remaining = y1, rs.remaining - adv
+
+    def finish(self, m, rs: RollingSpell) -> None:
+        """The roll is over: spawn the card's token there (Barbarian Barrel)."""
+        sp = rs.params.get("spawn_on_end")
+        if sp:
+            x, y = land(rs.x, rs.y)
+            m._spawn_card_units(rs.side, sp["token"], x, y, rs.source_event_id, False, deploy_ms=int(sp["deploy_ms"]))
+
+
+def land(x: float, y: float) -> Tuple[float, float]:
+    """A spawn point that is not in the river (a roll can end there): move it to the nearer bank."""
+    if G.region(y) == "river" and not G.on_bridge(x):
+        y = G.RIVER_Y0 - 0.5 if y - G.RIVER_Y0 < G.RIVER_Y1 - y else G.RIVER_Y1 + 0.5
+    return x, y
 
 
 # -- engine version 2: first new mechanics ------------------------------------------------------------
@@ -142,7 +161,7 @@ def knockback(m, u, dx: float, dy: float, distance: float) -> None:
     """Push a troop by `distance` tiles along (dx, dy). Structures never move; the river stays blocked."""
     if u.is_structure or u.mass == 0 or distance <= 0:
         return
-    n = math.hypot(dx, dy)
+    n = math.sqrt(dx * dx + dy * dy)
     if n < 1e-9:
         return
     m._move_clamped(u, u.x + dx / n * distance, u.y + dy / n * distance)

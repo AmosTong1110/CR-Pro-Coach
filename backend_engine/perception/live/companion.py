@@ -89,8 +89,9 @@ class LiveCompanion:
     def __init__(self, rules: dict, costs: Dict[str, int], units_per_play: Dict[str, int],
                  calibration: Optional[ArenaCalibration] = None, detector: Optional[Detector] = None,
                  guesser=None, min_conf: float = 0.0, lifetimes_ms: Optional[Dict[str, int]] = None,
-                 spells: frozenset = frozenset()):
+                 spells: frozenset = frozenset(), speeds: Optional[Dict[str, float]] = None):
         self.lifetimes_ms = lifetimes_ms or {}
+        self.speeds = speeds or {}                  # card -> top speed in tiles/s (tracker speed gate)
         self.spells = spells
         self.rules = rules
         self.costs = costs
@@ -113,13 +114,15 @@ class LiveCompanion:
         lifetimes = {cid: int((c["lifetime_s"] + c.get("deploy_time_s", 1.0)) * 1000)
                      for cid, c in db.cards.items() if c.get("lifetime_s")}
         spells = frozenset(cid for cid, c in db.cards.items() if c["type"] == "spell") | KNOWN_SPELLS
+        speeds = {cid: float(c.get("movement", {}).get("speed_tiles_s", 0.0)) for cid, c in db.cards.items()}
         return cls(db.rules, costs, units, calibration, detector, default_guesser(), lifetimes_ms=lifetimes,
-                   spells=spells)
+                   spells=spells, speeds=speeds)
 
     def reset(self) -> None:
         units = {**self.units_per_play, **getattr(self.detector, "units_per_play", {})}
         self.tracker = PlayTracker(self.costs, units, lifetimes_ms=self.lifetimes_ms,
-                                   spawned_by=getattr(self.detector, "spawned_by", {}), spells=self.spells)
+                                   spawned_by=getattr(self.detector, "spawned_by", {}), spells=self.spells,
+                                   speeds=self.speeds)
         self.opp_tracker = OppElixirTracker(self.rules, observer_side=YOU)   # counts the opponent
         self.me_tracker = OppElixirTracker(self.rules, observer_side=OPP)    # counts you
         self.events: List[PublicDeployEvent] = []

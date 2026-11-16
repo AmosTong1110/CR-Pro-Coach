@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import List, Optional, Set, Tuple
 
 from PySide6.QtCore import QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PySide6.QtGui import QBrush, QColor, QFont, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
 from backend_engine.simulator import geometry as G
@@ -47,7 +47,7 @@ class BoardWidget(QWidget):
         self.ghosts: List[Tuple[str, float, float, str]] = []
         self.banner: Optional[str] = None         # 棋盘顶部的战术横幅提示文本
         self.setMouseTracking(True)
-        self.setMinimumSize(int(G.W * 15), int(G.H * 15))
+        self.setMinimumSize(int(G.W * 12), int(G.H * 12))
 
     # -- 几何空间换算 (Geometry & Coordinates) -------------------------------
     def _geom(self) -> Tuple[float, float, float]:
@@ -108,7 +108,7 @@ class BoardWidget(QWidget):
     def paintEvent(self, e) -> None:
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        p.fillRect(self.rect(), QColor("#1e2a1a"))
+        p.fillRect(self.rect(), QColor("#15171c"))
         ts, _, _ = self._geom()
         # 1. 绘制草地、河道与桥梁
         self._paint_arena(p)
@@ -179,21 +179,26 @@ class BoardWidget(QWidget):
         if not self.banner:
             return
         f = QFont()
-        f.setPixelSize(13)
         f.setBold(True)
-        p.setFont(f)
         r = QRectF(8, 8, self.width() - 16, 26)
+        size, text = 13, self.banner
+        f.setPixelSize(size)
+        while size > 10 and QFontMetrics(f).horizontalAdvance(text) > r.width() - 16:
+            size -= 1
+            f.setPixelSize(size)
+        text = QFontMetrics(f).elidedText(text, Qt.ElideRight, int(r.width() - 16))
+        p.setFont(f)
         p.setPen(Qt.NoPen)
         p.setBrush(QColor(0, 0, 0, 170))
         p.drawRoundedRect(r, 6, 6)
         p.setPen(QColor("#ffd400"))
-        p.drawText(r, Qt.AlignCenter, self.banner)
+        p.drawText(r, Qt.AlignCenter, text)
 
     def _paint_overlay(self, p: QPainter) -> None:
         """绘制居中大字覆盖层 (Overlay Text)，如开局 3, 2, 1 倒计时"""
         if not self.overlay_text:
             return
-        p.fillRect(self.rect(), QColor(0, 0, 0, 70))
+        p.fillRect(self.tile_rect(0, 0, G.W, G.H), QColor(0, 0, 0, 70))
         f = QFont()
         f.setPixelSize(max(48, self.width() // 4))
         f.setBold(True)
@@ -319,7 +324,7 @@ class BoardWidget(QWidget):
         f.setPixelSize(max(8, int(r * 0.85)))
         f.setBold(True)
         p.setFont(f)
-        name = self.session.db.cards[u.card_id]["name"]
+        name = self.session.db.entry(u.card_id)["name"]
         p.drawText(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r), Qt.AlignCenter, short_name(name))
         if u.hp < u.max_hp:
             self._hp_bar(p, c.x(), c.y() - r - 5, 2 * r, u.hp / u.max_hp, u.side)
@@ -342,7 +347,7 @@ class BoardWidget(QWidget):
         r = self.session.result
         if r is None:
             return
-        p.fillRect(self.rect(), QColor(0, 0, 0, 120))
+        p.fillRect(self.tile_rect(0, 0, G.W, G.H), QColor(0, 0, 0, 120))
         if r.winner is None:
             text, col = "Draw", QColor("#dddddd")
         elif r.winner == HUMAN:

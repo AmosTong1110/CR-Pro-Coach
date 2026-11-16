@@ -54,6 +54,9 @@ def test_file_is_schema_4_with_identity(raw, db):
 def test_v3_file_still_loads_identically(raw, db):
     v3 = copy.deepcopy(raw)
     v3["schema_version"] = 3
+    # v3 mechanics are bare tags without params, so a card that must name its token (Barbarian Barrel) can't be v3
+    v3["cards"] = {cid: c for cid, c in v3["cards"].items() if all(m["kind"] != "spawn_on_end" for m in c["mechanics"])}
+    v3.pop("tokens", None)
     for c in v3["cards"].values():
         evo = c.pop("variants")["evo"]
         c["evolution"] = evo and {"cycles_required": evo["cycles_required"],

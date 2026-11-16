@@ -65,6 +65,8 @@ def build_card(card: Dict[str, Any], src: SourceIndex, as_of: str) -> Dict[str, 
         dmg = _nz(body.get("damage"), proj and proj.get("damage"))
         if dmg:
             base["damage"] = dmg
+        if body.get("death_damage"):
+            base["death_damage"] = body["death_damage"]
         atk = out.setdefault("attack", {})
         atk["hit_speed_s"] = body["hit_speed"] / MS
         atk["first_hit_s"] = (body.get("load_time") or 0) / MS
@@ -86,13 +88,16 @@ def build_card(card: Dict[str, Any], src: SourceIndex, as_of: str) -> Dict[str, 
     elif ref["section"] in ("spell", "projectile"):
         # projectile-type spells (Fireball, The Log) live directly in the projectile table
         proj = rec if ref["section"] == "projectile" else src.get("projectile", rec.get("projectile"))
+        if proj is None and rec.get("radius") and rec.get("damage"):
+            proj = rec    # instant area effect with no projectile (Zap): the spell record holds damage and radius
         if proj is None:
             raise KeyError(f"{ref}: spell needs a projectile record")
         base["damage"] = proj["damage"]
         if proj.get("crown_tower_damage_percent") is not None:
             out["crown_tower_damage_pct"] = proj["crown_tower_damage_percent"]
         sp = out.setdefault("spell", {})
-        sp["travel_speed_tiles_s"] = proj["speed"] / SPEED_UNIT
+        if proj.get("speed"):                 # no speed = lands at once
+            sp["travel_speed_tiles_s"] = proj["speed"] / SPEED_UNIT
         if proj.get("projectile_range"):
             sp["rolling_range_tiles"] = proj["projectile_range"] / MS
             sp["width_tiles"] = 2 * proj["projectile_radius"] / MS

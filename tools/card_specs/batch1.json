@@ -1,0 +1,230 @@
+{
+  "_doc": "Batch-1 cards (plan section 1). Per card: our id -> RoyaleAPI key, source_ref, and the mechanics the engine needs. '$buff_time', '$pushback' and '$death_radius' are filled from the source record by tools/add_cards.py. Slow/status durations marked _source 'assumed' are NOT in the 2023-10 data and must be checked in game.",
+  "zap": {
+    "api_key": "zap",
+    "source_ref": {
+      "section": "spell",
+      "name": "Zap"
+    },
+    "mechanics": [
+      {
+        "kind": "apply_status",
+        "params": {
+          "tag": "stun",
+          "ms": "$buff_time"
+        }
+      },
+      {
+        "kind": "reduced_tower_damage",
+        "params": {}
+      }
+    ]
+  },
+  "ice_spirit": {
+    "api_key": "ice-spirit",
+    "source_ref": {
+      "section": "troop",
+      "name": "IceSpirits"
+    },
+    "mechanics": [
+      {
+        "kind": "suicide",
+        "params": {
+          "status": {
+            "tag": "freeze",
+            "ms": "$buff_time"
+          }
+        }
+      }
+    ]
+  },
+  "fire_spirit": {
+    "api_key": "fire-spirit",
+    "source_ref": {
+      "section": "troop",
+      "name": "FireSpirits"
+    },
+    "mechanics": [
+      {
+        "kind": "suicide",
+        "params": {}
+      }
+    ]
+  },
+  "electro_spirit": {
+    "api_key": "electro-spirit",
+    "source_ref": {
+      "section": "troop",
+      "name": "ElectroSpirit"
+    },
+    "mechanics": [
+      {
+        "kind": "suicide",
+        "params": {
+          "status": {
+            "tag": "stun",
+            "ms": "$buff_time"
+          },
+          "chain": {
+            "count": "$chain_count",
+            "radius_tiles": "$chain_radius",
+            "_note": "count = total units hit including the first; whether the game counts the first is unverified"
+          }
+        }
+      }
+    ]
+  },
+  "ice_golem": {
+    "api_key": "ice-golem",
+    "source_ref": {
+      "section": "troop",
+      "name": "IceGolemite"
+    },
+    "mechanics": [
+      {
+        "kind": "death_damage",
+        "params": {
+          "radius_tiles": "$death_radius",
+          "status": {
+            "tag": "slow",
+            "ms": 2000,
+            "_source": "assumed: the 2023-10 data has no death-slow duration; check in game"
+          }
+        }
+      }
+    ]
+  },
+  "mini_pekka": {
+    "api_key": "mini-pekka",
+    "source_ref": {
+      "section": "troop",
+      "name": "MiniPekka"
+    },
+    "mechanics": []
+  },
+  "valkyrie": {
+    "api_key": "valkyrie",
+    "source_ref": {
+      "section": "troop",
+      "name": "Valkyrie"
+    },
+    "mechanics": [
+      {
+        "kind": "splash",
+        "params": {
+          "center": "self"
+        }
+      }
+    ]
+  },
+  "skeleton_army": {
+    "api_key": "skeleton-army",
+    "source_ref": {
+      "section": "troop",
+      "name": "SkeletonArmy"
+    },
+    "mechanics": [
+      {
+        "kind": "swarm",
+        "params": {}
+      }
+    ]
+  },
+  "dart_goblin": {
+    "api_key": "dart-goblin",
+    "source_ref": {
+      "section": "troop",
+      "name": "BlowdartGoblin"
+    },
+    "mechanics": []
+  },
+  "rocket": {
+    "api_key": "rocket",
+    "source_ref": {
+      "section": "projectile",
+      "name": "RocketSpell"
+    },
+    "mechanics": [
+      {
+        "kind": "knockback",
+        "params": {
+          "distance_tiles": "$pushback"
+        }
+      },
+      {
+        "kind": "reduced_tower_damage",
+        "params": {}
+      }
+    ]
+  },
+  "barbarian_barrel": {
+    "api_key": "barbarian-barrel",
+    "source_ref": {
+      "section": "projectile",
+      "name": "BarbLogProjectileRolling"
+    },
+    "mechanics": [
+      {
+        "kind": "spawn_on_end",
+        "params": {
+          "token": "barbarian",
+          "deploy_ms": "$spawn_deploy"
+        }
+      },
+      {
+        "kind": "ground_only",
+        "params": {}
+      }
+    ]
+  },
+  "royal_ghost": {
+    "api_key": "royal-ghost",
+    "source_ref": {
+      "section": "troop",
+      "name": "Ghost"
+    },
+    "mechanics": [
+      {
+        "kind": "invisible_when_idle",
+        "params": {
+          "delay_ms": "$idle_ms"
+        }
+      }
+    ]
+  },
+  "tornado": {
+    "api_key": "tornado",
+    "source_ref": {
+      "section": "spell",
+      "name": "Tornado"
+    },
+    "area_buff": true,
+    "mechanics": [
+      {
+        "kind": "pull_spell",
+        "params": {}
+      },
+      {
+        "kind": "reduced_tower_damage",
+        "params": {}
+      }
+    ],
+    "spell": {
+      "pull_speed_tiles_s": 3.6,
+      "_pull_source": "assumed: attract_percentage 360 / 100; the 2023-10 data has no pull speed in tiles/s, check in game"
+    }
+  },
+  "tokens": {
+    "barbarian": {
+      "source_ref": {
+        "section": "troop",
+        "name": "Barbarians"
+      },
+      "rarity": "epic",
+      "elixir": 2,
+      "count": 1,
+      "mechanics": [],
+      "_doc": "Spawned by Barbarian Barrel; rarity/elixir are the parent card's (level scaling / value model)."
+    }
+  }
+}

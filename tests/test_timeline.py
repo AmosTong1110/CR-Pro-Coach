@@ -120,6 +120,7 @@ def test_window_rewind_countdown_and_take_over():
     app = QApplication.instance() or QApplication([])
     w = MainWindow(session(9))
     w.show()
+    w.start_match()
     w.session.tick(20 * 30)
     w.add_log([])
     w.refresh()

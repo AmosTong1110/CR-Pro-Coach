@@ -20,9 +20,10 @@ HOOK_NAMES = ("on_spawn", "on_tick", "on_attack", "on_damaged", "on_death", "way
 HOOKS: Dict[str, set] = {h: set() for h in HOOK_NAMES}
 
 # Tags in card data that describe a card but need no code (behaviour comes from stats / targeting).
-# `knockback` is simulated by the spell kinds, which read it from the spell's params.
+# `knockback` and `apply_status` are simulated by the spell kinds, which read them from the spell's params.
 DESCRIPTIVE = frozenset({"building_targeting", "swarm", "ground_only", "reduced_tower_damage",
-                         "pulls_building_targeters", "air_unit", "knockback"})
+                         "pulls_building_targeters", "air_unit", "knockback", "apply_status",
+                         "spawn_on_end"})
 # Known game mechanics that are not simulated yet (listed so data can mention them).
 PLANNED: frozenset = frozenset()
 

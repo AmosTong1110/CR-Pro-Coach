@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import copy
 import heapq
-import random
+from backend_engine.simulator.rng import Pcg32
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -33,7 +33,6 @@ from backend_engine.contracts import (
     LatencyClass,
     PublicDeployEvent,
     ScheduledAction,
-    TilePos,
 )
 
 # 默认的人类生理参数配置文件路径
@@ -57,7 +56,7 @@ class LatencyDist:
         if self.std < 0:
             raise ValueError("LatencyDist std must be >= 0")
 
-    def sample(self, rng: random.Random) -> int:
+    def sample(self, rng: Pcg32) -> int:
         """从截断正态分布中采样一个具体毫秒数 (拒绝采样，避免概率在边界堆积)"""
         clamp = lambda v: min(max(v, self.min), self.max)  # noqa: E731
         if self.std == 0 or self.min == self.max:
@@ -155,7 +154,7 @@ class HumanDelayBuffer:
     # -- 生命周期与重置 ----------------------------------------------------
     def reset(self) -> None:
         """重置所有内部队列与状态"""
-        self._rng = random.Random(self.seed)
+        self._rng = Pcg32(self.seed)
         self._expectations: Dict[str, float] = {}
         self._hover: Optional[HoverPlan] = None
         self._hover_expires_ms: int = 0
@@ -180,7 +179,7 @@ class HumanDelayBuffer:
         rng_state = snap.pop("_rng_state")
         for k, v in snap.items():
             setattr(self, k, copy.deepcopy(v))
-        self._rng = random.Random()
+        self._rng = Pcg32()
         self._rng.setstate(rng_state)
 
     # -- 感知层输入接口 ----------------------------------------------------
