@@ -36,6 +36,10 @@ Consequences:
   mighty_miner, firecracker, earthquake, lightning, tesla, golden_knight, vines, dart_goblin, valkyrie,
   skeleton_army, rocket, miner, royal_delivery, goblin_demolisher, fire_spirit, dark_prince.
   This set makes Hog 2.6 (the most common deck, 218/3184) and several cycle decks fully playable.
+* **Modern (2026) Meta deck expansion**: Double Giant Miner-Poison (`rune_giant`, `minion_giant`, `little_prince` [champion],
+  `miner`, `poison`, `barbarian_barrel`, `bats`#evo, `skeletons`#evo). Adding `rune_giant`, `minion_giant`, `little_prince`
+  (+ `guardienne` token), `bats`, and `poison` gives CRbot immediate coverage of the top-tier 2026 beatdown/control archetype
+  alongside classic Hog 2.6.
 
 ## 2. App shell: CRbot (own look)
 
@@ -74,12 +78,15 @@ Consequences:
 3. **App shell** with the four sections; Fight = current window; Analysis = match store + existing review.
 4. Golden-value tests per card (L11 and L16 numbers) once current stats are available.
 
-### Week 2: 30 cards, deck links, archetypes, IL dataset
-1. Mechanics needed by batch 1: projectiles with travel time, splash, stun/reset, slow/freeze, knockback
-   and pull (tornado), death spawn and death damage, multi-unit spawns (skeleton army), burrow/tunnel
-   (miner, mighty miner), invisibility (royal ghost), damage-over-time and building multiplier
-   (earthquake, vines root), charge and shield (dark prince), champion abilities (golden knight dash,
-   mighty miner), form change (goblin demolisher), recoil (firecracker), chain (electro spirit).
+### Week 2: 30 cards + 2026 meta deck, deck links, archetypes, IL dataset
+1. Mechanics needed by batch 1 + modern meta expansion:
+   - Projectiles with travel time, splash, stun/reset, slow/freeze, knockback and pull (tornado), death spawn and death damage,
+     multi-unit spawns (skeleton army), burrow/tunnel (miner, mighty miner), invisibility (royal ghost), damage-over-time and
+     building multiplier (earthquake, vines root, poison lingering AoE + slow), charge and shield (dark prince), champion abilities
+     (golden knight dash, mighty miner lane swap, little prince attack ramp + Royal Rescue Guardienne charge knockback),
+     form change (goblin demolisher), recoil (firecracker), chain (electro spirit).
+   - Modern meta unit behaviors: flying ranged tank (minion_giant, range 4.0, knockback immune), ally enhancement aura
+     (rune_giant, every 3rd attack damage boost), flying melee swarm + lifesteal overheal (bats, evo bats), evo skeletons multiplying on hit.
 2. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>`, mapping numeric card ids to ours.
 3. **Archetype naming** (§7).
 4. **IL dataset builder**: replay events → (observation, next action) samples using our OppElixirTracker,
@@ -203,7 +210,8 @@ If a timing variant beats the actual play by ≥ 3 pts, report "too early/late b
 ### Archetype names (own rules)
 `[Evo/Hero tag][win condition] [key building or spell] [avg elixir if cycle]`, built from a win-condition
 table (hog_rider→Hog, royal_giant→RG, golem→Golem, lava_hound→Lava, balloon→Loon, x_bow→XBow,
-graveyard→GY, goblin_barrel→Bait, miner→Miner…), e.g. "EvoRoyalHogs GobHut", "Hog 2.6".
+graveyard→GY, goblin_barrel→Bait, miner→Miner, rune_giant→RuneGiant, minion_giant→MinionGiant,
+little_prince→LP…), e.g. "EvoRoyalHogs GobHut", "Hog 2.6", "Double Giant Miner Poison".
 
 ## 8. M1 budget (8 GB)
 
