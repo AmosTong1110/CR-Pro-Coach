@@ -51,6 +51,24 @@ def test_read_only_contract():
 
 
 # ---------------------------------------------------------------- calibration
+def test_crop_box_matches_training_tower_layout():
+    """A tower tile mapped through crop_box must land where the 568x896 training crop has it."""
+    cal = ArenaCalibration.from_corners(1000, 2000, (100, 300), (900, 1600))
+    l, t, r, b = cal.crop_box(1000, 2000)
+    for (tx, ty), (cx, cy) in {(3.5, 25.5): (116, 200), (14.5, 6.5): (461, 689)}.items():
+        px, py = cal.tile_to_px(tx, ty)
+        assert ((px - l) / (r - l) * 568, (py - t) / (b - t) * 896) == pytest.approx((cx, cy), abs=0.5)
+
+
+def test_default_layout_follows_aspect_ratio():
+    phone = ArenaCalibration.default_for(1080, 2340)
+    ipad = ArenaCalibration.default_for(1640, 2360)
+    assert (phone.left, phone.right) == (0.0, 1080.0)
+    # iPad: tile grid is inset by the side walls; queen tower (3.5, 6.5) at ~(480, 1411) px (measured)
+    assert ipad.tile_to_px(3.5, 6.5) == pytest.approx((480.7, 1411.4), abs=4)
+    assert ipad.crop_box(1640, 2360) == pytest.approx((252, 58, 1372, 1818), abs=2)
+
+
 def test_calibration_round_trip_and_scaling(tmp_path):
     cal = ArenaCalibration.from_corners(400, 860, (10, 100), (390, 700), screen_region=(5, 6, 400, 860))
     assert cal.px_to_tile(10, 700) == pytest.approx((0, 0))
@@ -356,8 +374,9 @@ def test_arena_crop_maps_boxes_back_to_frame(tmp_path):
     frame = np.zeros((2000, 1000, 3), np.uint8)
     (d,) = det.detect(frame, cal)
     fx, fy = (d.box[0] + d.box[2]) / 2, (d.box[1] + d.box[3]) / 2
-    assert (fx, fy) == pytest.approx((500, 950), abs=3)         # centre of the arena in frame pixels
-    assert cal.px_to_tile(fx, fy) == pytest.approx((9, 16), abs=0.1)
+    l, t, r, b = cal.crop_box(1000, 2000)                        # crop = tile box + training margins
+    assert (fx, fy) == pytest.approx(((l + r) / 2, (t + b) / 2), abs=3)
+    assert cal.px_to_tile(fx, fy) == pytest.approx((9, 16), abs=0.2)
     assert d.evolved and d.card_id == "knight"
 
 

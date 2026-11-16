@@ -17,6 +17,16 @@ W_TILES, H_TILES = 18.0, 32.0
 
 # Rough arena box as fractions of a portrait phone frame (~9:19.5). Calibrate for real use.
 DEFAULT_FRACTIONS = (0.0, 0.115, 1.0, 0.79)   # left, top, right, bottom
+# iPad screen recordings (1640x2360, aspect ~0.695, measured 2026-11-16 on 5 real matches in two arenas):
+# the arena has wide decorative side walls and the hand panel takes the bottom ~20%, so the tile grid
+# spans only x 16-84% of the width. Fitted so the towers land where the detector's training crop has them.
+IPAD_FRACTIONS = (0.16115, 0.05180, 0.83992, 0.73729)
+TABLET_MIN_ASPECT = 0.6    # width / height above this = tablet layout (phones are ~0.46)
+
+# The detector's 568x896 training crop is a bit larger than the 18x32 tile grid. From the dataset's tower
+# layout (queen towers at crop px (116|461, 200|689) = tiles (3.5|14.5, 25.5|6.5)) the tile grid spans
+# x 6.2-570.8 and y 32.7-856.3 of the crop. Margins as fractions of the tile box: left, top, right, bottom.
+CROP_MARGINS = (6.227 / 564.545, 32.71 / 823.58, (568 - 570.773) / 564.545, (896 - 856.29) / 823.58)
 
 
 @dataclass
@@ -32,7 +42,7 @@ class ArenaCalibration:
 
     @classmethod
     def default_for(cls, frame_w: int, frame_h: int) -> "ArenaCalibration":
-        l, t, r, b = DEFAULT_FRACTIONS
+        l, t, r, b = IPAD_FRACTIONS if frame_w / frame_h > TABLET_MIN_ASPECT else DEFAULT_FRACTIONS
         return cls(frame_w, frame_h, l * frame_w, t * frame_h, r * frame_w, b * frame_h)
 
     @classmethod
@@ -47,6 +57,13 @@ class ArenaCalibration:
     def _scaled(self, frame_w: int, frame_h: int) -> Tuple[float, float, float, float]:
         sx, sy = frame_w / self.frame_w, frame_h / self.frame_h
         return self.left * sx, self.top * sy, self.right * sx, self.bottom * sy
+
+    def crop_box(self, frame_w: int, frame_h: int) -> Tuple[float, float, float, float]:
+        """The detector's arena crop (l, t, r, b) in frame pixels: the tile box plus the training margins."""
+        l, t, r, b = self._scaled(frame_w, frame_h)
+        w, h = r - l, b - t
+        ml, mt, mr, mb = CROP_MARGINS
+        return l - ml * w, t - mt * h, r + mr * w, b + mb * h
 
     def px_to_tile(self, px: float, py: float, frame_w: Optional[int] = None,
                    frame_h: Optional[int] = None) -> Tuple[float, float]:
