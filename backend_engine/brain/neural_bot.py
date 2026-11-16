@@ -35,6 +35,9 @@ ROOT = Path(__file__).resolve().parents[2]
 MODEL_NAME = "crbot_il_v1"
 DEFAULT_MODEL_DIR = ROOT / "pretrained_weights" / MODEL_NAME
 DECIDE_EVERY_MS = 500
+# fallback when the model .json has no gate_threshold: the crbot_il_v1 gauntlet optimum (2026-11-16: 0.45 at 500 ms,
+# 23-1 vs ScriptedBot; every setting from 0.30 to 0.70 scored within the same 95% interval)
+DEFAULT_GATE_THRESHOLD = 0.45
 OUTPUTS = ("gate_logit", "slot_logits", "tile_logits", "value")
 
 
@@ -100,7 +103,7 @@ class NeuralBot:
             raise ValueError(f"decide_every_ms must be a positive multiple of the 50 ms tick, got {every}")
         self.decide_every_ms = every
         self.gate_threshold = float(gate_threshold if gate_threshold is not None
-                                    else meta.get("gate_threshold", 0.5))
+                                    else meta.get("gate_threshold", DEFAULT_GATE_THRESHOLD))
         self._input = session.get_inputs()[0].name
         self._rules = ScriptedBot(db, side)                # abilities only
         self.last: Optional[dict] = None                   # last model call (for debugging / UI)

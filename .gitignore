@@ -48,6 +48,7 @@ pretrained_weights/*.pth
 
 # Detector weights (licence: personal use only, do not redistribute)
 pretrained_weights/**/*.onnx
+pretrained_weights/**/*.bak
 
 # Detector training weights (same licence)
 pretrained_weights/**/*.pt
