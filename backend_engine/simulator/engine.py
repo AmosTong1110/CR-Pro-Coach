@@ -663,7 +663,7 @@ class Match:
         units = [
             {"uid": u.uid, "side": u.side, "card_id": u.card_id, "kind": u.kind, "layer": u.layer,
              "x": u.x, "y": u.y, "hp": u.hp, "max_hp": u.max_hp, "deploying": u.deploy_ms > 0,
-             "tower_role": u.tower_role, "active": u.active, "targets": u.targets}
+             "tower_role": u.tower_role, "active": u.active, "targets": u.targets, "radius": u.radius}
             for u in sorted(self.units.values(), key=lambda u: u.uid) if seen(u.source_event_id, u.side)
         ]
         spells = [{"side": s.side, "card_id": s.card_id, "x": s.x, "y": s.y}

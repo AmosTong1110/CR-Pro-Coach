@@ -57,6 +57,10 @@ recordings/
 # Fine-tuning sets built from the user's own recordings (private gameplay)
 data/finetune/
 
+# Imitation-learning data: downloaded replay parts and generated training shards (large, rebuildable)
+data/il_raw/
+data/il_shards/
+
 # Lint cache
 .ruff_cache/
 

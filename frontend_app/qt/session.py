@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 
 from backend_engine.brain.coach_analyzer import Candidate, CoachAnalyzer, MatchReview
 from backend_engine.brain.human_delay_buffer import HumanDelayBuffer, ReactionProfile
-from backend_engine.brain.scripted_bot import ScriptedBot
+from backend_engine.brain.neural_bot import make_agent, model_available
 from backend_engine.contracts import ElixirEstimate, LatencyClass
 from backend_engine.meta.archetypes import archetype_name
 from backend_engine.perception.bayesian_deck_guesser import DeckGuess, default_guesser
@@ -39,7 +39,18 @@ PERSONAS: Dict[str, dict] = {
     "aggressor":  {"label": "The Aggressor (Dual-Lane Pressure)", "aggression": 0.95, "profile": "aggressor"},
     "spell_cycler": {"label": "Spell-Cycler (Turtle/Chip)",       "aggression": 0.2, "profile": "spell_cycler"},
     "adaptive_counter": {"label": "Adaptive Counter",             "aggression": 0.5, "profile": "adaptive_counter"},
+    # imitation-learning policy (pretrained_weights/crbot_il_v1/); falls back to the rules if the model is missing
+    "neural":     {"label": "Neural (IL v1)",                    "aggression": 0.5, "profile": "adaptive_counter",
+                   "agent": "neural"},
 }
+
+
+def persona_label(key: str) -> str:
+    """Label for persona pickers (says when the neural model isn't installed)."""
+    p = PERSONAS[key]
+    if p.get("agent") == "neural" and not model_available():
+        return "Neural (IL v1, not installed)"
+    return p["label"]
 
 
 @dataclass(frozen=True)
@@ -119,8 +130,8 @@ class GameSession:
         self.match = Match(MatchConfig((c.player_deck, c.ai_deck), (c.level, c.level),
                                        (c.player_evo, c.ai_evo), seed=seed), self.db)
         self.ai_buffer = HumanDelayBuffer(profile, side=AI, seed=seed + 1)
-        self.runner = MatchRunner(self.match, {HUMAN: None, AI: ScriptedBot(self.db, AI, persona["aggression"])},
-                                  {AI: self.ai_buffer})
+        agent, self.ai_note = self._make_ai()
+        self.runner = MatchRunner(self.match, {HUMAN: None, AI: agent}, {AI: self.ai_buffer})
         self.log = []
         self._logged = 0
         evo_capable = self.db.evo_capable()
@@ -233,6 +244,11 @@ class GameSession:
             self._restore(cp)
         return self.match.t_ms
 
+    def _make_ai(self):
+        """The AI agent of the current persona: (agent, note). `note` explains a fallback to the rules."""
+        p = PERSONAS[self.cfg.persona]
+        return make_agent(self.db, AI, p.get("agent", "scripted"), p["aggression"])
+
     # -- 赛后复盘分析调度 ----------------------------------------------------
     def fork(self, cp: Checkpoint) -> Tuple[Match, MatchRunner]:
         """克隆生成独立的平行推演副本 (专用于分析评估，完全不影响正在进行的实时对局)"""
@@ -240,8 +256,7 @@ class GameSession:
         m.restore(cp.match)
         buf = HumanDelayBuffer(self.ai_buffer.profile, side=AI, seed=0)
         buf.restore(cp.ai_buffer)
-        r = MatchRunner(m, {HUMAN: None, AI: ScriptedBot(self.db, AI, PERSONAS[self.cfg.persona]["aggression"])},
-                        {AI: buf})
+        r = MatchRunner(m, {HUMAN: None, AI: self._make_ai()[0]}, {AI: buf})
         r._delivered = cp.delivered
         for s, snap in cp.ai_trackers.items():
             r.trackers[s].restore(snap)
