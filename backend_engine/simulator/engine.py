@@ -23,6 +23,7 @@ from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.entities import AreaEffect, Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
 from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
 from backend_engine.simulator.mechanics import status as S
+from backend_engine.simulator.mechanics.abilities import ABILITY_SUFFIX, ability_unit, start_ability
 from backend_engine.simulator.mechanics.batch2 import fill_spawn_params
 from backend_engine.simulator.mechanics.core import advance_projectile
 from backend_engine.simulator.rng import Pcg32
@@ -35,7 +36,7 @@ from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
 #   4: card numbers from the Clash Royale Wiki (2026-11-16): exact L11-L16 hitpoints / damage / tower damage
 #   5: wiki timings (hit speed, first hit, range) of the simulated cards
 #   6: batch 2: charge, shield, burrow, ramp damage, recoil, hide underground, form change, Earthquake / Lightning /
-#      Vines / Royal Delivery spell kinds, 50% slow
+#      Vines / Royal Delivery spell kinds, 50% slow; champion abilities (`Match.use_ability`, `card#ability` log entries)
 ENGINE_VERSION = 6
 
 # 战斗感知与物理常量
@@ -249,6 +250,39 @@ class Match:
             self._cast_spell(side, card_id, x, y, ev.event_id)
         else:
             self._spawn_card_units(side, card_id, x, y, ev.event_id, evolved)
+        return PlayResult(True, event=ev)
+
+    # -- champion abilities ----------------------------------------------------
+    def check_ability(self, side: int, card_id: str) -> Optional[str]:
+        """Read-only: None if `side` can use the ability of its champion `card_id` now, else a reason code."""
+        if self.result is not None:
+            return "match_over"
+        card = self.db.cards.get(card_id)
+        ab = next((m for m in (card or {}).get("mechanics", []) if m["kind"] == "champion_ability"), None)
+        if ab is None:
+            return "no_ability"
+        u = ability_unit(self, side, card_id)
+        if u is None:
+            return "ability_not_ready"
+        if self.sides[side].elixir + 1e-9 < float(ab["params"].get("elixir", 1)):
+            return "not_enough_elixir"
+        return None
+
+    def use_ability(self, side: int, card_id: str) -> PlayResult:
+        """Spend the ability's elixir and start it on the oldest ready champion of that card. Recorded as a
+        `PublicDeployEvent(is_ability=True)` and as a `card#ability` entry in the action log (replayable)."""
+        reason = self.check_ability(side, card_id)
+        if reason:
+            return PlayResult(False, reason)
+        u = ability_unit(self, side, card_id)
+        cost = int(u.params["champion_ability"].get("elixir", 1))
+        self.sides[side].elixir -= cost
+        ev = PublicDeployEvent(self.next_event_id, self.t_ms, side, card_id, cost, TilePos(u.x, u.y),
+                               is_ability=True, is_threat=self._is_threat(side, "troop", u.y))
+        self.next_event_id += 1
+        self.events.append(ev)
+        self.action_log.append((self.t_ms, side, card_id + ABILITY_SUFFIX, u.x, u.y))
+        start_ability(self, u)
         return PlayResult(True, event=ev)
 
     @staticmethod
@@ -630,6 +664,8 @@ class Match:
             "crowns": (st.crowns, opp.crowns),
             "units": units,
             "spells": spells,
+            "abilities": [c for c in dict.fromkeys(u.card_id for u in self.units.values() if u.side == side)
+                          if self.check_ability(side, c) is None],      # own champions that can use their ability now
         }
 
     # -- 快照保存、回溯与确定性哈希 (Snapshots & Determinism) -------------------
@@ -677,7 +713,10 @@ class Match:
         while m.result is None and m.t_ms < stop:
             while i < len(log) and log[i][0] == m.t_ms:
                 _, side, card, x, y = log[i]
-                res = m.play(side, card, x, y)
+                if card.endswith(ABILITY_SUFFIX):
+                    res = m.use_ability(side, card[: -len(ABILITY_SUFFIX)])
+                else:
+                    res = m.play(side, card, x, y)
                 if not res.ok:
                     raise RuntimeError(f"replay diverged at {log[i]}: {res.reason}")
                 i += 1

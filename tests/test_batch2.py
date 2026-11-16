@@ -69,8 +69,7 @@ def test_costs_and_champions(db):
     assert {c: db.cards[c]["elixir"] for c in ("lightning", "tesla", "miner", "vines")} == \
         {"lightning": 6, "tesla": 4, "miner": 3, "vines": 3}
     assert db.cards["golden_knight"]["rarity"] == "champion"
-    tags = db.unsimulated_tags()
-    assert tags["golden_knight"] == ["champion_ability"] and tags["mighty_miner"] == ["champion_ability"]
+    assert db.unsimulated_tags() == {}                             # champion abilities are simulated (test_abilities)
 
 
 def test_decks_unlocked(db):

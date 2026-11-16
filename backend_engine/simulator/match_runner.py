@@ -23,7 +23,7 @@ from dataclasses import dataclass, field, replace
 from typing import Dict, List, Optional, Protocol, Sequence, Tuple
 
 from backend_engine.brain.human_delay_buffer import HumanDelayBuffer, ReactionProfile
-from backend_engine.contracts import ActionIntent, PublicDeployEvent
+from backend_engine.contracts import ActionIntent, ActionKind, PublicDeployEvent
 from backend_engine.perception.bayesian_deck_guesser import DeckGuess, default_guesser, known_costs
 from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator.card_db import CardDB
@@ -98,6 +98,11 @@ class MatchRunner:
             self.stats.plays[side] += 1
         return res
 
+    def human_ability(self, card_id: str, side: int = 0) -> PlayResult:
+        """Human uses a champion ability (no reaction delay: the human is the one acting)."""
+        res = self.match.use_ability(side, card_id)
+        return res
+
     def tick(self) -> None:
         """执行单一 50ms 模拟 Tick 推进管线"""
         m = self.match
@@ -140,9 +145,15 @@ class MatchRunner:
 
         # 3. 释放到达下牌时刻的动作意图并下发引擎
         for side, buf in self.buffers.items():
-            legal = lambda i, s=side: m.check_play(s, i.card_id, i.tile.x, i.tile.y) is None  # noqa: E731
+            def legal(i, s=side) -> bool:
+                if i.kind == ActionKind.ABILITY:
+                    return m.check_ability(s, i.card_id) is None
+                return m.check_play(s, i.card_id, i.tile.x, i.tile.y) is None
             for a in buf.release_due(t, elixir=m.sides[side].elixir, is_legal=legal):
-                res = m.play(side, a.intent.card_id, a.intent.tile.x, a.intent.tile.y)
+                if a.intent.kind == ActionKind.ABILITY:
+                    res = m.use_ability(side, a.intent.card_id)
+                else:
+                    res = m.play(side, a.intent.card_id, a.intent.tile.x, a.intent.tile.y)
                 if res.ok:
                     self.stats.plays[side] += 1
                 else:

@@ -31,6 +31,8 @@ def fill_spawn_params(params: dict, stats) -> None:
         params["tower_damage"]["damage"] = st.get("crown_tower_damage", 0)
     if "ramp_damage" in params:
         params["ramp_damage"]["damages"] = [st[k] for k in params["ramp_damage"]["stats"]]
+    if "champion_ability" in params:
+        params["champion_ability"]["damage"] = st.get(params["champion_ability"].get("damage_stat", "damage"), 0)
     if "form_change" in params:
         fc = params["form_change"]
         fc["death_damage"] = st.get("death_damage", 0)

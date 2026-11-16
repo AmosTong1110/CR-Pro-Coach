@@ -233,6 +233,23 @@ def delivery_ramp_firecracker(db: CardDB) -> List[str]:
     return _sampled(m, 16_000)
 
 
+CHAMPIONS = ("golden_knight", "mighty_miner", "hog_rider", "knight", "musketeer", "fireball", "the_log", "skeletons")
+
+
+def champion_abilities(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_B), shuffle=False), db)
+    for card, x, y in (("knight", 9.5, 21.0), ("valkyrie", 11.0, 22.0), ("musketeer", 7.5, 22.0)):
+        _play(m, 1, card, x, y)
+    _play(m, 0, "golden_knight", 9.5, 14.0)
+    _play(m, 0, "mighty_miner", 4.5, 12.0)
+    m.run_until(3000)
+    m.sides[0].elixir = 6.0
+    m.use_ability(0, "golden_knight")
+    m.run_until(5000)
+    m.use_ability(0, "mighty_miner")
+    return _sampled(m, 14_000)
+
+
 def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out: Dict[str, Callable[[], List[str]]] = {}
     for seed in (1, 2, 3, 4):
@@ -242,8 +259,9 @@ def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     for fn in (log_vs_swarm, fireball_king, cannon_pulls_hog, hog_river_jump, crowd, evo_knight_tank,
                zap_stun, ice_spirit_freeze, electro_chain, ice_golem_burst, valkyrie_swarm, skeleton_army_fireball,
                barrel_spawn, ghost_stealth, tornado_pull, dark_prince_charge, spells_batch2, tesla_demolisher_miner,
-               delivery_ramp_firecracker):
+               delivery_ramp_firecracker, champion_abilities):
         out[fn.__name__] = lambda fn=fn: fn(db)
     out["bots_hog26_s5"] = lambda: bot_match(db, 5, 11, deck=HOG_26)
     out["bots_stealth_s6"] = lambda: bot_match(db, 6, 11, deck=STEALTH)
+    out["bots_champions_s7"] = lambda: bot_match(db, 7, 11, deck=CHAMPIONS)
     return out

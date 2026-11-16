@@ -34,6 +34,22 @@ class ScriptedBot:
         ax, ay = G.to_side(self.side, x, y)
         return ActionIntent(ActionKind.DEPLOY, card, TilePos(ax, ay), self.db.cards[card]["elixir"], source="script")
 
+    def _ability(self, obs: dict) -> Optional[ActionIntent]:
+        """Champion ability: Dashing Dash when 2+ enemy troops / buildings are within its reach; Explosive Escape when
+        the Miner is hurt (below 60%) with an enemy on top of it. Single use, so the bot just waits for the moment."""
+        for c in obs.get("abilities", ()):
+            name = next((m["params"].get("name") for m in self._card(c)["mechanics"] if m["kind"] == "champion_ability"),
+                        None)
+            for u in obs["units"]:
+                if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
+                    continue
+                near = [e for e in obs["units"] if e["side"] != self.side and e["kind"] != "tower"
+                        and G.dist(e["x"], e["y"], u["x"], u["y"]) <= (5.0 if name == "dash" else 2.0)]
+                if (name == "dash" and len(near) >= 2) or (name == "explosive_escape" and near
+                                                          and u["hp"] < 0.6 * u["max_hp"]):
+                    return ActionIntent(ActionKind.ABILITY, c, None, 1, source="script")
+        return None
+
     def _card(self, c: str) -> dict:
         return self.db.cards[c]
 
@@ -48,6 +64,9 @@ class ScriptedBot:
         优先级 4: 圣水满费防漏水沉底过牌
         """
         elixir, hand = obs["elixir"], obs["hand"]
+        ab = self._ability(obs)
+        if ab:
+            return [ab]
         affordable = [c for c in hand if self._card(c)["elixir"] <= elixir + 1e-9]
         if not affordable:
             return []

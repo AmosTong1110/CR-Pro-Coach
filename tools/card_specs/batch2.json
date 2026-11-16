@@ -62,7 +62,8 @@
           "uses": 1,
           "max_dashes": 10,
           "max_dash_tiles": 5.5,
-          "dash_damage_stat": "dash_damage"
+          "dash_speed_tiles_s": 6.0,
+          "damage_stat": "dash_damage"
         }
       }
     ],
@@ -75,7 +76,8 @@
     },
     "assumed": [
       "mass",
-      "collision_radius_tiles"
+      "collision_radius_tiles",
+      "dash speed 6 tiles/s, towers are not dash targets, immune while dashing (wiki: the immunity can be extended by dashing again)"
     ],
     "internal_name": "GoldenKnight"
   },
@@ -113,7 +115,11 @@
           "name": "explosive_escape",
           "elixir": 1,
           "uses": 1,
-          "damage_stat": "escape_damage"
+          "damage_stat": "escape_damage",
+          "radius_tiles": 2.5,
+          "knockback_tiles": 1.0,
+          "dig_ms": 933,
+          "bomb_ms": 1000
         }
       }
     ],
@@ -124,7 +130,8 @@
     "assumed": [
       "mass",
       "collision_radius_tiles",
-      "first_hit_s (not on the page; engine default 0.5)"
+      "first_hit_s (not on the page; engine default 0.5)",
+      "bomb radius 2.5 and knockback 1 tile ('medium area'), bomb hits towers for full damage, knockback immunity not simulated"
     ],
     "internal_name": "MightyMiner"
   },
