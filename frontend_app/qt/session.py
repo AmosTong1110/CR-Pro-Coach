@@ -43,14 +43,17 @@ PERSONAS: Dict[str, dict] = {
     # imitation-learning policy (pretrained_weights/crbot_il_v1/); falls back to the rules if the model is missing
     "neural":     {"label": "Neural (IL v1)",                    "aggression": 0.5, "profile": "adaptive_counter",
                    "agent": "neural"},
+    # PPO self-play fine-tune of IL v1 (pretrained_weights/crbot_ppo_v1/); same fallback
+    "neural_ppo": {"label": "Neural (PPO v1)",                   "aggression": 0.5, "profile": "adaptive_counter",
+                   "agent": "neural", "model": "crbot_ppo_v1"},
 }
 
 
 def persona_label(key: str) -> str:
     """Label for persona pickers (says when the neural model isn't installed)."""
     p = PERSONAS[key]
-    if p.get("agent") == "neural" and not model_available():
-        return "Neural (IL v1, not installed)"
+    if p.get("agent") == "neural" and not model_available(name=p.get("model", "crbot_il_v1")):
+        return p["label"][:-1] + ", not installed)"
     return p["label"]
 
 
@@ -275,7 +278,8 @@ class GameSession:
     def _make_ai(self):
         """The AI agent of the current persona: (agent, note). `note` explains a fallback to the rules."""
         p = PERSONAS[self.cfg.persona]
-        return make_agent(self.db, AI, p.get("agent", "scripted"), p["aggression"])
+        return make_agent(self.db, AI, p.get("agent", "scripted"), p["aggression"],
+                          model=p.get("model", "crbot_il_v1"))
 
     # -- 赛后复盘分析调度 ----------------------------------------------------
     def fork(self, cp: Checkpoint) -> Tuple[Match, MatchRunner]:
