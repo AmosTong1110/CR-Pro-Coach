@@ -51,16 +51,11 @@ CR-Pro-Coach/
 │   └── gauntlet_eval.py              # Gauntlet tournament evaluation for policy iterations
 │
 └── 📂 frontend_app/                  # [5. Frontend Client Applications]
-    ├── 📂 qt/                        # Native PySide6 Desktop Application
-    │   ├── app.py                    # Main sparring window, timeline scrubber, and controls
-    │   ├── board.py                  # 18x32 arena canvas, ghost tile visualizations, and range rings
-    │   ├── review.py                 # Win-rate graph, move-by-move evaluation panel, and take-over engine
-    │   └── session.py                # Game session orchestrator, rewind/fast-forward, and state history
-    │
-    └── 📂 Assets/Scripts/            # Unity (C#) Client Scripts
-        ├── ArenaUI/                  # 18x32 board rendering, card deployment, and Level 11/16 switcher
-        ├── DeckBuilder/              # Full deck builder with RoyaleAPI deck link import
-        └── CoachOverlay/             # Real-time win-rate overlay, ghost tiles, and take-over button
+    └── 📂 qt/                        # Native PySide6 Desktop Application
+        ├── app.py                    # Main sparring window, timeline scrubber, and controls
+        ├── board.py                  # 18x32 arena canvas, ghost tile visualizations, and range rings
+        ├── review.py                 # Win-rate graph, move-by-move evaluation panel, and take-over engine
+        └── session.py                # Game session orchestrator, rewind/fast-forward, and state history
 ```
 
 ---
