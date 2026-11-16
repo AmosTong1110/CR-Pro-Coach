@@ -239,8 +239,8 @@ Target decks = the 8 archetypes in `configs/meta_decks_top200.json` (season 2026
 ### Phase 1 (current batch, keeps AI training unblocked)
 * The plan's 30 cards + the 5 modern cards (`rune_giant`, `minion_giant`, `little_prince`, `bats`, `poison`) = 35,
   plus `zap`, `archers`, `minions` (already simulated, extras) = 38 cards.
-* Wiki pages for all 35 are saved in `data/raw_sources/cards/` (30/30 + 5/5). Simulated now: 22 of 38.
-* Meta decks completed: Hog 2.6 (now). After the remaining 11 batch cards: still only Hog 2.6 of the 8
+* Wiki pages for all 35 are saved in `data/raw_sources/cards/` (30/30 + 5/5). Simulated now: 33 of 38 (all 30 plan cards + zap, archers, minions; the 5 modern cards are next).
+* Meta decks completed: Hog 2.6 (now). With all 30 batch cards (done 2026-11-16): still only Hog 2.6 of the 8
   (the other 7 each miss 2–7 Phase 2 cards). In the HF replay data: 33 of 932 decks (337 of 3,184 listings).
   The 5 modern cards add `poison` and unlock 3 more HF decks; they are 2 cards short of Rune Giant Miner Control
   (`inferno_dragon`, `goblin_cage`) and of Goblin Drill Poison (`goblin_drill`, `magic_archer`).

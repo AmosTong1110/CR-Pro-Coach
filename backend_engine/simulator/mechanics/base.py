@@ -25,7 +25,7 @@ DESCRIPTIVE = frozenset({"building_targeting", "swarm", "ground_only", "reduced_
                          "pulls_building_targeters", "air_unit", "knockback", "apply_status",
                          "spawn_on_end"})
 # Known game mechanics that are not simulated yet (listed so data can mention them).
-PLANNED: frozenset = frozenset()
+PLANNED: frozenset = frozenset({"champion_ability"})   # champion / hero abilities: not simulated yet
 
 
 class Mechanic:

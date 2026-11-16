@@ -57,7 +57,7 @@ class AreaSpell(SpellKind):
         kx, ky, _ = G.tower_pos(side, "king")
         travel = G.dist(kx, ky, x, y) / sp.get("travel_speed_tiles_s", 1e9) * 1000
         m.spells.append(Spell(m._uid(), side, card_id, x, y, sp["radius_tiles"], dmg, tdmg,
-                              int(math.ceil(travel / G.TICK_MS) * G.TICK_MS), eid, "area_spell", dict(params)))
+                              int(math.ceil(travel / G.TICK_MS) * G.TICK_MS), eid, self.kind, dict(params)))
 
     def impact(self, m, sp: Spell) -> None:
         for e in sorted(m.units.values(), key=lambda e: e.uid):

@@ -217,6 +217,8 @@ class WikiPage:
     card_id: str                                 # snake_case id of the base card ("knight")
     variant: str                                 # base | evo | hero
     attrs: Dict[str, str] = field(default_factory=dict)             # first attributes table (Cost, Hit Speed, ...)
+    tables: List[Dict[str, str]] = field(default_factory=list)      # every unit-attributes table in page order
+    totals: Dict[int, Dict[str, float]] = field(default_factory=dict)   # level -> {column: N} for cells "64 x5 (320)"
     levels: Dict[int, Dict[str, float]] = field(default_factory=dict)   # level -> {column header: value}
     columns: List[str] = field(default_factory=list)
 
@@ -249,8 +251,10 @@ def parse_wiki_html(path: Path) -> WikiPage:
         rows = [r for r in t["rows"] if r]
         if len(rows) < 2:
             continue
-        if t["id"] == "unit-attributes-table" and not page.attrs:
-            page.attrs = dict(zip(rows[0], rows[1]))
+        if (t["id"] or "").startswith("unit-attributes-table"):
+            page.tables.append(dict(zip(rows[0], rows[1])))
+            if not page.attrs:
+                page.attrs = page.tables[0]
         elif t["id"] == "unit-statistics-table" and not page.levels:
             page.columns = rows[0][1:]
             for r in rows[1:]:
@@ -259,6 +263,10 @@ def parse_wiki_html(path: Path) -> WikiPage:
                     continue
                 page.levels[int(lvl)] = {h: v for h, c in zip(rows[0][1:], r[1:])
                                          if (v := wiki_number(c)) is not None}
+                for h, c in zip(rows[0][1:], r[1:]):         # "64 x5 (320)": keep the total as well
+                    mt = re.search(r"\(\s*(\d[\d,]*)\s*\)\s*$", c)
+                    if mt:
+                        page.totals.setdefault(int(lvl), {})[h] = float(mt.group(1).replace(",", ""))
     return page
 
 
@@ -286,7 +294,7 @@ def _our_stat_for(column: str, card: Dict[str, Any]) -> Optional[str]:
 def headline_columns(pg: WikiPage, entry: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
     """(wiki column, our stat key, is_token) for the columns we model. Spell pages that also list the unit the
     spell spawns (Barbarian Barrel) have their Hitpoints / Damage columns mapped to that token."""
-    spawns = entry.get("type") == "spell" and any(m["kind"] == "spawn_on_end" for m in entry.get("mechanics", []))
+    spawns = entry.get("type") == "spell" and any(m["kind"] in _SPAWNERS for m in entry.get("mechanics", []))
     out, seen = [], set()
     for col in pg.columns:
         stat = _our_stat_for(col, entry)
@@ -300,8 +308,11 @@ def headline_columns(pg: WikiPage, entry: Dict[str, Any]) -> List[Tuple[str, str
     return out
 
 
+_SPAWNERS = ("spawn_on_end", "delayed_drop")       # spell mechanics that put a token unit on the field
+
+
 def _token_id(entry: Dict[str, Any]) -> Optional[str]:
-    return next((m["params"]["token"] for m in entry.get("mechanics", []) if m["kind"] == "spawn_on_end"), None)
+    return next((m["params"]["token"] for m in entry.get("mechanics", []) if m["kind"] in _SPAWNERS), None)
 
 
 def verify_wiki(db: CardDB, pages: List[WikiPage], levels: Tuple[int, ...] = (11, 16)) -> List[Dict[str, Any]]:
@@ -324,7 +335,9 @@ def verify_wiki(db: CardDB, pages: List[WikiPage], levels: Tuple[int, ...] = (11
                 continue
             mine = {L: ours[L].get(stat) for L in levels}
             tol = 1 if stat == "crown_tower_damage" else 0     # a percentage-derived value may be off by a rounding step
-            ok = all(wiki[L] is None or mine[L] is not None and abs(mine[L] - wiki[L]) <= tol for L in levels)
+            tot = {L: pg.totals.get(L, {}).get(col) for L in levels}      # "64 x5 (320)": we may hold the total
+            ok = all(wiki[L] is None or mine[L] is not None and (abs(mine[L] - wiki[L]) <= tol or mine[L] == tot[L])
+                     for L in levels)
             rows.append({"card": pg.card_id + ("/" + holder if token else ""), "stat": stat, "wiki": wiki,
                          "ours": mine, "status": "ok" if ok else "DIFF", "data_as_of": entry.get("data_as_of")})
         if not cols:
@@ -350,8 +363,9 @@ def apply_wiki(cfg: Dict[str, Any], pages: List[WikiPage], as_of: str,
                 if v is not None:
                     holder.setdefault("level_overrides", {}).setdefault(str(L), {})[stat] = int(v)
             holder["wiki_as_of"] = as_of
-        new["cards"][pg.card_id]["data_source"] = (new["cards"][pg.card_id].get("data_source", "")
-                                                   + f" + wiki-fandom-html:{pg.title}").replace("  ", " ")
+        src = new["cards"][pg.card_id].get("data_source", "")
+        if "wiki-fandom-html" not in src:
+            new["cards"][pg.card_id]["data_source"] = f"{src} + wiki-fandom-html:{pg.title}".strip()
     return new
 
 
@@ -377,10 +391,10 @@ def print_verification(rows: List[Dict[str, Any]], pages: List[WikiPage], levels
 
 
 # ---- attributes: cost, timings, range, speed, count, targets -------------------------------------------
-def attribute_fields(pg: WikiPage, entry: Dict[str, Any]) -> Dict[str, Any]:
+def attribute_fields(pg: WikiPage, entry: Dict[str, Any], attrs: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     """Wiki attribute table -> {dotted config path: value}. Only fields a card of that type has are produced.
     Speeds / projectile speeds are game units / 60 (tiles per second), the same convention as the importer."""
-    a, out = pg.attrs, {}
+    a, out = (pg.attrs if attrs is None else attrs), {}
     num = lambda k: wiki_number(a.get(k, ""))                        # noqa: E731
     out["elixir"] = num("Cost")
     spell = entry.get("type") == "spell"

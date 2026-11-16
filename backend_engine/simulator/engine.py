@@ -23,6 +23,7 @@ from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.entities import AreaEffect, Projectile, RollingSpell, Spell, Unit  # noqa: F401  (re-exported)
 from backend_engine.simulator.mechanics import REGISTRY, SPELLS, hooks_for
 from backend_engine.simulator.mechanics import status as S
+from backend_engine.simulator.mechanics.batch2 import fill_spawn_params
 from backend_engine.simulator.mechanics.core import advance_projectile
 from backend_engine.simulator.rng import Pcg32
 from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
@@ -33,7 +34,9 @@ from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
 #   3: portable arithmetic (PCG32 RNG, constant trig tables, sqrt instead of hypot) for the C++ core
 #   4: card numbers from the Clash Royale Wiki (2026-11-16): exact L11-L16 hitpoints / damage / tower damage
 #   5: wiki timings (hit speed, first hit, range) of the simulated cards
-ENGINE_VERSION = 5
+#   6: batch 2: charge, shield, burrow, ramp damage, recoil, hide underground, form change, Earthquake / Lightning /
+#      Vines / Royal Delivery spell kinds, 50% slow
+ENGINE_VERSION = 6
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
@@ -200,6 +203,13 @@ class Match:
             return "out_of_bounds"
         sx, sy = G.snap(x, y)
         blockers = [(u.x, u.y, u.radius) for u in self.units.values() if u.is_structure and u.hp > 0]
+        if any(m["kind"] == "burrow" for m in self.db.cards[card_id]["mechanics"]):
+            # burrowing units (Miner) may be dug in anywhere on the ground: not in the river, not on a structure
+            if G.region(sy) == "river" and not G.on_bridge(sx):
+                return "river"
+            if any(abs(sx - bx) < br and abs(sy - by) < br for bx, by, br in blockers):
+                return "blocked_by_structure"
+            return None
         return G.deploy_check(side, self.db.cards[card_id]["type"], sx, sy, self._princess_alive(1 - side), blockers)
 
     # -- 出牌动作执行 ----------------------------------------------------------
@@ -272,6 +282,7 @@ class Match:
         params = {m["kind"]: dict(m["params"]) for m in mechs}
         if "death_damage" in params:       # the burst scales with level like any other damage stat
             params["death_damage"]["damage"] = s.stats.get("death_damage", 0)
+        fill_spawn_params(params, s)
         for i in range(n):
             if n > MAX_SPAWN:
                 raise ValueError(f"{card_id}: count {n} > MAX_SPAWN {MAX_SPAWN}")

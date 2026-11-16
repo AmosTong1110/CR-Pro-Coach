@@ -190,6 +190,49 @@ def tornado_pull(db: CardDB) -> List[str]:
     return _sampled(m, 15_000)
 
 
+B2_A = ("dark_prince", "miner", "tesla", "firecracker", "goblin_demolisher", "mighty_miner", "golden_knight",
+        "royal_delivery")
+B2_B = ("earthquake", "lightning", "vines", "knight", "archers", "musketeer", "valkyrie", "hog_rider")
+
+
+def dark_prince_charge(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_B), shuffle=False), db)
+    _play(m, 1, "knight", 3.5, 21.0)
+    _play(m, 1, "archers", 3.5, 23.5)
+    _play(m, 0, "dark_prince", 3.5, 10.0)
+    return _sampled(m, 14_000)
+
+
+def spells_batch2(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_B, B2_A), shuffle=False), db)      # side 0 casts, side 1 fields the targets
+    for card, x, y in (("goblin_demolisher", 9.5, 21.0), ("dark_prince", 8.5, 22.5), ("golden_knight", 11.0, 22.5),
+                       ("tesla", 9.5, 24.0), ("mighty_miner", 10.5, 20.5)):
+        _play(m, 1, card, x, y)
+    for t, card in ((1000, "lightning"), (3500, "vines"), (7000, "earthquake")):
+        m.run_until(t)
+        _play(m, 0, card, 9.5, 22.0)
+    return _sampled(m, 14_000)
+
+
+def tesla_demolisher_miner(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_A), shuffle=False), db)
+    _play(m, 0, "tesla", 9.5, 12.0)
+    _play(m, 1, "goblin_demolisher", 3.5, 22.0)
+    _play(m, 0, "miner", 11.5, 27.5)
+    m.run_until(8000)
+    _play(m, 1, "dark_prince", 9.5, 22.0)
+    return _sampled(m, 24_000)
+
+
+def delivery_ramp_firecracker(db: CardDB) -> List[str]:
+    m = Match(MatchConfig((B2_A, B2_A), shuffle=False), db)
+    _play(m, 1, "golden_knight", 9.5, 21.0)
+    _play(m, 0, "royal_delivery", 9.5, 21.0)
+    _play(m, 0, "firecracker", 9.5, 10.0)
+    _play(m, 0, "mighty_miner", 3.5, 12.0)
+    return _sampled(m, 16_000)
+
+
 def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out: Dict[str, Callable[[], List[str]]] = {}
     for seed in (1, 2, 3, 4):
@@ -198,7 +241,8 @@ def scenarios(db: CardDB) -> Dict[str, Callable[[], List[str]]]:
     out["bots_evo_knight"] = lambda: bot_match(db, 9, 11, (("knight",), ("knight",)))
     for fn in (log_vs_swarm, fireball_king, cannon_pulls_hog, hog_river_jump, crowd, evo_knight_tank,
                zap_stun, ice_spirit_freeze, electro_chain, ice_golem_burst, valkyrie_swarm, skeleton_army_fireball,
-               barrel_spawn, ghost_stealth, tornado_pull):
+               barrel_spawn, ghost_stealth, tornado_pull, dark_prince_charge, spells_batch2, tesla_demolisher_miner,
+               delivery_ramp_firecracker):
         out[fn.__name__] = lambda fn=fn: fn(db)
     out["bots_hog26_s5"] = lambda: bot_match(db, 5, 11, deck=HOG_26)
     out["bots_stealth_s6"] = lambda: bot_match(db, 6, 11, deck=STEALTH)

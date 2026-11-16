@@ -1,0 +1,408 @@
+{
+  "_doc": "Batch-2 cards (the 11 left of the plan's 30), built from the saved Clash Royale Wiki pages by tools/add_wiki_cards.py. 'stats' maps our stat key -> wiki column (level 11-16 values are stored as level_overrides); 'totals' lists stats that take the total of a 'N xK (total)' cell. 'assumed' lists fields that are NOT on the wiki page and must be checked in game. Champion abilities are not simulated yet (mechanic 'champion_ability').",
+  "dark_prince": {
+    "wiki": "Dark Prince",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Area Damage",
+      "shield_hitpoints": "Shield Hitpoints",
+      "charge_damage": "Charge Damage"
+    },
+    "attack": {
+      "targets": [
+        "ground"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "charge",
+        "params": {
+          "charge_tiles": 3.0,
+          "speed_tiles_s": 2.0,
+          "damage_stat": "charge_damage"
+        }
+      },
+      {
+        "kind": "shield",
+        "params": {}
+      }
+    ],
+    "extra": {
+      "mass": 5,
+      "collision_radius_tiles": 0.6
+    },
+    "assumed": [
+      "mass",
+      "collision_radius_tiles",
+      "charge_tiles: wiki 'Charge Range 3' read as 3 tiles of straight running"
+    ],
+    "internal_name": "DarkPrince"
+  },
+  "golden_knight": {
+    "wiki": "Golden Knight",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Damage"
+    },
+    "attack": {
+      "targets": [
+        "ground"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "champion_ability",
+        "params": {
+          "name": "dash",
+          "elixir": 1,
+          "uses": 1,
+          "max_dashes": 10,
+          "max_dash_tiles": 5.5,
+          "dash_damage_stat": "dash_damage"
+        }
+      }
+    ],
+    "extra": {
+      "mass": 6,
+      "collision_radius_tiles": 0.5
+    },
+    "stats_extra": {
+      "dash_damage": "Dashing Dash Damage"
+    },
+    "assumed": [
+      "mass",
+      "collision_radius_tiles"
+    ],
+    "internal_name": "GoldenKnight"
+  },
+  "mighty_miner": {
+    "wiki": "Mighty Miner",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "1 stage Damage",
+      "damage_stage2": "2 stage Damage",
+      "damage_stage3": "3 stage Damage",
+      "escape_damage": "Explosive Escape Damage"
+    },
+    "attack": {
+      "targets": [
+        "ground"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "ramp_damage",
+        "params": {
+          "stage_ms": 2000,
+          "stats": [
+            "damage",
+            "damage_stage2",
+            "damage_stage3"
+          ]
+        }
+      },
+      {
+        "kind": "champion_ability",
+        "params": {
+          "name": "explosive_escape",
+          "elixir": 1,
+          "uses": 1,
+          "damage_stat": "escape_damage"
+        }
+      }
+    ],
+    "extra": {
+      "mass": 8,
+      "collision_radius_tiles": 0.6
+    },
+    "assumed": [
+      "mass",
+      "collision_radius_tiles",
+      "first_hit_s (not on the page; engine default 0.5)"
+    ],
+    "internal_name": "MightyMiner"
+  },
+  "miner": {
+    "wiki": "Miner",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Damage",
+      "crown_tower_damage": "Crown Tower Damage"
+    },
+    "attack": {
+      "targets": [
+        "ground"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "burrow",
+        "params": {}
+      },
+      {
+        "kind": "tower_damage",
+        "params": {}
+      }
+    ],
+    "extra": {
+      "mass": 4,
+      "collision_radius_tiles": 0.5
+    },
+    "assumed": [
+      "mass",
+      "collision_radius_tiles"
+    ],
+    "internal_name": "Miner"
+  },
+  "firecracker": {
+    "wiki": "Firecracker",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Area Damage"
+    },
+    "totals": [
+      "damage"
+    ],
+    "attack": {
+      "targets": [
+        "ground",
+        "air"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "recoil",
+        "params": {
+          "tiles": 1.0
+        }
+      }
+    ],
+    "extra": {
+      "mass": 3,
+      "collision_radius_tiles": 0.5
+    },
+    "assumed": [
+      "recoil distance 1.0 tile",
+      "damage = all 5 sparks (64 x5) landing on one target; the real spread pattern is not simulated",
+      "mass",
+      "collision_radius_tiles"
+    ],
+    "internal_name": "Firecracker"
+  },
+  "tesla": {
+    "wiki": "Tesla",
+    "type": "building",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Damage"
+    },
+    "attack": {
+      "targets": [
+        "ground",
+        "air"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "hide_underground",
+        "params": {}
+      }
+    ],
+    "extra": {
+      "footprint_tiles": [
+        2,
+        2
+      ],
+      "collision_radius_tiles": 0.6
+    },
+    "assumed": [
+      "footprint_tiles",
+      "collision_radius_tiles",
+      "hides when no troop is within its range"
+    ],
+    "internal_name": "Tesla"
+  },
+  "earthquake": {
+    "wiki": "Earthquake",
+    "type": "spell",
+    "stats": {
+      "damage": "Area Damage",
+      "crown_tower_damage": "Crown Tower Damage",
+      "building_damage": "Building Damage"
+    },
+    "spell": {
+      "hit_every_ms": 1000,
+      "slow_pct": 50
+    },
+    "mechanics": [
+      {
+        "kind": "dot_spell",
+        "params": {}
+      }
+    ],
+    "assumed": [
+      "pulses at 1 s, 2 s, 3 s (the page says 'x3')",
+      "slow also slows attack speed"
+    ],
+    "internal_name": "Earthquake"
+  },
+  "lightning": {
+    "wiki": "Lightning",
+    "type": "spell",
+    "stats": {
+      "damage": "Area Damage",
+      "crown_tower_damage": "Crown Tower Damage"
+    },
+    "attr_override": {
+      "elixir": 6,
+      "spell.radius_tiles": 3.5
+    },
+    "mechanics": [
+      {
+        "kind": "top_n_spell",
+        "params": {
+          "n": 3,
+          "stun_ms": 500
+        }
+      }
+    ],
+    "assumed": [
+      "radius 3.5 and stun 0.5 s (the saved page has no attribute table)",
+      "lands at once"
+    ],
+    "internal_name": "Lightning"
+  },
+  "vines": {
+    "wiki": "Vines",
+    "type": "spell",
+    "stats": {
+      "damage": "Area Damage",
+      "crown_tower_damage": "Crown Tower Damage"
+    },
+    "spell": {
+      "delay_ms": 900,
+      "root_ms": 2000,
+      "hit_every_ms": 1000,
+      "targets": 3
+    },
+    "mechanics": [
+      {
+        "kind": "root_spell",
+        "params": {}
+      }
+    ],
+    "assumed": [
+      "picks the 3 highest-hp enemies in range, towers included",
+      "pulses 1 s and 2 s after the grab (page says 'x2')",
+      "internal_name (not in the 2023 data; guessed from the card name)"
+    ],
+    "internal_name": "Vines"
+  },
+  "royal_delivery": {
+    "wiki": "Royal Delivery",
+    "type": "spell",
+    "stats": {
+      "damage": "Royal Delivery Area Damage"
+    },
+    "spell": {
+      "delay_ms": 3000
+    },
+    "mechanics": [
+      {
+        "kind": "delayed_drop",
+        "params": {
+          "token": "royal_recruit",
+          "deploy_ms": 250
+        }
+      }
+    ],
+    "assumed": [
+      "no reduced tower damage listed: the drop hits towers for full damage"
+    ],
+    "internal_name": "RoyalDelivery"
+  },
+  "goblin_demolisher": {
+    "wiki": "Goblin Demolisher",
+    "type": "troop",
+    "layer": "ground",
+    "stats": {
+      "hitpoints": "Hitpoints",
+      "damage": "Area Damage",
+      "death_damage": "Death Damage",
+      "kamikaze_hp_per_s": "Kamikaze Goblin Demolisher Hitpoints lost per second"
+    },
+    "attack": {
+      "targets": [
+        "ground"
+      ]
+    },
+    "mechanics": [
+      {
+        "kind": "form_change",
+        "params": {
+          "at_hp_fraction": 0.5,
+          "speed_tiles_s": 2.0,
+          "range_tiles": 0.5,
+          "targets": [
+            "buildings"
+          ],
+          "death_radius_tiles": 2.5,
+          "hp_loss_stat": "kamikaze_hp_per_s"
+        }
+      }
+    ],
+    "extra": {
+      "mass": 6,
+      "collision_radius_tiles": 0.6
+    },
+    "assumed": [
+      "mass",
+      "collision_radius_tiles",
+      "internal_name (not in the 2023 data; guessed from the card name)"
+    ],
+    "internal_name": "GoblinDemolisher"
+  },
+  "tokens": {
+    "royal_recruit": {
+      "wiki": "Royal Delivery",
+      "table": 1,
+      "rarity": "common",
+      "elixir": 3,
+      "stats": {
+        "hitpoints": "Hitpoints",
+        "damage": "Damage",
+        "shield_hitpoints": "Shield Hitpoints"
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ]
+      },
+      "mechanics": [
+        {
+          "kind": "shield",
+          "params": {}
+        }
+      ],
+      "extra": {
+        "mass": 5,
+        "collision_radius_tiles": 0.5,
+        "name": "Royal Recruit"
+      },
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ]
+    }
+  }
+}
