@@ -11,6 +11,7 @@ and press "Use suggestion", or ignore it. Saved labels go to reviewed/; the pseu
 """
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -374,9 +375,13 @@ class ReviewWindow(QMainWindow):
         out = QFileDialog.getExistingDirectory(self, "Export training set to", str(self.ls.root.parent))
         if not out:
             return
-        n = self.ls.export(Path(out) / f"{self.ls.root.name}_reviewed")
+        target = Path(out) / f"{self.ls.root.name}_reviewed"
+        n = self.ls.export(target)
+        zipped = shutil.make_archive(str(target), "zip", target)
         QMessageBox.information(self, "Export", f"Wrote {n['train']} train and {n['val']} validation frames "
-                                                f"({n['boxes']} boxes). Validation = the last match.")
+                                                f"({n['boxes']} boxes). Validation = the last match.\n\n"
+                                                f"Upload {Path(zipped).name} to "
+                                                f"cloud_training/finetune_detector_colab.ipynb.")
 
 
 def main() -> None:

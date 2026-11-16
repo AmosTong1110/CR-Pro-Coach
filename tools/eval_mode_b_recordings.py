@@ -3,7 +3,8 @@ Evaluate the Mode B detector on real screen recordings, using the official battl
 and export the frames as a pseudo-labelled fine-tuning set.
 
     python tools/eval_mode_b_recordings.py recordings/ data/raw_sources/my_battlelog.json \
-        [--fps 2] [--conf 0.4] [--export data/finetune/ipad_20261116] [--max-seconds 30]
+        [--fps 2] [--conf 0.4] [--export data/finetune/ipad_20261116] [--max-seconds 30] \
+        [--model pretrained_weights/<dir>/<model>.onnx] [--only 13-21-38]
 
 What the battlelog can and cannot tell us
 * It has both decks, crowns and final tower hitpoints, but no play-by-play timeline and no boxes.
@@ -173,6 +174,8 @@ def main() -> None:
     ap.add_argument("--max-seconds", type=float, default=None, help="only the first N seconds (quick test)")
     ap.add_argument("--export", type=Path, default=None, help="write the fine-tuning set here")
     ap.add_argument("--report", type=Path, default=None, help="write the metrics as JSON here")
+    ap.add_argument("--only", default=None,
+                    help="only recordings whose name contains this text (e.g. the held-out match: 13-21-38)")
     a = ap.parse_args()
 
     import onnxruntime as ort
@@ -189,9 +192,10 @@ def main() -> None:
     model_cards = {c for c in cmap.values() if c}
 
     battles = json.loads(a.battlelog.read_text())
-    recs = sorted(p for p in a.recordings.iterdir() if p.suffix.lower() in VIDEO_EXT)
-    info = {p: probe(p) for p in recs}
-    pairs = match_recordings([(p, info[p][2]) for p in recs], battles)
+    every = sorted(p for p in a.recordings.iterdir() if p.suffix.lower() in VIDEO_EXT)
+    info = {p: probe(p) for p in every}
+    pairs = match_recordings([(p, info[p][2]) for p in every], battles)   # pair on all: more robust offset
+    recs = [p for p in every if a.only is None or a.only in p.name]
 
     if a.export:
         (a.export / "images").mkdir(parents=True, exist_ok=True)
