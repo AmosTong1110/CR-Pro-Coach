@@ -339,6 +339,10 @@ class GameSession:
         cards = dict.fromkeys(u.card_id for u in m.units.values() if u.side == HUMAN)
         return [c for c in cards if m.check_ability(HUMAN, c) is None]
 
+    def ability_cost(self, card_id: str) -> int:
+        ab = next(m for m in self.db.cards[card_id]["mechanics"] if m["kind"] == "champion_ability")
+        return int(ab["params"].get("elixir", 1))
+
     def use_ability(self, card_id: str) -> PlayResult:
         """Player uses a champion ability (1 elixir, single use). Mirrors `play`: checkpoint, new branch, log."""
         if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:

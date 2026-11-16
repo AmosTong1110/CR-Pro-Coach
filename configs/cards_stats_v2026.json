@@ -2948,6 +2948,456 @@
         "collision_radius_tiles",
         "internal_name (not in the 2023 data; guessed from the card name)"
       ]
+    },
+    "bats": {
+      "name": "Bats",
+      "internal_name": "Bats",
+      "game_id": 26000049,
+      "aliases": {
+        "display": "Bats",
+        "hf": "bats",
+        "royaleapi": "bats",
+        "detector": [
+          "bat",
+          "bat-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 81
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 89
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 98
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 108
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 119
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 130
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "hit_speed_s": 1.3,
+        "first_hit_s": 0.6,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 2.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 5,
+      "mass": 1,
+      "collision_radius_tiles": 0.4,
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 81,
+        "damage": 81
+      },
+      "data_source": "wiki-fandom-html:Bats",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ]
+    },
+    "minion_giant": {
+      "name": "Minion Giant",
+      "internal_name": "MinionGiant",
+      "game_id": 26000107,
+      "aliases": {
+        "display": "Minion Giant",
+        "hf": "minion_giant",
+        "royaleapi": "minion-giant",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1817,
+          "damage": 168
+        },
+        "12": {
+          "hitpoints": 1995,
+          "damage": 185
+        },
+        "13": {
+          "hitpoints": 2193,
+          "damage": 203
+        },
+        "14": {
+          "hitpoints": 2406,
+          "damage": 223
+        },
+        "15": {
+          "hitpoints": 2641,
+          "damage": 245
+        },
+        "16": {
+          "hitpoints": 2903,
+          "damage": 269
+        }
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "hit_speed_s": 1.7,
+        "range_tiles": 4.0,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 7,
+      "collision_radius_tiles": 0.8,
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1817,
+        "damage": 168
+      },
+      "data_source": "wiki-fandom-html:Minion Giant",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "flies: the page text says 'ranged air troop' but its table says Transport Ground (the page is under construction)",
+        "first_hit_s (page says Unknown)",
+        "no projectile travel time",
+        "mass",
+        "collision_radius_tiles",
+        "internal_name"
+      ]
+    },
+    "rune_giant": {
+      "name": "Rune Giant",
+      "internal_name": "RuneGiant",
+      "game_id": 26000101,
+      "aliases": {
+        "display": "Rune Giant",
+        "hf": "rune_giant",
+        "royaleapi": "rune-giant",
+        "detector": [
+          "rune-giant"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 2662,
+          "damage": 120,
+          "bonus_damage": 220
+        },
+        "12": {
+          "hitpoints": 2928,
+          "damage": 132,
+          "bonus_damage": 242
+        },
+        "13": {
+          "hitpoints": 3221,
+          "damage": 145,
+          "bonus_damage": 266
+        },
+        "14": {
+          "hitpoints": 3543,
+          "damage": 160,
+          "bonus_damage": 293
+        },
+        "15": {
+          "hitpoints": 3897,
+          "damage": 176,
+          "bonus_damage": 322
+        },
+        "16": {
+          "hitpoints": 4287,
+          "damage": 193,
+          "bonus_damage": 354
+        }
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "hit_speed_s": 1.5,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 8,
+      "collision_radius_tiles": 0.8,
+      "mechanics": [
+        {
+          "kind": "enchant",
+          "params": {
+            "range_tiles": 8.5,
+            "limit": 2,
+            "every": 3,
+            "linger_ms": 5000,
+            "bonus_stat": "bonus_damage"
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 2662,
+        "damage": 120,
+        "bonus_damage": 220
+      },
+      "data_source": "wiki-fandom-html:Rune Giant",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "enchantments are handed out as soon as a slot is free (no throw delay)",
+        "the bonus lands on the target at once, also for projectile attackers",
+        "mass",
+        "collision_radius_tiles",
+        "internal_name"
+      ]
+    },
+    "poison": {
+      "name": "Poison",
+      "internal_name": "Poison",
+      "game_id": 28000009,
+      "aliases": {
+        "display": "Poison",
+        "hf": "poison",
+        "royaleapi": "poison",
+        "detector": [
+          "poison"
+        ]
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "damage": 92,
+          "building_damage": 92,
+          "crown_tower_damage": 22
+        },
+        "12": {
+          "damage": 101,
+          "building_damage": 101,
+          "crown_tower_damage": 24
+        },
+        "13": {
+          "damage": 111,
+          "building_damage": 111,
+          "crown_tower_damage": 27
+        },
+        "14": {
+          "damage": 122,
+          "building_damage": 122,
+          "crown_tower_damage": 29
+        },
+        "15": {
+          "damage": 135,
+          "building_damage": 135,
+          "crown_tower_damage": 32
+        },
+        "16": {
+          "damage": 148,
+          "building_damage": 148,
+          "crown_tower_damage": 35
+        }
+      },
+      "spell": {
+        "duration_ms": 8000,
+        "hit_every_ms": 1000,
+        "slow_pct": 15,
+        "hits_air": true,
+        "radius_tiles": 3.5
+      },
+      "mechanics": [
+        {
+          "kind": "dot_spell",
+          "params": {}
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "damage": 92,
+        "building_damage": 92,
+        "crown_tower_damage": 22
+      },
+      "data_source": "wiki-fandom-html:Poison",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "radius 3.5 (the saved page has no attribute table)",
+        "8 pulses at 1 s .. 8 s",
+        "buildings take the troop damage"
+      ]
+    },
+    "little_prince": {
+      "name": "Little Prince",
+      "internal_name": "LittlePrince",
+      "game_id": 26000093,
+      "aliases": {
+        "display": "Little Prince",
+        "hf": "little_prince",
+        "royaleapi": "little-prince",
+        "detector": [
+          "little-prince"
+        ]
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 698,
+          "damage": 104,
+          "rescue_damage": 256
+        },
+        "12": {
+          "hitpoints": 768,
+          "damage": 114,
+          "rescue_damage": 282
+        },
+        "13": {
+          "hitpoints": 845,
+          "damage": 126,
+          "rescue_damage": 310
+        },
+        "14": {
+          "hitpoints": 929,
+          "damage": 138,
+          "rescue_damage": 341
+        },
+        "15": {
+          "hitpoints": 1022,
+          "damage": 152,
+          "rescue_damage": 375
+        },
+        "16": {
+          "hitpoints": 1124,
+          "damage": 167,
+          "rescue_damage": 412
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "first_hit_s": 0.4,
+        "range_tiles": 5.5,
+        "projectile_speed_tiles_s": 13.333333333333334,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5,
+        "hit_speed_s": 1.2
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "mass": 3,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [
+        {
+          "kind": "ramp_hit_speed",
+          "params": {
+            "hit_speeds_ms": [
+              1200,
+              600,
+              400
+            ],
+            "hits_per_stage": 2
+          }
+        },
+        {
+          "kind": "champion_ability",
+          "params": {
+            "name": "royal_rescue",
+            "elixir": 3,
+            "uses": 1,
+            "damage_stat": "rescue_damage",
+            "token": "guardienne",
+            "delay_ms": 1000,
+            "dash_tiles": 4.0,
+            "radius_tiles": 2.0,
+            "knockback_tiles": 2.0,
+            "deploy_ms": 300
+          }
+        }
+      ],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 698,
+        "damage": 104,
+        "rescue_damage": 256
+      },
+      "data_source": "wiki-fandom-html:Little Prince",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "the page gives no stage lengths for the 1.2 / 0.6 / 0.4 s hit speeds: stage up every 2 hits on the same target",
+        "Guardienne lands 4 tiles ahead (dash range), damages ground troops within 2 tiles and knocks them up to 2 tiles",
+        "mass",
+        "collision_radius_tiles"
+      ]
     }
   },
   "tokens": {
@@ -3091,6 +3541,73 @@
       ],
       "name": "Royal Recruit",
       "rarity": "common",
+      "elixir": 3
+    },
+    "guardienne": {
+      "type": "troop",
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1600,
+          "damage": 217
+        },
+        "12": {
+          "hitpoints": 1760,
+          "damage": 239
+        },
+        "13": {
+          "hitpoints": 1936,
+          "damage": 263
+        },
+        "14": {
+          "hitpoints": 2130,
+          "damage": 289
+        },
+        "15": {
+          "hitpoints": 2343,
+          "damage": 318
+        },
+        "16": {
+          "hitpoints": 2577,
+          "damage": 349
+        }
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "hit_speed_s": 1.2,
+        "first_hit_s": 0.5,
+        "range_tiles": 1.2,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 0.3,
+      "count": 1,
+      "mass": 6,
+      "collision_radius_tiles": 0.5,
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "base_stats": {
+        "hitpoints": 1600,
+        "damage": 217
+      },
+      "data_source": "wiki-fandom-html:Little Prince#table2",
+      "data_as_of": "2026-11-16",
+      "wiki_as_of": "2026-11-16",
+      "assumed": [
+        "mass",
+        "collision_radius_tiles"
+      ],
+      "name": "Guardienne",
+      "rarity": "champion",
       "elixir": 3
     }
   }

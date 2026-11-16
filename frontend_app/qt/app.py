@@ -17,7 +17,7 @@ over from just before that play.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from PySide6.QtCore import QEvent, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QShortcut
@@ -148,7 +148,7 @@ class HandBar(QWidget):
         self.elixir = ElixirBar()
         self.ability_btn = QPushButton()                  # only visible while one of your champions can use its ability
         self.ability_btn.setCursor(Qt.PointingHandCursor)
-        self.ability_btn.setToolTip("Use your champion's ability (A): 1 elixir, once per champion")
+        self.ability_btn.setToolTip("Use your champion's ability (A): once per champion")
         self.ability_btn.setStyleSheet(f"QPushButton{{font-size:12px; font-weight:700; border-radius:8px; padding:4px 10px;"
                                        f"background:{C['violet']}; color:white; border:none;}}")
         self.ability_btn.clicked.connect(lambda: self.on_ability())
@@ -160,10 +160,12 @@ class HandBar(QWidget):
         lay.addLayout(bottom)
 
     def refresh(self, hand: List[str], next_card: str, names, costs, elixir: float,
-                selected: Optional[str], evo_ready: set, enabled: bool = True, abilities: Sequence[str] = ()) -> None:
+                selected: Optional[str], evo_ready: set, enabled: bool = True,
+                abilities: Sequence[Tuple[str, int]] = ()) -> None:
         self.ability_btn.setVisible(enabled and bool(abilities))
         if abilities:
-            self.ability_btn.setText(f"⚡ {names[abilities[0]]} ability · 1  (A)")
+            card, cost = abilities[0]
+            self.ability_btn.setText(f"⚡ {names[card]} ability · {cost}  (A)")
         for i, (b, c) in enumerate(zip(self.buttons, hand)):
             evo = c in evo_ready
             b.setText(f"{names[c]}{'  ★ Evo' if evo else ''}\n{costs[c]} elixir")
@@ -1199,7 +1201,8 @@ class MainWindow(QMainWindow):
             costs = {cid: c["elixir"] for cid, c in s.db.cards.items()}
             evo_ready = {c for c in st.evo_cards if st.evo_counter[c] >= s.db.evo_cycles(c)}
             self.hand.refresh(st.hand, st.queue[0], names, costs, st.elixir, self.selected, evo_ready,
-                              enabled=self.mode == LIVE, abilities=s.ability_cards() if self.mode == LIVE else ())
+                              enabled=self.mode == LIVE,
+                              abilities=[(c, s.ability_cost(c)) for c in s.ability_cards()] if self.mode == LIVE else ())
         if self.mode == LIVE:
             self.counter.refresh()
         end = max(s.max_known_ms(), 1000)

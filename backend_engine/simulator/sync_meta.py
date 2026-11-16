@@ -283,10 +283,14 @@ _SPAWN_COLUMNS = {"Hitpoints", "Damage"}
 
 
 def _our_stat_for(column: str, card: Dict[str, Any]) -> Optional[str]:
-    key = _COLUMN_TO_STAT.get(column.strip().lower())
+    name = (card.get("name") or "").lower()
+    low = column.strip().lower()
+    if name and low.startswith(name + " "):        # "Little Prince Hitpoints" on a champion's page
+        low = low[len(name) + 1:]
+    key = _COLUMN_TO_STAT.get(low)
     if key is None:
         # "Barbarian Barrel Area Damage" / "Royal Delivery Area Damage" = the spell's own damage
-        if column.strip().lower().endswith("area damage") and card.get("type") == "spell":
+        if low.endswith("area damage") and card.get("type") == "spell":
             return "damage"
     return key
 

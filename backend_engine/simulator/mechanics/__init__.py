@@ -11,4 +11,4 @@ from backend_engine.simulator.mechanics.base import (  # noqa: F401
     DESCRIPTIVE, HOOKS, PLANNED, REGISTRY, SPELLS, Mechanic, SpellKind, hooks_for, known_kinds, register,
     register_spell,
 )
-from backend_engine.simulator.mechanics import core, effects, batch2, abilities  # noqa: F401,E402  (registers built-ins)
+from backend_engine.simulator.mechanics import core, effects, batch2, batch3, abilities  # noqa: F401,E402  (registers built-ins)

@@ -33,6 +33,8 @@ def fill_spawn_params(params: dict, stats) -> None:
         params["ramp_damage"]["damages"] = [st[k] for k in params["ramp_damage"]["stats"]]
     if "champion_ability" in params:
         params["champion_ability"]["damage"] = st.get(params["champion_ability"].get("damage_stat", "damage"), 0)
+    if "enchant" in params:
+        params["enchant"]["bonus"] = st.get(params["enchant"].get("bonus_stat", "bonus_damage"), 0)
     if "form_change" in params:
         fc = params["form_change"]
         fc["death_damage"] = st.get("death_damage", 0)
@@ -203,17 +205,20 @@ class DotSpell(SpellKind):
                                     st.get("crown_tower_damage", dmg), int(sp["duration_ms"]), int(sp["hit_every_ms"]),
                                     0.0, eid, kind="dot_spell", next_hit_ms=int(sp["hit_every_ms"]),
                                     params={**params, "state": {"building": st.get("building_damage", dmg),
-                                                                "slow_pct": sp.get("slow_pct", 0)}}))
+                                                                "slow_pct": sp.get("slow_pct", 0),
+                                                                "air": bool(sp.get("hits_air", False))}}))
 
     def advance(self, m, ef: AreaEffect, dt: int) -> None:
         ef.elapsed_ms += dt
         stt = ef.params["state"]
         inside = [e for e in _enemies(m, ef.side)
-                  if (e.is_structure or e.layer == "ground") and G.dist(e.x, e.y, ef.x, ef.y) <= ef.radius + e.radius]
-        if stt["slow_pct"]:
+                  if (e.is_structure or e.layer == "ground" or stt["air"])
+                  and G.dist(e.x, e.y, ef.x, ef.y) <= ef.radius + e.radius]
+        tag = {50: S.SLOW50, 15: S.SLOW15}.get(int(stt["slow_pct"]))
+        if tag:
             for e in inside:
                 if not e.is_structure:
-                    m.apply_status(e, S.SLOW50, 2 * dt)
+                    m.apply_status(e, tag, 2 * dt)
         while ef.next_hit_ms <= ef.elapsed_ms and ef.next_hit_ms <= ef.duration_ms:
             ef.next_hit_ms += ef.hit_every_ms
             for e in inside:

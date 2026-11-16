@@ -38,16 +38,17 @@ class ScriptedBot:
         """Champion ability: Dashing Dash when 2+ enemy troops / buildings are within its reach; Explosive Escape when
         the Miner is hurt (below 60%) with an enemy on top of it. Single use, so the bot just waits for the moment."""
         for c in obs.get("abilities", ()):
-            name = next((m["params"].get("name") for m in self._card(c)["mechanics"] if m["kind"] == "champion_ability"),
-                        None)
+            ab = next((m["params"] for m in self._card(c)["mechanics"] if m["kind"] == "champion_ability"), {})
+            name, cost = ab.get("name"), int(ab.get("elixir", 1))
             for u in obs["units"]:
                 if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
                     continue
+                reach = {"dash": 5.0, "royal_rescue": 4.0}.get(name, 2.0)
                 near = [e for e in obs["units"] if e["side"] != self.side and e["kind"] != "tower"
-                        and G.dist(e["x"], e["y"], u["x"], u["y"]) <= (5.0 if name == "dash" else 2.0)]
-                if (name == "dash" and len(near) >= 2) or (name == "explosive_escape" and near
-                                                          and u["hp"] < 0.6 * u["max_hp"]):
-                    return ActionIntent(ActionKind.ABILITY, c, None, 1, source="script")
+                        and G.dist(e["x"], e["y"], u["x"], u["y"]) <= reach]
+                if ((name == "dash" and len(near) >= 2) or (name == "royal_rescue" and near)
+                        or (name == "explosive_escape" and near and u["hp"] < 0.6 * u["max_hp"])):
+                    return ActionIntent(ActionKind.ABILITY, c, None, cost, source="script")
         return None
 
     def _card(self, c: str) -> dict:

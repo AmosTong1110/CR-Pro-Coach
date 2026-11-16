@@ -99,7 +99,38 @@ class Escape:
         return False
 
 
-ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape}
+class Rescue:
+    """Little Prince, Royal Rescue: after `delay_ms` Guardienne charges in `dash_tiles` in front of him: ground troops
+    around the landing point take `damage` and are knocked away (up to 2 tiles, less the farther from the centre), and
+    she stays on the field as a unit (token `token`). Landing spot, radius and knockback shape are assumed."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        u.mstate["ab"].update(phase="rescue", ms=0)
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        from backend_engine.simulator.mechanics.core import knockback, land
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        if ab["ms"] < int(p.get("delay_ms", 1000)):
+            return False
+        ab["phase"] = None
+        x, y = land(u.x, min(max(u.y + G.forward(u.side) * float(p.get("dash_tiles", 4.0)), 0.0), G.H - 0.01))
+        radius = float(p.get("radius_tiles", 2.0))
+        for e in _foes(m, u):
+            d = G.dist(e.x, e.y, x, y)
+            if e.is_structure or e.layer != "ground" or d > radius + e.radius:
+                continue
+            m._deal(e, float(p.get("damage", 0)), u)
+            if e.hp > 0:
+                dx, dy = (e.x - x, e.y - y) if d > 1e-9 else (0.0, float(G.forward(u.side)))
+                knockback(m, e, dx, dy, float(p.get("knockback_tiles", 2.0)) * max(0.0, 1.0 - d / (radius + e.radius)))
+        m._spawn_card_units(u.side, p["token"], x, y, u.source_event_id or 0, False, deploy_ms=int(p.get("deploy_ms", 300)))
+        return False
+
+
+ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape, "royal_rescue": Rescue}
 
 
 @register("champion_ability")
@@ -109,8 +140,9 @@ class ChampionAbility(Mechanic):
 
     def on_tick(self, m, u, dt: int) -> bool:
         ab = u.mstate.get("ab")
-        if ab and ab["phase"] == "dash":
-            return Dash.tick(m, u, u.params["champion_ability"], dt)
+        if ab and ab["phase"]:
+            p = u.params["champion_ability"]
+            return ABILITIES[p["name"]].tick(m, u, p, dt)
         return False
 
     def on_damaged(self, m, u, amount: float, source) -> float:
