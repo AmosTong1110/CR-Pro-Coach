@@ -48,7 +48,7 @@ CR-Pro-Coach/
 ├── 📂 cloud_training/                # [4. Cloud Training & Evaluation Notebooks (Google Colab / Cloud)]
 │   ├── train_imitation_colab.ipynb   # Stage 1: imitation learning (IL v1) on shards from tools/build_il_dataset.py
 │   ├── train_selfplay_ppo.ipynb      # Stage 2: Self-play Reinforcement Learning (PPO)
-│   └── gauntlet_eval.py              # Gauntlet tournament evaluation for policy iterations
+│   └── gauntlet_eval.py              # NeuralBot vs ScriptedBot sweep (gate threshold x cadence), runs on the Mac
 │
 └── 📂 frontend_app/                  # [5. Frontend Client Applications]
     └── 📂 qt/                        # Native PySide6 Desktop Application
