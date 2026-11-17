@@ -60,6 +60,10 @@ class Unit:
     def river_jump(self) -> bool:
         return "river_jump" in self.mechanics
 
+    @property
+    def is_heavy(self) -> bool:
+        return self.card_id in ("pekka", "giant", "rune_giant", "minion_giant", "mighty_miner", "golem", "mega_knight", "electro_giant", "sparky", "bowler")
+
 
 @dataclass
 class Spell:

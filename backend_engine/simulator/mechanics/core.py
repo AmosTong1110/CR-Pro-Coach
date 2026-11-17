@@ -77,7 +77,7 @@ class AreaSpell(SpellKind):
                     dx, dy = e.x - sp.x, e.y - sp.y
                     if abs(dx) + abs(dy) < 1e-9:            # dead centre: push away from the caster
                         dx, dy = 0.0, float(G.forward(sp.side))
-                    knockback(m, e, dx, dy, float(kb.get("distance_tiles", 0)))
+                    knockback(m, e, dx, dy, float(kb.get("distance_tiles", 0)), is_log=(sp.card_id == "the_log"))
 
 
 @register_spell("rolling_spell")
@@ -104,7 +104,7 @@ class Rolling(SpellKind):
                 m._deal(e, rs.tower_damage if e.kind == "tower" else rs.damage, rs)
                 kb = rs.params.get("knockback")
                 if kb and e.hp > 0:
-                    knockback(m, e, 0.0, float(rs.direction), float(kb.get("distance_tiles", 0)))
+                    knockback(m, e, 0.0, float(rs.direction), float(kb.get("distance_tiles", 0)), is_log=(rs.card_id == "the_log"))
         rs.y, rs.remaining = y1, rs.remaining - adv
 
     def finish(self, m, rs: RollingSpell) -> None:
@@ -166,9 +166,13 @@ def _can_hit(targets, e) -> bool:
     return e.layer in targets
 
 
-def knockback(m, u, dx: float, dy: float, distance: float) -> None:
-    """Push a troop by `distance` tiles along (dx, dy). Structures never move; the river stays blocked."""
+def knockback(m, u, dx: float, dy: float, distance: float, is_log: bool = False) -> None:
+    """Push a troop by `distance` tiles along (dx, dy). Structures never move; the river stays blocked.
+    Heavy units (PEKKA, Giant, Rune Giant, etc.) are immune to knockback unless hit by The Log.
+    """
     if u.is_structure or u.mass == 0 or distance <= 0:
+        return
+    if not is_log and getattr(u, "is_heavy", False):
         return
     n = math.sqrt(dx * dx + dy * dy)
     if n < 1e-9:

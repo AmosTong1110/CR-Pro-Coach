@@ -63,6 +63,11 @@ class Charge(Mechanic):
         lx, ly = u.mstate["last"]
         moved = math.hypot(u.x - lx, u.y - ly)
         u.mstate["last"] = (u.x, u.y)
+        if S.STUN in u.status or S.FREEZE in u.status:
+            u.mstate["run"] = 0.0
+            u.mstate["charged"] = False
+            u.speed = u.mstate["base_speed"]
+            return False
         u.mstate["run"] = u.mstate["run"] + moved if moved > 1e-6 else 0.0
         charged = u.mstate["charged"] or u.mstate["run"] >= float(p.get("charge_tiles", 3.0))
         u.mstate["charged"] = charged

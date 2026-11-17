@@ -557,3 +557,68 @@ def test_task7_spawner_tombstone_death_spawns(db):
     # Verify 4 death-spawned skeletons appear on side 0
     skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 0]
     assert len(skels) == 4
+
+
+def test_task8_stun_resets_charge_and_ramps(db):
+    """Stun/Zap resets Dark Prince charge state and damage/speed ramps."""
+    from backend_engine.simulator.mechanics import status as S
+
+    deck = ("dark_prince", "zap", "fireball", "the_log", "pekka", "giant", "knight", "archers")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Dark Prince charges forward
+    res = m.play(0, "dark_prince", 14.5, 9.5)
+    assert res.ok
+    dp = [u for u in m.units.values() if u.card_id == "dark_prince"][0]
+    dp.deploy_ms = 0
+
+    # Step for 70 ticks (3.5s at speed 1.0 > 3.0 tiles needed to charge)
+    for _ in range(70):
+        m.step()
+
+    assert dp.mstate.get("charged") is True
+    assert dp.speed > dp.mstate["base_speed"]
+
+    # Apply Stun / Zap
+    m.apply_status(dp, S.STUN, 500)
+
+    # Charge state must immediately reset
+    assert dp.mstate.get("charged") is False
+    assert dp.speed == dp.mstate["base_speed"]
+
+
+def test_task8_heavy_knockback_immunity_vs_the_log(db):
+    """Heavy units (PEKKA, Giant) ignore Fireball knockback but are pushed back by The Log."""
+    deck = ("pekka", "dark_prince", "zap", "fireball", "the_log", "giant", "knight", "archers")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn PEKKA for side 1 in north territory
+    m.sides[1].elixir = 10.0
+    res_p = m.play(1, "pekka", 9.5, 18.5)
+    assert res_p.ok
+    pekka = [u for u in m.units.values() if u.card_id == "pekka" and u.side == 1][0]
+    pekka.deploy_ms = 0
+    pekka.speed = 0.0
+    initial_y = pekka.y
+
+    # Cast Fireball at (9.5, 17.5)
+    m.sides[0].elixir = 10.0
+    res_fb = m.play(0, "fireball", 9.5, 17.5)
+    assert res_fb.ok
+    while len(m.spells) > 0:
+        m.step()
+
+    # PEKKA is heavy: takes damage but immune to Fireball knockback
+    assert pekka.y == initial_y
+
+    # Cast The Log from (9.5, 14.0) rolling north
+    m.sides[0].elixir = 10.0
+    res_log = m.play(0, "the_log", 9.5, 14.0)
+    assert res_log.ok
+    for _ in range(40):
+        m.step()
+
+    # The Log knocks back ALL ground troops, including heavy units
+    assert pekka.y > initial_y
