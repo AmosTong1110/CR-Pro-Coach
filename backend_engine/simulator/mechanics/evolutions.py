@@ -141,3 +141,21 @@ class EvoPulse(Mechanic):
     def on_death(self, m, u) -> None:
         _pulse(m, u)
 
+
+# ---------------------------------------------------------------- Mortar
+@register("evo_goblin_mortar")
+class EvoGoblinMortar(Mechanic):
+    """Evolved Mortar: launches a Goblin at the target upon projectile impact."""
+
+    def on_projectile_hit(self, m, p, target) -> None:
+        token_id = p.params.get("evo_goblin_mortar", {}).get("token", "goblin")
+        shooter = m.units.get(p.source_uid)
+        eid = (shooter.source_event_id or 0) if shooter is not None else 0
+        tx = target.x if target is not None else p.x
+        ty = target.y if target is not None else p.y
+        try:
+            m._spawn_card_units(p.side, token_id, tx, ty, eid, False, deploy_ms=500)
+        except (KeyError, ValueError):
+            pass
+
+

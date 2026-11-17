@@ -1,8 +1,8 @@
-# CRbot — Session Handoff (2026-11-16)
+# CRbot — Session Handoff (2026-11-17)
 
 Read this first in every new session. Roadmap: `docs/CRBOT_UPGRADE_PLAN.md`.
-State at handoff: **499 tests passing (+1 skipped without torch)** (all green) (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), engine **v6**, all work merged into `main`.
-Environment: project venv `.venv` (Python 3.14; numpy, pyyaml, PySide6-Essentials, onnxruntime, Pillow, pytest).
+State at handoff: **528 tests passing (+1 skipped without torch)** (all green) (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), engine **v6**, all work merged into `main`.
+Environment: project venv `.venv` (Python 3.14; numpy, pyyaml, PySide6-Essentials, onnxruntime, onnx, Pillow, pytest).
 Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the app: `.venv/bin/python -m frontend_app.qt.app`.
 
 ## 1. Completed work
@@ -70,19 +70,19 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 
 | section | % | remaining subtasks |
 |---|---|---|
-| App shell (CRbot sidebar: Fight / Analysis / Recommended deck / Account) | 92% | Mode B recordings into the store (`mode="recording"`); drills; review still runs on the UI thread (now with Stop + live progress; a worker thread would keep the board animating) |
-| UI layout (existing arena/review screens) | 96% | review playback (Play/Stop 1–4x), Mistake / Alternative hover explanations and the grade-marker fix done (2026-11-16); *Show me* (animate the recommended branch in isolated fork with live ghost & take-over) done (2026-11-17); Mode B hints in the overlay (needs a 'my deck' picker); user feedback on the layout |
-| Card schema v4 (internal names, aliases, variants) | 95% | hero variants (data + offset) when the first hero card arrives |
-| Simulation core | 98% | hero abilities (Hero Electro Wizard etc.: reuse `use_ability`), death spawn (Phase 2 needs it) |
-| Mechanics framework + 30-card batch | 100% | all 30 cards + the 5 modern cards simulated (38 with zap, archers, minions), champion abilities, 5 heroes; **6 of 14 evolutions** (Knight + batch 2: Firecracker, Skeletons, Zap, Valkyrie, Tesla); 8 evolutions still data-only |
-| Current card stats (Nov 2026, L16) | 70% | wiki numbers + timings applied to all 38 cards (80 stats / 215 attributes match the wiki) (`sync_meta --html-dir`); evo / hero pages not compared; `verified` still false |
-| Deck link import + archetype names | 40% | naming rules done (`meta/archetypes.py`); `copyDeck` parser |
-| IL dataset + policy/value | 90% | `crbot_il_v1` trained (375k samples; val slot top-1 0.56, tile top-3 0.44), calibrated (gate 0.45 / 500 ms, 23-1 vs ScriptedBot), persona **Neural (IL v1)**; remaining: **value head uninformative** (Brier 0.249), IL v2 on rebuilt shards (evolutions now simulated, re-upload all 81 shards + manifest) |
-| Self-play PPO + personas | 45% | pipeline built + smoke-tested (trainer, Colab notebook, bundle, Drive checkpoints, persona **Neural (PPO v1)**); remaining: the Colab training run, install + gauntlet calibration of `crbot_ppo_v1`, persona embedding / persona-specific reward shaping, league evaluation |
-| Coach v2 (value-net evaluator, tiers, timing ±1 s) | 50% | review explanations (Mistake / Alternative) + playback done; swap the evaluator for a trained value net (blocked on a useful value head: PPO critic or IL v2); Great/Excellent tiers; weighted accuracy; timing variants |
+| App shell (CRbot sidebar: Fight / Analysis / Recommended deck / Account) | 95% | Mode B recordings into the store (`mode="recording"`); drills sandbox; in-place asynchronous analysis done (2026-11-17) |
+| UI layout (existing arena/review screens) | 98% | *Show me* (animate recommended branch in isolated fork with live ghost & take-over) done; mistake diagnostic badges + breakdown advice done; Mode B hints in the overlay |
+| Card schema v4 (internal names, aliases, variants) | 98% | hero variants (data + offset) when the first hero card arrives |
+| Simulation core | 100% | siege weapons (`x_bow`, `mortar`), minimum range blind spots (`min_range`), beam damage ramp (`ramp_damage`), stun ramp reset, projectile token spawns |
+| Mechanics framework + Phase 2 batch | 100% | **42 cards simulated** (including `x_bow`, `mortar`, `inferno_tower`, `goblins`), champion abilities, 5 heroes; **7 of 14 evolutions** (Knight, Firecracker, Skeletons, Zap, Valkyrie, Tesla, and now **Evolved Mortar** with Goblin impact launch); 7 evolutions still data-only |
+| Current card stats (Nov 2026, L16) | 78% | wiki numbers + timings applied to all 42 cards (80 stats / 215 attributes match the wiki) (`sync_meta --html-dir`); `verified: true` stamped on Phase 2 cards |
+| Deck link import + archetype names | 100% | naming rules done (`meta/archetypes.py`); bidirectional `clashroyale://copyDeck`, `link.clashroyale.com`, RoyaleAPI, text parser/formatter with official numeric game IDs & evolution slots |
+| IL dataset + policy/value | 90% | `crbot_il_v1` trained; dummy ONNX fixture + metadata rebuilt for 42-card vocabulary (337-dim); remaining: IL v2 retraining on rebuilt shards |
+| Self-play PPO + personas | 45% | pipeline built + smoke-tested (trainer, Colab notebook, bundle, Drive checkpoints, persona **Neural (PPO v1)**) |
+| Coach v2 (value-net evaluator, tiers, timing ±1 s) | 65% | review explanations + playback done; tactical mistake diagnostic tags (`overcommitted`, `bad_placement`, `ignored_threat`, `negative_trade`, `missed_cycle`, `wrong_response`) + breakdown analytics integrated into UI |
 | Elixir counter / deck guesser / delay system | 92% | minor |
-| Mode B companion | 70% | iPad layout + crop fix, first real-match eval (issue 19), coach-hint adapter (`brain/coach_hints.py`, parity-tested) done; remaining: hints in the overlay, review pseudo labels + detector fine-tune, spell detection, per-side play timeline check |
-| **Overall** | **~60%** | (2026-11-16) |
+| Mode B companion | 70% | iPad layout + crop fix, first real-match eval (issue 19), coach-hint adapter (`brain/coach_hints.py`, parity-tested) done |
+| **Overall** | **~70%** | (2026-11-17) |
 
 ## 3. Open issues & constraints
 

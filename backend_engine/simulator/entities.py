@@ -28,6 +28,7 @@ class Unit:
     first_hit_ms: int              # delay before the first hit after locking on
     range: float                   # tiles, edge to edge
     targets: Tuple[str, ...]       # ("ground", "air", "buildings")
+    min_range: float = 0.0         # minimum range blind spot (tiles, edge to edge, e.g. Mortar)
     splash: float = 0.0            # splash radius (read by the `splash` mechanic)
     speed: float = 0.0             # tiles / s
     sight: float = TROOP_SIGHT

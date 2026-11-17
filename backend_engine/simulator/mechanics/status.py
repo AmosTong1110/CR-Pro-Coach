@@ -19,7 +19,11 @@ def apply(u, tag: str, ms: int) -> None:
     u.status[tag] = max(int(ms), u.status.get(tag, 0))
     if tag in (STUN, FREEZE):
         u.cooldown_ms = max(u.cooldown_ms, u.first_hit_ms)
-        u.target_uid = None if tag == STUN else u.target_uid
+        if tag == STUN:
+            u.target_uid = None
+            if "ramp_target" in u.mstate:
+                u.mstate["ramp_target"] = None
+                u.mstate["ramp_ms"] = 0
 
 
 def tick(u, dt: int) -> None:

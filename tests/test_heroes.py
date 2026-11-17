@@ -52,7 +52,7 @@ def use(m, card, elixir=9.0):
 def test_slots_parse_and_validate(db):
     assert split_slot("knight") == ("knight", "evo") and split_slot("knight#hero") == ("knight", "hero")
     assert set(db.hero_capable()) == {"knight", "mini_pekka", "ice_golem", "musketeer", "valkyrie"}
-    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla"}   # the rest are data only
+    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla", "mortar"}   # the rest are data only
     for bad in ("archers", "archers#hero", "barbarian_barrel#hero", "skeletons#hero", "fireball#hero"):
         deck = (*H[:7], "archers") if bad.startswith("archers") else H if bad.split("#")[0] in H else (*H[:7], bad.split("#")[0])
         with pytest.raises(ValueError, match="cannot be an evolution / hero slot"):

@@ -110,8 +110,12 @@ class ScriptedBot:
                 # 军队防守：放置在敌军身前安全拉扯距离
                 return [self._intent(pick, tx, max(min(ty - 3.0, G.RIVER_Y0 - 0.5), 0.5))]
 
-        # 寻找进攻核心卡牌 (只攻击建筑的攻城核心，如野猪骑士、攻城槌)
-        wincons = [c for c in affordable if self._card(c).get("attack", {}).get("targets") == ["buildings"]]
+        # 寻找进攻核心卡牌 (只攻击建筑的攻城核心，如野猪骑士、攻城槌；以及远程自闭攻城武器如连弩、迫击炮)
+        wincons = [c for c in affordable if self._card(c).get("attack", {}).get("targets") == ["buildings"]
+                   or (self._card(c)["type"] == "building" and self._card(c).get("attack", {}).get("range_tiles", 0) >= 11.0)]
+
+        def _wincon_pos(cid: str, lx: float) -> Tuple[float, float]:
+            return (lx, G.RIVER_Y0 - 1.5) if self._card(cid)["type"] == "building" else (lx, G.RIVER_Y0 - 0.5)
 
         # 2b) 抓空挡突袭换路 (Punish / Lane Switch):
         # 推算出对手圣水空虚 (<=1.5水) 或我方圣水领先 >= 2 水且处于激进模式时，在对手沉底相反路桥头速攻
@@ -126,12 +130,14 @@ class ScriptedBot:
                     lane_x = G.BRIDGE_X[1] if G.lane_of(last["x"]) == "left" else G.BRIDGE_X[0]
                 else:
                     lane_x = min(G.BRIDGE_X, key=lambda bx: self._lane_tower_hp(towers, bx))
-                return [self._intent(wincons[0], lane_x, G.RIVER_Y0 - 0.5)]
+                wx, wy = _wincon_pos(wincons[0], lane_x)
+                return [self._intent(wincons[0], wx, wy)]
 
         # 3) 桥头推进进攻 (Push): 圣水充裕、足够跟上后续法术与支援时桥头施放进攻核心
         if wincons and elixir >= self._card(wincons[0])["elixir"] + 4 * (1 - self.aggression):
             lane_x = min(G.BRIDGE_X, key=lambda bx: self._lane_tower_hp(towers, bx))
-            return [self._intent(wincons[0], lane_x, G.RIVER_Y0 - 0.5)]
+            wx, wy = _wincon_pos(wincons[0], lane_x)
+            return [self._intent(wincons[0], wx, wy)]
 
         # 4) 满费防漏水过牌 (Leak Protection): 圣水逼近 9.5~10 费时，沉底最便宜的轻量单位过牌
         if elixir >= 9.5:

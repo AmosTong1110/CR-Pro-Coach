@@ -69,11 +69,15 @@ def test_mode_b_encoding_matches_the_simulator(db):
     tr = OppElixirTracker(db.rules, observer_side=0, evo_cards=db.evo_capable())
     tr.observe_all(m.events)
     sim = F.encode_observation(m.observation(0), tr.estimate(m.t_ms), guess, db, F.card_vocab(db))
-    assert np.allclose(mode_b[:63], sim[:63], atol=1e-6)                       # global, towers, opponent view
-    blocks = lambda v: sorted(map(tuple, v[63:87].reshape(4, 6)))  # noqa: E731  (hand order may differ)
-    assert blocks(mode_b) == blocks(sim) and np.allclose(mode_b[87:93], sim[87:93])
+    v_len = len(F.card_vocab(db))
+    opp_end = 25 + v_len
+    hand_end = opp_end + 24
+    nxt_end = hand_end + 6
+    assert np.allclose(mode_b[:opp_end], sim[:opp_end], atol=1e-6)                       # global, towers, opponent view
+    blocks = lambda v: sorted(map(tuple, v[opp_end:hand_end].reshape(4, 6)))  # noqa: E731  (hand order may differ)
+    assert blocks(mode_b) == blocks(sim) and np.allclose(mode_b[hand_end:nxt_end], sim[hand_end:nxt_end])
     keep = [k for k in range(8) if k != 6]
-    assert np.allclose(mode_b[93:].reshape(30, 8)[:, keep], sim[93:].reshape(30, 8)[:, keep], atol=1e-6)
+    assert np.allclose(mode_b[nxt_end:].reshape(30, 8)[:, keep], sim[nxt_end:].reshape(30, 8)[:, keep], atol=1e-6)
 
 
 def test_hints_from_known_hand(db, hinter):

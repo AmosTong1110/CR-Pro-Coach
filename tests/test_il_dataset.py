@@ -93,7 +93,7 @@ def test_replay_both_sides_learn_with_legal_labels(db, proxies, tmp_path):
     assert first[0] // 18 < 15 and first[1] // 18 < 15
     assert (d["tile_index"][~play] == -1).all() and (d["card_slot"][~play] == -1).all()
     manifest = json.loads((tmp_path / "manifest.json").read_text())
-    assert manifest["obs_dim"] == 333 and manifest["schema"] == "il_shards_v1"
+    assert manifest["obs_dim"] == F.OBS_DIM and manifest["schema"] == "il_shards_v1"
 
 
 def test_proxy_side_is_not_a_learner_and_proxy_plays_still_happen(db, proxies, tmp_path):

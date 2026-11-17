@@ -22,15 +22,18 @@ def _encode(m, side, db):
 
 
 def test_layout_is_333_floats_in_range(db):
-    assert F.OBS_DIM == 333 == F.obs_dim(F.card_vocab(db))
+    vocab = F.card_vocab(db)
+    dim = F.obs_dim(vocab)
+    assert F.OBS_DIM == dim
     m = Match(MatchConfig((DECK, DECK), seed=3, shuffle=False), db)
     assert m.play(0, "musketeer", 3.5, 10.5).ok
     for _ in range(30):
         m.step()
     v = _encode(m, 0, db)
-    assert v.shape == (333,) and v.dtype == np.float32
+    assert v.shape == (dim,) and v.dtype == np.float32
     assert np.isfinite(v).all() and v.min() >= -1.0 and v.max() <= 1.0
-    assert v[93] == 1.0 and v[94] == 1.0          # first unit token: present, own
+    unit_start = 55 + len(vocab)
+    assert v[unit_start] == 1.0 and v[unit_start + 1] == 1.0          # first unit token: present, own
 
 
 def test_mirrored_positions_encode_the_same_for_both_sides(db):

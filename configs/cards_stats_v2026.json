@@ -4017,6 +4017,382 @@
         "mass",
         "collision_radius_tiles"
       ]
+    },
+    "x_bow": {
+      "name": "X-Bow",
+      "internal_name": "X-Bow",
+      "game_id": 27000008,
+      "aliases": {
+        "display": "X-Bow",
+        "hf": "x_bow",
+        "royaleapi": "x-bow",
+        "detector": [
+          "x-bow"
+        ]
+      },
+      "type": "building",
+      "rarity": "epic",
+      "elixir": 6,
+      "verified": true,
+      "deploy_time_s": 3.5,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "collision_radius_tiles": 0.75,
+      "mass": 0,
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 11.5,
+        "hit_speed_s": 0.3,
+        "first_hit_s": 0.3,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 11.5
+      },
+      "movement": {
+        "layer": "ground"
+      },
+      "mechanics": [
+        {
+          "kind": "decay",
+          "params": {}
+        },
+        {
+          "kind": "pulls_building_targeters",
+          "params": {}
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 1000,
+        "damage": 26
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1600,
+          "damage": 42
+        },
+        "12": {
+          "hitpoints": 1760,
+          "damage": 46
+        },
+        "13": {
+          "hitpoints": 1936,
+          "damage": 51
+        },
+        "14": {
+          "hitpoints": 2128,
+          "damage": 56
+        },
+        "15": {
+          "hitpoints": 2336,
+          "damage": 61
+        },
+        "16": {
+          "hitpoints": 2569,
+          "damage": 67
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:X-Bow",
+      "wiki_as_of": "2026-11-16",
+      "data_as_of": "2026-11-16"
+    },
+    "mortar": {
+      "name": "Mortar",
+      "internal_name": "Mortar",
+      "game_id": 27000002,
+      "aliases": {
+        "display": "Mortar",
+        "hf": "mortar",
+        "royaleapi": "mortar",
+        "detector": [
+          "mortar",
+          "mortar-evolution"
+        ]
+      },
+      "type": "building",
+      "rarity": "common",
+      "elixir": 4,
+      "verified": true,
+      "deploy_time_s": 3.5,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "collision_radius_tiles": 0.75,
+      "mass": 0,
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 11.5,
+        "min_range_tiles": 3.5,
+        "hit_speed_s": 5.0,
+        "first_hit_s": 3.5,
+        "splash_radius_tiles": 2.0,
+        "sight_tiles": 11.5,
+        "projectile_speed_tiles_s": 8.0
+      },
+      "movement": {
+        "layer": "ground"
+      },
+      "mechanics": [
+        {
+          "kind": "decay",
+          "params": {}
+        },
+        {
+          "kind": "pulls_building_targeters",
+          "params": {}
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 575,
+        "damage": 104
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1472,
+          "damage": 266
+        },
+        "12": {
+          "hitpoints": 1619,
+          "damage": 292
+        },
+        "13": {
+          "hitpoints": 1781,
+          "damage": 321
+        },
+        "14": {
+          "hitpoints": 1957,
+          "damage": 353
+        },
+        "15": {
+          "hitpoints": 2149,
+          "damage": 388
+        },
+        "16": {
+          "hitpoints": 2369,
+          "damage": 428
+        }
+      },
+      "variants": {
+        "evo": {
+          "cycles_required": 2,
+          "mechanics": [
+            {
+              "kind": "evo_goblin_mortar",
+              "params": {
+                "token": "goblin"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "data_source": "wiki-fandom-html:Evolved Mortar",
+          "wiki_as_of": "2026-11-16"
+        },
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Mortar",
+      "wiki_as_of": "2026-11-16",
+      "data_as_of": "2026-11-16"
+    },
+    "inferno_tower": {
+      "name": "Inferno Tower",
+      "internal_name": "InfernoTower",
+      "game_id": 27000003,
+      "aliases": {
+        "display": "Inferno Tower",
+        "hf": "inferno_tower",
+        "royaleapi": "inferno-tower",
+        "detector": [
+          "inferno-tower"
+        ]
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 5,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [
+        2,
+        2
+      ],
+      "collision_radius_tiles": 0.6,
+      "mass": 0,
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 6.0,
+        "hit_speed_s": 0.4,
+        "first_hit_s": 0.4,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 6.0
+      },
+      "movement": {
+        "layer": "ground"
+      },
+      "mechanics": [
+        {
+          "kind": "decay",
+          "params": {}
+        },
+        {
+          "kind": "pulls_building_targeters",
+          "params": {}
+        },
+        {
+          "kind": "ramp_damage",
+          "params": {
+            "stage_ms": 2000,
+            "stats": [
+              "damage",
+              "damage_stage2",
+              "damage_stage3"
+            ]
+          }
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 816,
+        "damage": 20,
+        "damage_stage2": 82,
+        "damage_stage3": 409
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1730,
+          "damage": 42,
+          "damage_stage2": 173,
+          "damage_stage3": 868
+        },
+        "12": {
+          "hitpoints": 1903,
+          "damage": 46,
+          "damage_stage2": 190,
+          "damage_stage3": 954
+        },
+        "13": {
+          "hitpoints": 2093,
+          "damage": 50,
+          "damage_stage2": 209,
+          "damage_stage3": 1050
+        },
+        "14": {
+          "hitpoints": 2300,
+          "damage": 55,
+          "damage_stage2": 230,
+          "damage_stage3": 1154
+        },
+        "15": {
+          "hitpoints": 2525,
+          "damage": 61,
+          "damage_stage2": 252,
+          "damage_stage3": 1267
+        },
+        "16": {
+          "hitpoints": 2776,
+          "damage": 67,
+          "damage_stage2": 277,
+          "damage_stage3": 1391
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Inferno Tower",
+      "wiki_as_of": "2026-11-16",
+      "data_as_of": "2026-11-16"
+    },
+    "goblins": {
+      "name": "Goblins",
+      "internal_name": "Goblins",
+      "game_id": 26000002,
+      "aliases": {
+        "display": "Goblins",
+        "hf": "goblins",
+        "royaleapi": "goblins",
+        "detector": [
+          "goblins"
+        ]
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "count": 3,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 1,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.5,
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "mechanics": [
+        {
+          "kind": "swarm",
+          "params": {}
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 79,
+        "damage": 47
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 202,
+          "damage": 120
+        },
+        "12": {
+          "hitpoints": 222,
+          "damage": 132
+        },
+        "13": {
+          "hitpoints": 244,
+          "damage": 145
+        },
+        "14": {
+          "hitpoints": 268,
+          "damage": 159
+        },
+        "15": {
+          "hitpoints": 294,
+          "damage": 175
+        },
+        "16": {
+          "hitpoints": 323,
+          "damage": 192
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Goblins",
+      "wiki_as_of": "2026-11-16",
+      "data_as_of": "2026-11-16"
     }
   },
   "tokens": {
@@ -4296,6 +4672,69 @@
       ],
       "collision_radius_tiles": 0.5,
       "mass": 0
+    },
+    "goblin": {
+      "name": "Goblin",
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 1,
+      "count": 1,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.5,
+      "mass": 1,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.5
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.5,
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "mechanics": [],
+      "base_stats": {
+        "hitpoints": 79,
+        "damage": 47
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 202,
+          "damage": 120
+        },
+        "12": {
+          "hitpoints": 222,
+          "damage": 132
+        },
+        "13": {
+          "hitpoints": 244,
+          "damage": 145
+        },
+        "14": {
+          "hitpoints": 268,
+          "damage": 159
+        },
+        "15": {
+          "hitpoints": 294,
+          "damage": 175
+        },
+        "16": {
+          "hitpoints": 323,
+          "damage": 192
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Goblins",
+      "wiki_as_of": "2026-11-16",
+      "data_as_of": "2026-11-16"
     }
   }
 }

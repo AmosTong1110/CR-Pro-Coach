@@ -339,6 +339,7 @@ class Match:
                 s.hitpoints, s.hitpoints, s.damage or 0,
                 int(atk.get("hit_speed_s", 1.0) * 1000), int(atk.get("first_hit_s", 0.5) * 1000),
                 float(atk.get("range_tiles", 1.0)), tuple(atk.get("targets", ["ground"])),
+                min_range=float(atk.get("min_range_tiles", 0.0)),
                 splash=float(atk.get("splash_radius_tiles", 0.0)),
                 speed=float(mov.get("speed_tiles_s", 0.0)),
                 sight=float(atk.get("sight_tiles", TROOP_SIGHT)),
@@ -450,8 +451,11 @@ class Match:
         return max(0.0, G.dist(a.x, a.y, b.x, b.y) - a.radius - b.radius)
 
     def _in_range(self, u: Unit, t: Unit) -> bool:
-        """检测目标是否在攻击者的射程之内"""
-        return self._edge_dist(u, t) <= u.range + 1e-9
+        """检测目标是否在攻击者的射程之内 (支持最小射程盲区，如迫击炮)"""
+        d = self._edge_dist(u, t)
+        if u.min_range > 0 and d < u.min_range - 1e-9:
+            return False
+        return d <= u.range + 1e-9
 
     @staticmethod
     def _can_target(u: Unit, e: Unit) -> bool:

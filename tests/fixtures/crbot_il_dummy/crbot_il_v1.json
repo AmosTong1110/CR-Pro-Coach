@@ -2,7 +2,7 @@
  "name": "crbot_il_v1",
  "dummy": true,
  "obs_version": "il_obs_v1",
- "obs_dim": 333,
+ "obs_dim": 337,
  "vocab": [
   "archers",
   "barbarian_barrel",
@@ -16,10 +16,12 @@
   "fireball",
   "firecracker",
   "goblin_demolisher",
+  "goblins",
   "golden_knight",
   "hog_rider",
   "ice_golem",
   "ice_spirit",
+  "inferno_tower",
   "knight",
   "lightning",
   "little_prince",
@@ -28,6 +30,7 @@
   "mini_pekka",
   "minion_giant",
   "minions",
+  "mortar",
   "musketeer",
   "poison",
   "rocket",
@@ -41,6 +44,7 @@
   "tornado",
   "valkyrie",
   "vines",
+  "x_bow",
   "zap"
  ],
  "gate_threshold": 0.5

@@ -71,7 +71,7 @@ def test_v3_file_still_loads_identically(raw, db):
 
 def test_variant_helpers(db):
     assert db.has_variant("knight", "evo") and not db.has_variant("hog_rider", "evo")
-    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla"}
+    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla", "mortar"}
     with pytest.raises(KeyError):
         db.evo_cycles("hog_rider")
     assert db.stats("knight", 11, "evo").hitpoints == db.stats("knight", 11).hitpoints   # no stat_mods yet
