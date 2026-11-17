@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 
 from backend_engine.contracts import LatencyClass
 from backend_engine.meta.archetypes import archetype_name, fmt_avg
+from backend_engine.meta.deck_link import format_copy_deck_link, parse_deck_link
 from backend_engine.meta.presets import AI_PUSH_CARDS, find_preset, playable
 from backend_engine.simulator.geometry import TICK_MS
 from frontend_app.qt.board import BoardWidget
@@ -241,12 +242,20 @@ class DeckDialog(QDialog):
         custom = cls(QPushButton("Build your own…"), "ghost")
         custom.setToolTip("Tick 8 cards yourself for the selected side")
         custom.clicked.connect(self._custom)
+        import_btn = cls(QPushButton("Import link…"), "ghost")
+        import_btn.setToolTip("Import deck from official clashroyale:// link, RoyaleAPI, or text")
+        import_btn.clicked.connect(self._import_link)
+        copy_btn = cls(QPushButton("Copy link"), "ghost")
+        copy_btn.setToolTip("Copy official clashroyale:// deck link for the selected side")
+        copy_btn.clicked.connect(self._copy_link)
         cancel = cls(QPushButton("Cancel"), "ghost")
         cancel.clicked.connect(self.reject)
         ok = cls(QPushButton("Use these decks"), "primary")
         ok.setDefault(True)
         ok.clicked.connect(self.accept)
         bottom.addWidget(custom)
+        bottom.addWidget(import_btn)
+        bottom.addWidget(copy_btn)
         bottom.addStretch(1)
         bottom.addWidget(cancel)
         bottom.addWidget(ok)
@@ -301,6 +310,46 @@ class DeckDialog(QDialog):
         self.side_summary.setText(f"<span style='color:{C['you']}'>You</span>: {self._name(HUMAN)}"
                                   f"&nbsp;&nbsp;·&nbsp;&nbsp;<span style='color:{C['ai']}'>AI</span>: {self._name(AI)}")
 
+    def _import_link(self) -> None:
+        clip = QApplication.clipboard().text().strip()
+        default_val = clip if ("clashroyale" in clip or "royaleapi" in clip or "," in clip or ";" in clip) else ""
+        text, ok = QInputDialog.getText(
+            self,
+            "Import Deck Link",
+            f"Paste deck link or card list for {'Your deck' if self.side == HUMAN else 'AI deck'}:\n"
+            f"(Supports clashroyale://copyDeck, link.clashroyale.com, RoyaleAPI, or card names)",
+            text=default_val,
+        )
+        if not ok or not text.strip():
+            return
+        parsed = parse_deck_link(text.strip(), self.session.db)
+        if not parsed.playable:
+            msg = parsed.warning or "Deck is incomplete or contains unsimulated cards."
+            if parsed.missing:
+                msg += f"\n\nMissing / unsimulated: {', '.join(parsed.missing)}"
+            QMessageBox.warning(self, "Cannot Import Deck", msg)
+            return
+
+        self.choice[self.side] = (parsed.cards, parsed.evo)
+        self.set_side(self.side)
+        if parsed.warning:
+            QMessageBox.information(self, "Deck Imported", f"Imported {parsed.archetype or 'deck'}.\n\nNote: {parsed.warning}")
+
+    def _copy_link(self) -> None:
+        cards, evo = self.choice[self.side]
+        try:
+            link = format_copy_deck_link(cards, evo, db=self.session.db)
+        except Exception as e:
+            QMessageBox.warning(self, "Copy Deck Link", f"Could not generate deck link: {e}")
+            return
+        QApplication.clipboard().setText(link)
+        side_name = "Your deck" if self.side == HUMAN else "AI deck"
+        QMessageBox.information(
+            self,
+            "Deck Link Copied",
+            f"Official Clash Royale link for {side_name} copied to clipboard:\n\n{link}",
+        )
+
     def _custom(self) -> None:
         cards, evo = self.choice[self.side]
         dlg = CustomDeckDialog(self.session.db, cards, evo, "Your deck" if self.side == HUMAN else "AI deck", self)
@@ -319,6 +368,7 @@ class CustomDeckDialog(QDialog):
     def __init__(self, db, deck, evo, title: str, parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"Build your own · {title}")
+        self.db = db
         lay = QVBoxLayout(self)
         lay.setContentsMargins(16, 14, 16, 14)
         self.count = label("", "sub")
@@ -342,12 +392,80 @@ class CustomDeckDialog(QDialog):
                     if slot in evo:
                         self.evo_box.setCurrentIndex(self.evo_box.count() - 1)
         lay.addWidget(self.evo_box)
+
+        btn_bar = QHBoxLayout()
+        import_btn = cls(QPushButton("Import link…"), "ghost")
+        import_btn.setToolTip("Import deck from official clashroyale:// link, RoyaleAPI, or text")
+        import_btn.clicked.connect(self._import_link)
+        copy_btn = cls(QPushButton("Copy link"), "ghost")
+        copy_btn.setToolTip("Copy official clashroyale:// deck link of selected cards")
+        copy_btn.clicked.connect(self._copy_link)
+        btn_bar.addWidget(import_btn)
+        btn_bar.addWidget(copy_btn)
+        btn_bar.addStretch(1)
+
         bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.accepted.connect(self._accept)
         bb.rejected.connect(self.reject)
-        lay.addWidget(bb)
-        self.resize(360, 560)
+        btn_bar.addWidget(bb)
+        lay.addLayout(btn_bar)
+
+        self.resize(380, 580)
         self._count()
+
+    def _import_link(self) -> None:
+        clip = QApplication.clipboard().text().strip()
+        default_val = clip if ("clashroyale" in clip or "royaleapi" in clip or "," in clip or ";" in clip) else ""
+        text, ok = QInputDialog.getText(
+            self,
+            "Import Deck Link",
+            "Paste deck link or card list (clashroyale://, link.clashroyale.com, RoyaleAPI, or names):",
+            text=default_val,
+        )
+        if not ok or not text.strip():
+            return
+        parsed = parse_deck_link(text.strip(), self.db)
+        if parsed.missing:
+            QMessageBox.warning(
+                self,
+                "Import Warning",
+                f"Some cards could not be resolved or are not simulated:\n{', '.join(parsed.missing)}",
+            )
+        if not parsed.cards:
+            return
+
+        self.lw.blockSignals(True)
+        for j in range(self.lw.count()):
+            it = self.lw.item(j)
+            cid = it.data(Qt.UserRole)
+            it.setCheckState(Qt.Checked if cid in parsed.cards else Qt.Unchecked)
+        self.lw.blockSignals(False)
+
+        if parsed.evo:
+            target_evo = parsed.evo[0]
+            for idx in range(self.evo_box.count()):
+                d = self.evo_box.itemData(idx)
+                if d and (d == target_evo or d.split("#")[0] == target_evo):
+                    self.evo_box.setCurrentIndex(idx)
+                    break
+        else:
+            self.evo_box.setCurrentIndex(0)
+        self._count()
+
+    def _copy_link(self) -> None:
+        deck = self.chosen()
+        if len(deck) != 8:
+            QMessageBox.warning(self, "Copy Deck Link", f"A deck needs exactly 8 cards to generate a link (you have {len(deck)}).")
+            return
+        evo = self.evo_box.currentData()
+        evo_tuple = (evo,) if evo else ()
+        try:
+            link = format_copy_deck_link(deck, evo_tuple, db=self.db)
+        except Exception as e:
+            QMessageBox.warning(self, "Copy Deck Link", f"Could not generate deck link: {e}")
+            return
+        QApplication.clipboard().setText(link)
+        QMessageBox.information(self, "Deck Link Copied", f"Official deck link copied to clipboard:\n\n{link}")
 
     def chosen(self):
         return tuple(self.lw.item(j).data(Qt.UserRole) for j in range(self.lw.count())

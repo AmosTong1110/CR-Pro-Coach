@@ -320,6 +320,17 @@ class CardDB:
             return explicit[0]
         return "rolling_spell" if "rolling_range_tiles" in sp else "area_spell"
 
+    def by_game_id(self, game_id: int | str) -> Optional[str]:
+        """Card id for a numeric game_id (Supercell ID used in clashroyale://copyDeck links)."""
+        try:
+            gid = int(game_id)
+        except (ValueError, TypeError):
+            return None
+        for cid, c in self.cards.items():
+            if c.get("game_id") == gid:
+                return cid
+        return None
+
     def by_alias(self, name: str, source: Optional[str] = None) -> Optional[str]:
         """Card id for an id, display name, internal name or alias (optionally from one source:
         hf / royaleapi / detector / display / internal_name)."""
@@ -355,3 +366,15 @@ def split_slot(slot: str) -> tuple:
     """Evolution / hero slot entry -> (card id, variant): "knight" = evolution, "knight#hero" = hero (CardRef form)."""
     cid, _, var = slot.partition("#")
     return cid, (var or "evo")
+
+
+_DEFAULT_DB: Optional[CardDB] = None
+
+
+def default_card_db() -> CardDB:
+    """Return the cached default CardDB instance."""
+    global _DEFAULT_DB
+    if _DEFAULT_DB is None:
+        _DEFAULT_DB = CardDB.load()
+    return _DEFAULT_DB
+

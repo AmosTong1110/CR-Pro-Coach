@@ -21,13 +21,14 @@ from PySide6.QtCore import QSize, QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QFileDialog, QFormLayout, QFrame,
-    QGroupBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
+    QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMessageBox, QProgressBar, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
 )
 
 from backend_engine.brain.coach_analyzer import MatchReview
 from backend_engine.meta.archetypes import avg_elixir, fmt_avg, pretty
+from backend_engine.meta.deck_link import format_copy_deck_link, parse_deck_link
 from backend_engine.meta.recommend import coverage, meta_info, recommend
 from backend_engine.simulator.engine import ENGINE_VERSION
 from backend_engine.simulator.match_runner import DEFAULT_DECK
@@ -796,13 +797,19 @@ class DecksPage(QWidget):
         self.only_ready.toggled.connect(lambda _: self.reload())
         bar.addWidget(self.only_ready)
         bar.addStretch(1)
+        self.import_btn = _cls(QPushButton("Import link…"), "ghost")
+        self.import_btn.setToolTip("Import deck from official clashroyale:// link, RoyaleAPI, or text")
+        self.import_btn.clicked.connect(self._import_link)
+        self.copy_btn = _cls(QPushButton("Copy link"), "ghost")
+        self.copy_btn.setToolTip("Copy official clashroyale:// link for the selected deck")
+        self.copy_btn.clicked.connect(self._copy_link)
         self.vs_btn = _cls(QPushButton("Fight against it"), "ghost")
         self.vs_btn.clicked.connect(lambda: self.use(as_ai=True))
         self.use_btn = _cls(QPushButton("Fight with this deck"), "primary")
         self.use_btn.clicked.connect(lambda: self.use(as_ai=False))
         builder = _cls(QPushButton("Deck builder…"), "ghost")
         builder.clicked.connect(self.shell.open_deck_builder)
-        for b in (builder, self.vs_btn, self.use_btn):
+        for b in (self.import_btn, self.copy_btn, builder, self.vs_btn, self.use_btn):
             bar.addWidget(b)
         root.addLayout(bar)
 
@@ -860,6 +867,54 @@ class DecksPage(QWidget):
         ready = r is not None and not r[4]
         self.use_btn.setEnabled(ready)
         self.vs_btn.setEnabled(ready)
+        self.copy_btn.setEnabled(ready)
+
+    def _copy_link(self) -> None:
+        r = self._selected_row()
+        if r is None or r[4]:
+            return
+        cards = tuple(r[1])
+        try:
+            link = format_copy_deck_link(cards, db=self.shell.fight.session.db)
+        except Exception as e:
+            QMessageBox.warning(self, "Copy Deck Link", f"Could not generate deck link: {e}")
+            return
+        QApplication.clipboard().setText(link)
+        QMessageBox.information(self, "Deck Link Copied", f"Official deck link for {r[0]} copied to clipboard:\n\n{link}")
+
+    def _import_link(self) -> None:
+        clip = QApplication.clipboard().text().strip()
+        default_val = clip if ("clashroyale" in clip or "royaleapi" in clip or "," in clip or ";" in clip) else ""
+        text, ok = QInputDialog.getText(
+            self,
+            "Import Deck Link",
+            "Paste official deck link, RoyaleAPI URL, or card list:",
+            text=default_val,
+        )
+        if not ok or not text.strip():
+            return
+        db = self.shell.fight.session.db
+        parsed = parse_deck_link(text.strip(), db)
+        if not parsed.playable:
+            msg = parsed.warning or "Deck is incomplete or contains unsimulated cards."
+            if parsed.missing:
+                msg += f"\n\nMissing / unsimulated: {', '.join(parsed.missing)}"
+            QMessageBox.warning(self, "Cannot Import Deck", msg)
+            return
+
+        box = QMessageBox(self)
+        box.setWindowTitle("Deck Imported")
+        avg_str = f"Average elixir: {parsed.avg_elixir:.1f}" if parsed.avg_elixir else ""
+        box.setText(f"Successfully parsed '{parsed.archetype or 'Custom Deck'}' (8/8 cards playable)!\n{avg_str}")
+        play_btn = box.addButton("Fight with this deck", QMessageBox.AcceptRole)
+        vs_btn = box.addButton("Fight against it", QMessageBox.ActionRole)
+        box.addButton("Cancel", QMessageBox.RejectRole)
+        box.exec()
+        clicked = box.clickedButton()
+        if clicked == play_btn:
+            self.shell.fight_with(parsed.cards, as_ai=False, evo=parsed.evo)
+        elif clicked == vs_btn:
+            self.shell.fight_with(parsed.cards, as_ai=True, evo=parsed.evo)
 
     def use(self, as_ai: bool) -> None:
         r = self._selected_row()
@@ -1188,14 +1243,17 @@ class CRbotWindow(QMainWindow):
             self.fight.review_goto(at_ms)
         return True
 
-    def fight_with(self, deck, as_ai: bool = False) -> None:
+    def fight_with(self, deck, as_ai: bool = False, evo: Optional[Sequence[str]] = None) -> None:
         key = "ai_deck" if as_ai else "player_deck"
         evo_key = "ai_evo" if as_ai else "player_evo"
         cfg = self.fight.session.cfg
-        evo = tuple(e for e in getattr(cfg, evo_key) if e in deck)
-        self.fight.restart(**{key: tuple(deck), evo_key: evo})
+        if evo is None:
+            chosen_evo = tuple(e for e in getattr(cfg, evo_key) if e in deck)
+        else:
+            chosen_evo = tuple(e for e in evo if e.split("#")[0] in deck)
+        self.fight.restart(**{key: tuple(deck), evo_key: chosen_evo})
         self.show_page("fight")
-        self.fight.flash(("AI now plays" if as_ai else "You now play") + f" {deck_text(deck)} · Space to start")
+        self.fight.flash(("AI now plays" if as_ai else "You now play") + f" {deck_text(deck, chosen_evo)} · Space to start")
 
     def open_deck_builder(self) -> None:
         self.show_page("fight")
