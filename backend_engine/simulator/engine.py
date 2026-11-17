@@ -569,8 +569,7 @@ class Match:
         if d <= 1e-9:
             return
         f = min(1.0, step / d)
-        u.x = min(max(u.x + (wx - u.x) * f, 0.0), G.W - 0.01)
-        u.y = min(max(u.y + (wy - u.y) * f, 0.0), G.H - 0.01)
+        self._move_clamped(u, u.x + (wx - u.x) * f, u.y + (wy - u.y) * f)
 
     def _resolve_collisions(self) -> None:
         """
@@ -618,6 +617,26 @@ class Match:
                 pa[1] -= ny * overlap * sa
                 pb[0] += nx * overlap * sb
                 pb[1] += ny * overlap * sb
+                # 防御塔/静态建筑侧向切线滑行 (避免直接卡在塔正后方或正前方反复震荡)
+                if ma == 0 or mb == 0:
+                    moving = b if ma == 0 else a
+                    obs = a if ma == 0 else b
+                    ox_dir = nx if ma == 0 else -nx
+                    if abs(ox_dir) < 0.25:
+                        if ox_dir < -1e-4:
+                            slide_x = -1.0
+                        elif ox_dir > 1e-4:
+                            slide_x = 1.0
+                        else:
+                            if obs.x > G.W / 2:
+                                slide_x = -1.0
+                            elif obs.x < G.W / 2:
+                                slide_x = 1.0
+                            else:
+                                slide_x = -1.0 if moving.lane == "left" else 1.0
+                        slide_mag = max(0.04, overlap * 0.4)
+                        p_moving = pb if ma == 0 else pa
+                        p_moving[0] += slide_x * slide_mag
         # 应用推挤位移，并限制最大位移与河道防落水边界限制
         for uid in sorted(push):
             u = self.units[uid]

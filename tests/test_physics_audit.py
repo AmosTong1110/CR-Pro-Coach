@@ -211,3 +211,68 @@ def test_task3_sight_range_pull_and_reacquisition(db):
     tgt_after = m.units.get(knight.target_uid)
     assert tgt_after is not None
     assert tgt_after.tower_role == "princess_right"
+
+
+def test_task4_princess_tower_sliding(db):
+    """Troop deployed directly behind Princess Tower smoothly slides around without vibrating in place."""
+    deck = ("knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "musketeer", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Deploy directly behind right Princess Tower at (14.5, 4.0)
+    res = m.play(0, "knight", 14.5, 4.0)
+    assert res.ok
+    knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 0][0]
+
+    # Step for 180 ticks (9.0s)
+    for _ in range(180):
+        m.step()
+
+    # Knight must have smoothly navigated past the tower (tower top is y = 6.5 + 1.5 = 8.0)
+    assert knight.y > 8.0, f"Knight got stuck behind tower at y={knight.y}"
+    assert knight.hp > 0
+
+
+def test_task4_king_tower_sliding(db):
+    """Troop deployed directly behind King Tower smoothly slides around without vibrating in place."""
+    deck = ("knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "musketeer", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Deploy directly behind King Tower at (9.0, 0.5)
+    res = m.play(0, "knight", 9.0, 0.5)
+    assert res.ok
+    knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 0][0]
+
+    # Step for 180 ticks (9.0s)
+    for _ in range(180):
+        m.step()
+
+    # Knight must have smoothly navigated past King Tower (y > 5.5)
+    assert knight.y > 5.5, f"Knight got stuck behind king tower at y={knight.y}"
+
+
+def test_task4_crowding_near_river(db):
+    """Dense unit crowding near river separates units naturally without pushing ground units into river."""
+    deck = ("skeletons", "knight", "archers", "fireball", "the_log", "ice_spirit", "musketeer", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Deploy skeletons near river
+    res = m.play(0, "skeletons", 10.0, 14.0)
+    assert res.ok
+    skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 0]
+
+    # Force them to stack on top of each other right at river edge off-bridge
+    for s in skels:
+        s.x = 10.0
+        s.y = 14.8
+
+    # Step match to let collision resolve
+    for _ in range(50):
+        m.step()
+
+    # None should have been pushed into river (15.0 <= y < 17.0) off-bridge
+    for s in skels:
+        if 15.0 <= s.y < 17.0:
+            assert abs(s.x - 3.5) <= 1.0 or abs(s.x - 14.5) <= 1.0, f"Unit pushed into river at {s.x}, {s.y}"
