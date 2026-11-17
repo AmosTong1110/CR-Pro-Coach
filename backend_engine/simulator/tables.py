@@ -10,6 +10,15 @@ UNIT_DIRS[k]:     unit vector at angle 2*pi*k/64, used to separate exactly-overl
 
 MAX_SPAWN = 20
 
+# Multi-unit spawn formations with proper horizontal/vertical offsets around drop point.
+# Ensures units placed at the King Tower (x=9.0) split naturally across left and right lanes.
+SPAWN_FORMATIONS = {
+    2: ((-0.75, 0.0), (0.75, 0.0)),
+    3: ((-0.75, -0.2), (0.0, 0.35), (0.75, -0.2)),
+    4: ((-0.7, 0.35), (0.7, 0.35), (-0.7, -0.35), (0.7, -0.35)),
+    5: ((-1.0, -0.2), (-0.5, 0.3), (0.0, -0.2), (0.5, 0.3), (1.0, -0.2)),
+}
+
 SPAWN_RING = (
     ((0.0, 0.0),),  # n = 0 (unused)
     ((0.0, 0.0),),

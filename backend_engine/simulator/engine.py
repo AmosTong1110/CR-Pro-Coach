@@ -27,7 +27,7 @@ from backend_engine.simulator.mechanics.abilities import ABILITY_SUFFIX, ability
 from backend_engine.simulator.mechanics.batch2 import fill_spawn_params
 from backend_engine.simulator.mechanics.core import advance_projectile
 from backend_engine.simulator.rng import Pcg32
-from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_RING, UNIT_DIRS
+from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_FORMATIONS, SPAWN_RING, UNIT_DIRS
 
 # Bumped whenever gameplay changes on purpose (golden hashes re-recorded). Saved matches made with another
 # version can't be rebuilt, only shown from their saved summary / review.
@@ -332,10 +332,18 @@ class Match:
         for i in range(n):
             if n > MAX_SPAWN:
                 raise ValueError(f"{card_id}: count {n} > MAX_SPAWN {MAX_SPAWN}")
-            ox, oy = SPAWN_RING[n][i] if n > 1 else (0.0, 0.0)
+            if n == 1:
+                ox, oy = 0.0, 0.0
+            elif n in SPAWN_FORMATIONS:
+                ox, oy = SPAWN_FORMATIONS[n][i]
+            else:
+                ox, oy = SPAWN_RING[n][i]
+            ux = min(max(x + ox, 0.0), G.W - 0.01)
+            uy = min(max(y + oy, 0.0), G.H - 0.01)
+            unit_lane = "left" if ux < G.W / 2 else "right"
             u = Unit(
                 self._uid(), side, card_id, kind, mov.get("layer", "ground"),
-                min(max(x + ox, 0.0), G.W - 0.01), min(max(y + oy, 0.0), G.H - 0.01), radius,
+                ux, uy, radius,
                 s.hitpoints, s.hitpoints, s.damage or 0,
                 int(atk.get("hit_speed_s", 1.0) * 1000), int(atk.get("first_hit_s", 0.5) * 1000),
                 float(atk.get("range_tiles", 1.0)), tuple(atk.get("targets", ["ground"])),
@@ -348,6 +356,7 @@ class Match:
                 decay_per_tick=decay, source_event_id=eid, evolved=evolved,
                 mass=0.0 if kind == "building" else float(card.get("mass") or 1),
                 variant=variant, mechanics=kinds, params=copy.deepcopy(params),
+                lane=unit_lane,
             )
             self.units[u.uid] = u
             for mech in hooks_for(u.mechanics, "on_spawn"):
@@ -464,6 +473,13 @@ class Match:
             return "buildings" in u.targets or "ground" in u.targets
         return e.layer in u.targets
 
+    def _default_lane_tower(self, u: Unit) -> Optional[Unit]:
+        """根据单位所分配路别确定默认进攻的敌方防御塔"""
+        enemy = 1 - u.side
+        own_role = "princess_left" if u.lane == "left" else "princess_right"
+        opp_role = "princess_right" if u.lane == "left" else "princess_left"
+        return self.tower(enemy, own_role) or self.tower(enemy, "king") or self.tower(enemy, opp_role)
+
     def _acquire(self, u: Unit) -> Optional[Unit]:
         """
         AI 索敌目标锁定算法
@@ -486,9 +502,19 @@ class Match:
         if u.is_structure:
             pool = [e for e in enemies if self._in_range(u, e)]
         elif u.building_only:
-            pool = [e for e in enemies if e.is_structure]
+            buildings_in_sight = [e for e in enemies if e.is_structure and e.kind == "building" and self._edge_dist(u, e) <= u.sight]
+            if buildings_in_sight:
+                pool = buildings_in_sight
+            else:
+                lane_tow = self._default_lane_tower(u)
+                pool = [lane_tow] if lane_tow is not None else [e for e in enemies if e.is_structure]
         else:
-            pool = [e for e in enemies if self._edge_dist(u, e) <= u.sight] or [e for e in enemies if e.is_structure]
+            enemies_in_sight = [e for e in enemies if self._edge_dist(u, e) <= u.sight]
+            if enemies_in_sight:
+                pool = enemies_in_sight
+            else:
+                lane_tow = self._default_lane_tower(u)
+                pool = [lane_tow] if lane_tow is not None else [e for e in enemies if e.is_structure]
         if not pool:
             u.target_uid = None
             return None
@@ -533,7 +559,7 @@ class Match:
         elif wp is not None:
             wx, wy = wp
         else:
-            wx, wy = G.ground_waypoint(u.x, u.y, t.x, t.y)
+            wx, wy = G.ground_waypoint(u.x, u.y, t.x, t.y, lane=u.lane)
         step = u.speed * dt / 1000.0
         if u.status:
             step *= S.speed_factor(u)

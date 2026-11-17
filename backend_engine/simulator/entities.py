@@ -46,6 +46,7 @@ class Unit:
     params: Dict[str, Dict[str, Any]] = field(default_factory=dict)   # kind -> params
     status: Dict[str, int] = field(default_factory=dict)              # status tag -> remaining ms
     mstate: Dict[str, Any] = field(default_factory=dict)              # per-unit mechanic state
+    lane: str = "left"                                                # "left" | "right" initial assigned lane
 
     @property
     def building_only(self) -> bool:

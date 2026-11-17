@@ -139,14 +139,16 @@ def deploy_check(
     return "enemy_half"
 
 
-def ground_waypoint(x: float, y: float, tx: float, ty: float) -> Tuple[float, float]:
+def ground_waypoint(x: float, y: float, tx: float, ty: float, lane: Optional[str] = None) -> Tuple[float, float]:
     """
     地面常规单位寻路路径点计算 (Ground Waypoint Navigation)
     当目标位于河道另一侧时，地面单位必须优先导向最近的桥梁中轴线。
+    若指定了 lane，在己方半场时严格按照分配路别经由该路桥梁过河。
     
     参数:
       x, y: 单位当前坐标
       tx, ty: 攻击目标终点坐标
+      lane: "left" | "right" | None
     返回:
       当前帧应该朝向移动的下一个拐点目标 (nx, ny)
     """
@@ -154,8 +156,14 @@ def ground_waypoint(x: float, y: float, tx: float, ty: float) -> Tuple[float, fl
     # 如果处于同一半场，或者目标就在河道上，直接直线走向目标
     if r == tr or tr == "river":
         return tx, ty
-    # 选择总曼哈顿距离最近的一座桥梁作为过河桥头堡
-    bx = min(BRIDGE_X, key=lambda b: abs(x - b) + abs(tx - b))
+    # 若在己方半场且锁定路别，严格按该路桥梁推进
+    if lane == "left":
+        bx = BRIDGE_X[0]
+    elif lane == "right":
+        bx = BRIDGE_X[1]
+    else:
+        # 选择总曼哈顿距离最近的一座桥梁作为过河桥头堡
+        bx = min(BRIDGE_X, key=lambda b: abs(x - b) + abs(tx - b))
     # 若当前单位正处于河道内
     if r == "river":
         if abs(x - bx) > BRIDGE_HALF_W:
