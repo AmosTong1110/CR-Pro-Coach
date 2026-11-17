@@ -622,3 +622,55 @@ def test_task8_heavy_knockback_immunity_vs_the_log(db):
 
     # The Log knocks back ALL ground troops, including heavy units
     assert pekka.y > initial_y
+
+
+def test_task9_match_clock_elixir_ramp_and_tiebreaker(db):
+    """Match clock transitions from 1x to 2x (2:00), sudden death (3:00), 3x (4:00), and tiebreaker (5:00)."""
+    deck = ("knight", "archers", "skeletons", "fireball", "the_log", "zap", "cannon", "musketeer")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # 1. Start: 5.0 elixir, 1x multiplier
+    assert m.sides[0].elixir == 5.0
+    assert m.multiplier() == 1
+
+    # 2. 2:00 (120s = 120,000ms): 2x multiplier
+    m.t_ms = 119_950
+    m.step()
+    assert m.t_ms == 120_000
+    assert m.multiplier() == 2
+
+    # 3. 3:00 (180s = 180,000ms): Sudden Death
+    m.t_ms = 179_950
+    m.step()
+    assert m.t_ms == 180_000
+    assert m.result is None  # tied 0-0, match continues into overtime
+
+    # Sudden Death first crown wins
+    m.sides[0].crowns = 1
+    m.step()
+    assert m.result is not None
+    assert m.result.winner == 0
+    assert m.result.reason == "crowns"
+
+    # Reset crowns for 4:00 and 5:00 testing
+    m.result = None
+    m.sides[0].crowns = 0
+
+    # 4. 4:00 (240s = 240,000ms): 3x multiplier
+    m.t_ms = 239_950
+    m.step()
+    assert m.t_ms == 240_000
+    assert m.multiplier() == 3
+
+    # 5. 5:00 (300s = 300,000ms): Tiebreaker
+    t0 = m.tower(0, "princess_left")
+    t1 = m.tower(1, "princess_left")
+    t0.hp = 2500
+    t1.hp = 1800  # side 1 has lower tower HP
+    m.t_ms = 299_950
+    m.step()
+    assert m.t_ms == 300_000
+    assert m.result is not None
+    assert m.result.winner == 0
+    assert m.result.reason == "tiebreaker"
