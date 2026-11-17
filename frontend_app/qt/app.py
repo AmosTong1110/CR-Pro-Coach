@@ -17,6 +17,14 @@ over from just before that play.
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Ensure project root is in sys.path when executed directly as a script
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from PySide6.QtCore import QEvent, QRectF, Qt, QTimer, Signal

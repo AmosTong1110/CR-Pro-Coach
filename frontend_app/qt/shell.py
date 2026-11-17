@@ -15,6 +15,12 @@ from __future__ import annotations
 import sys
 from datetime import datetime
 from pathlib import Path
+
+# Ensure project root is in sys.path when executed directly as a script
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from typing import List, Optional
 
 from PySide6.QtCore import QSize, QThread, Qt, QUrl, Signal
