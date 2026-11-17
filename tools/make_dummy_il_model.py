@@ -1,6 +1,6 @@
-"""Write the tiny test fixture tests/fixtures/crbot_il_dummy/crbot_il_v1.{onnx,json}.
+"""Write the tiny test fixture tests/fixtures/crbot_il_dummy/crbot_il_v2.{onnx,json}.
 
-Same inputs / outputs as the real crbot_il_v1 model (obs [B,333] -> gate_logit [B], slot_logits [B,4],
+Same inputs / outputs as a real crbot_il_v2 model (obs [B,1752] il_obs_v2 -> gate_logit [B], slot_logits [B,4],
 tile_logits [B,4,576], value [B]) but hand-set weights, so NeuralBot can be tested with onnxruntime without a
 trained model:
   * gate   = 10 * own_elixir_fraction - 3   (plays once elixir > 3)
@@ -20,8 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 
-from backend_engine.brain import il_features as F
-from backend_engine.simulator.card_db import CardDB
+from backend_engine.brain import obs_encoder as F
 
 OUT = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "crbot_il_dummy"
 
@@ -30,8 +29,7 @@ def build(out: Path = OUT) -> None:
     import onnx
     from onnx import TensorProto, helper, numpy_helper
 
-    vocab = F.card_vocab(CardDB.load())
-    dim = F.obs_dim(vocab)
+    dim = F.OBS_DIM
     gy, gx = np.divmod(np.arange(F.NUM_TILES), F.GRID_W)
     pref = -np.sqrt((gx - 3) ** 2 + (gy - 20) ** 2).astype(np.float32)
     inits = [
@@ -69,10 +67,9 @@ def build(out: Path = OUT) -> None:
     model.ir_version = 8
     onnx.checker.check_model(model)
     out.mkdir(parents=True, exist_ok=True)
-    onnx.save(model, out / "crbot_il_v1.onnx")
-    meta = {"name": "crbot_il_v1", "dummy": True, "obs_version": F.OBS_VERSION, "obs_dim": dim, "vocab": vocab,
-            "gate_threshold": 0.5}
-    (out / "crbot_il_v1.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
+    onnx.save(model, out / "crbot_il_v2.onnx")
+    meta = {"name": "crbot_il_v2", "dummy": True, **F.schema(), "gate_threshold": 0.5}
+    (out / "crbot_il_v2.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
     print("wrote", out)
 
 

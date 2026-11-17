@@ -1,4 +1,5 @@
-"""Shared IL features (backend_engine/brain/il_features.py): layout, perspective, masks."""
+"""Shared IL helpers (backend_engine/brain/il_features.py): frames, tiles, masks. The observation itself is
+tested in tests/test_obs_encoder.py."""
 import numpy as np
 import pytest
 
@@ -14,36 +15,6 @@ DECK = ("hog_rider", "musketeer", "cannon", "miner", "fireball", "skeletons", "t
 @pytest.fixture(scope="module")
 def db():
     return CardDB.load()
-
-
-def _encode(m, side, db):
-    est = OppElixirTracker(db.rules, observer_side=side).estimate(m.t_ms)
-    return F.encode_observation(m.observation(side), est, None, db, F.card_vocab(db))
-
-
-def test_layout_is_333_floats_in_range(db):
-    vocab = F.card_vocab(db)
-    dim = F.obs_dim(vocab)
-    assert F.OBS_DIM == dim
-    m = Match(MatchConfig((DECK, DECK), seed=3, shuffle=False), db)
-    assert m.play(0, "musketeer", 3.5, 10.5).ok
-    for _ in range(30):
-        m.step()
-    v = _encode(m, 0, db)
-    assert v.shape == (dim,) and v.dtype == np.float32
-    assert np.isfinite(v).all() and v.min() >= -1.0 and v.max() <= 1.0
-    unit_start = 55 + len(vocab)
-    assert v[unit_start] == 1.0 and v[unit_start + 1] == 1.0          # first unit token: present, own
-
-
-def test_mirrored_positions_encode_the_same_for_both_sides(db):
-    m = Match(MatchConfig((DECK, DECK), seed=0, shuffle=False), db)
-    assert np.array_equal(_encode(m, 0, db), _encode(m, 1, db))
-    assert m.play(0, "musketeer", 3.5, 10.5).ok
-    assert m.play(1, "musketeer", 3.5, 21.5).ok    # same spot in side 1's own frame
-    for _ in range(10):
-        m.step()
-    assert np.allclose(_encode(m, 0, db), _encode(m, 1, db))
 
 
 def test_tile_index_and_center_round_trip():

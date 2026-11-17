@@ -1,16 +1,18 @@
-"""PPO self-play fine-tuning of crbot_il_v1 (Colab T4 / CPU). Needs torch (+ onnx, onnxruntime to export).
+"""PPO self-play fine-tuning of crbot_il_v2 (Colab T4 / CPU). Needs torch (+ onnx, onnxruntime to export).
 
     cfg = PPOConfig(n_envs=8, updates=300)
-    PPOTrainer(cfg, il_onnx="pretrained_weights/crbot_il_v1/crbot_il_v1.onnx",
+    PPOTrainer(cfg, il_onnx="pretrained_weights/crbot_il_v2/crbot_il_v2.onnx",
                ckpt_dir="/content/drive/MyDrive/CRbot_Training/checkpoints/ppo", out_dir="...").train()
 
-Policy = the IL network (backend_engine/brain/il_model.CRbotIL), initialised from the crbot_il_v1 ONNX weights.
+Policy = the IL network (backend_engine/brain/il_model.CRbotIL), initialised from crbot_il_v2.npz (plain arrays
+saved by the IL notebook next to the .onnx; checked against the ONNX graph). Observations: obs_encoder (il_obs_v2),
+so the trainer, the IL model and NeuralBot never depend on the size of the card pool.
 Action at a decision point (every `decide_every_ms` of match time, only when a card is affordable, exactly when
 NeuralBot decides): gate ~ Bernoulli(sigmoid(gate)); if play: slot ~ masked softmax(slot_logits), tile ~ softmax of
 that slot's 576 tile logits masked by the card's legal tiles. Critic = 2 * value - 1 (the value head stays a win
 probability, so the exported model keeps NeuralBot's contract). Champion / hero abilities use the scripted rules.
 
-Rollouts: `n_envs` matches stepped in lockstep in one process (Engine v6 + the unchanged MatchRunner). Neural
+Rollouts: `n_envs` matches stepped in lockstep in one process (the engine + the unchanged MatchRunner). Neural
 agents are *deferred*: at a decision tick they record the observation (fog of war through their own
 HumanDelayBuffer, same encoder as training data and NeuralBot) and return nothing; the trainer runs one batched
 forward per network for all waiting agents, and the chosen intent is submitted on the next tick (50 ms later),
@@ -19,15 +21,15 @@ still through the HumanDelayBuffer. No lookahead during training.
 Reward (learner's view): +1 win / -1 loss / 0 draw at the end, plus potential-based shaping
 F = gamma * Phi(s') - Phi(s) with Phi = w_tower * (own - enemy mean tower hp fraction) + w_crown * crown diff / 3
 (Phi = 0 at the end, so the shaping can't change the optimal policy), minus `leak_penalty` per elixir leaked at
-10. Loss: clipped PPO surrogate + value MSE - entropy bonus + kl_coef * KL(policy || frozen crbot_il_v1)
+10. Loss: clipped PPO surrogate + value MSE - entropy bonus + kl_coef * KL(policy || frozen crbot_il_v2)
 (analytic KL of the gate, the slot and the chosen slot's tile distribution), which keeps the human-like
 placement grammar of the IL policy.
 
 Opponents (fictitious self-play), per match: ScriptedBot with a random aggression (`opp_mix[0]`), frozen
-crbot_il_v1 (`opp_mix[1]`), or a PPO snapshot from the pool (`opp_mix[2]`; the newest policy while the pool is
+crbot_il_v2 (`opp_mix[1]`), or a PPO snapshot from the pool (`opp_mix[2]`; the newest policy while the pool is
 empty). Decks: random playable presets (with their evolution slots); a ScriptedBot only gets decks it can push
 with. Checkpoints (state + optimizer + snapshots + history) every `ckpt_every` updates, resumed automatically;
-the best rolling score is exported as crbot_ppo_v1.onnx + .json (same format NeuralBot loads).
+the best rolling score is exported as crbot_ppo_v2.onnx + .json (same format NeuralBot loads).
 """
 from __future__ import annotations
 
@@ -45,8 +47,9 @@ import numpy as np
 import torch
 import torch.nn.functional as TF
 
-from backend_engine.brain import il_features as F
-from backend_engine.brain.il_model import CRbotIL, export_onnx, load_onnx_weights
+from backend_engine.brain import obs_encoder as F
+from backend_engine.brain.il_model import CRbotIL, check_against_onnx, export_onnx, load_weights, model_meta, \
+    save_weights
 from backend_engine.brain.scripted_bot import ScriptedBot
 from backend_engine.contracts import ActionIntent, ActionKind, TilePos
 from backend_engine.meta.presets import load_presets, playable
@@ -135,7 +138,6 @@ class DeferredAgent:
 
     def __init__(self, db: CardDB, side: int, brain_key: str, every_ms: int):
         self.db, self.side, self.brain_key, self.every = db, side, brain_key, every_ms
-        self.vocab = F.card_vocab(db)
         self.rules = ScriptedBot(db, side)
         self.pending: Optional[List[ActionIntent]] = None
         self.request: Optional[Request] = None
@@ -157,7 +159,7 @@ class DeferredAgent:
         for k, c in enumerate(hand):
             if smask[k]:
                 tm[k] = F.tile_mask(obs, c, self.db)
-        vec = F.encode_observation(obs, obs.get("opp_estimate"), obs.get("opp_deck_guess"), self.db, self.vocab)
+        vec = F.encode_observation(obs, obs.get("opp_estimate"), obs.get("opp_deck_guess"), self.db)
         self.request = Request(self, vec, smask, tm, hand)
         return []
 
@@ -267,13 +269,18 @@ class PPOTrainer:
                  il_meta: Optional[Path | str] = None, log=print):
         self.cfg, self.log = cfg, log
         self.db = CardDB.load()
-        self.vocab = F.card_vocab(self.db)
         self.device = cfg.device
         self.il_onnx = Path(il_onnx)
         self.il_meta = json.loads(Path(il_meta or self.il_onnx.with_suffix(".json")).read_text())
-        if self.il_meta.get("obs_version") != F.OBS_VERSION or list(self.il_meta.get("vocab", [])) != self.vocab:
-            raise ValueError("crbot_il_v1 was trained for other features / cards: retrain IL first")
-        ref = load_onnx_weights(self.il_onnx, verify=True).to(self.device)
+        reason = F.check_model_meta(self.il_meta)
+        if reason:
+            raise ValueError(f"{self.il_onnx.name}: {reason}")
+        weights = self.il_onnx.with_suffix(".npz")
+        if not weights.exists():
+            raise ValueError(f"{weights} is missing: the IL notebook saves it next to the .onnx")
+        ref = load_weights(weights)
+        check_against_onnx(ref, self.il_onnx)
+        ref = ref.to(self.device)
         self.model = copy.deepcopy(ref)                 # the learner (copied before the reference is frozen)
         for p in self.model.parameters():
             p.requires_grad_(True)
@@ -503,22 +510,23 @@ class PPOTrainer:
                 self._add_snapshot()
             if len(self.history) >= min(self.cfg.score_window, 2) and self.score() > self.best_score:
                 self.best_score = self.score()
-                self.export("crbot_ppo_v1")
-                self.log(f"  new best rolling score {self.best_score:.3f}: exported crbot_ppo_v1")
+                self.export("crbot_ppo_v2")
+                self.log(f"  new best rolling score {self.best_score:.3f}: exported crbot_ppo_v2")
             if self.update % self.cfg.ckpt_every == 0:
                 self.save()
         self.save()
-        self.export("crbot_ppo_v1_last")
+        self.export("crbot_ppo_v2_last")
         return {"updates": self.update, "best_score": self.best_score}
 
     def export(self, name: str) -> Tuple[Path, Path]:
-        """<out_dir>/<name>.onnx + .json (the NeuralBot contract; gate threshold / cadence as configured)."""
+        """<out_dir>/<name>.onnx + .npz + .json (the NeuralBot contract; gate threshold / cadence as configured)."""
         model = self._frozen(self.model).cpu()
         onnx_path = self.out_dir / f"{name}.onnx"
         diff = export_onnx(model, onnx_path, verify=True)
-        meta = {k: self.il_meta[k] for k in ("obs_version", "obs_dim", "vocab", "outputs") if k in self.il_meta}
-        meta.update({"name": name, "gate_threshold": self.cfg.gate_threshold,
-                     "decide_every_ms": self.cfg.decide_every_ms, "init": "crbot_il_v1",
+        save_weights(model, self.out_dir / f"{name}.npz")
+        meta = model_meta(name)
+        meta.update({"gate_threshold": self.cfg.gate_threshold,
+                     "decide_every_ms": self.cfg.decide_every_ms, "init": "crbot_il_v2",
                      "ppo": {"update": self.update, "best_rolling_score": round(self.best_score, 4),
                              "cfg": asdict(self.cfg), "history": self.history[-50:]},
                      "onnx_check_max_abs_diff": diff,

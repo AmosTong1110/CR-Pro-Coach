@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from backend_engine.brain import il_features as F
+from backend_engine.brain import obs_encoder as F
 from backend_engine.brain.neural_bot import (
-    ModelUnavailable, NeuralBot, load_neural_bot, make_agent, model_available,
+    ModelUnavailable, NeuralBot, load_neural_bot, make_agent, model_available, model_status,
 )
 from backend_engine.brain.scripted_bot import ScriptedBot
 from backend_engine.contracts import ActionKind
@@ -41,11 +41,23 @@ def test_load_and_fallbacks(db, tmp_path):
     assert isinstance(agent, ScriptedBot) and "unavailable" in note
     bad = tmp_path / "bad"
     shutil.copytree(FIXTURE, bad)
-    meta = json.loads((bad / "crbot_il_v1.json").read_text())
-    meta["vocab"] = meta["vocab"][:-1]
-    (bad / "crbot_il_v1.json").write_text(json.dumps(meta))
-    with pytest.raises(ModelUnavailable, match="vocab"):
+    meta = json.loads((bad / "crbot_il_v2.json").read_text())
+    meta["attribute_keys"] = meta["attribute_keys"][:-1]
+    (bad / "crbot_il_v2.json").write_text(json.dumps(meta))
+    with pytest.raises(ModelUnavailable, match="attribute_keys"):
         load_neural_bot(db, 1, bad)
+
+
+def test_legacy_card_id_model_is_reported_not_loaded(db, tmp_path):
+    """A crbot_il_v1-style .json (il_obs_v1, vocab, 341 floats) is refused with a clear 'legacy' reason."""
+    folder = tmp_path / "old"
+    shutil.copytree(FIXTURE, folder)
+    meta = {"name": "crbot_il_v2", "obs_version": "il_obs_v1", "obs_dim": 341, "vocab": sorted(db.cards)}
+    (folder / "crbot_il_v2.json").write_text(json.dumps(meta))
+    with pytest.raises(ModelUnavailable, match="legacy card-ID model"):
+        load_neural_bot(db, 1, folder)
+    assert model_status(folder=folder) == "legacy"
+    assert model_status(folder=FIXTURE) == "ok" and model_status(folder=tmp_path) == "missing"
 
 
 @pytest.mark.parametrize("side", [0, 1])
@@ -79,7 +91,7 @@ def test_gate_slots_and_cadence(db):
 def test_session_neural_persona_plays_and_is_deterministic(db, monkeypatch):
     from frontend_app.qt.session import AI, PERSONAS, GameSession, SessionConfig, persona_label
     monkeypatch.setenv("CRBOT_IL_MODEL_DIR", str(FIXTURE))
-    assert "neural" in PERSONAS and persona_label("neural") == "Neural (IL v1)"
+    assert "neural" in PERSONAS and persona_label("neural") == "Neural (IL v2)"
     hashes = []
     for _ in range(2):
         s = GameSession(db, SessionConfig(persona="neural", seed=11))
@@ -94,6 +106,6 @@ def test_session_neural_persona_plays_and_is_deterministic(db, monkeypatch):
 def test_session_neural_persona_falls_back_without_model(db, monkeypatch, tmp_path):
     from frontend_app.qt.session import AI, GameSession, SessionConfig, persona_label
     monkeypatch.setenv("CRBOT_IL_MODEL_DIR", str(tmp_path))
-    assert "not installed" in persona_label("neural")
+    assert "not installed" in persona_label("neural") or "legacy" in persona_label("neural")   # a local v1?
     s = GameSession(db, SessionConfig(persona="neural", seed=3))
     assert isinstance(s.runner.agents[AI], ScriptedBot) and "unavailable" in s.ai_note

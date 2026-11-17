@@ -1,0 +1,83 @@
+{
+ "name": "crbot_il_v2",
+ "dummy": true,
+ "obs_version": "il_obs_v2",
+ "obs_dim": 1752,
+ "attribute_keys": [
+  "elixir",
+  "hitpoints",
+  "dps",
+  "damage",
+  "hit_speed",
+  "range",
+  "move_speed",
+  "is_air",
+  "targets_air",
+  "targets_ground",
+  "building_only",
+  "splash_radius",
+  "is_building",
+  "lifetime",
+  "is_spell",
+  "spell_radius",
+  "spell_reach",
+  "stun_or_knockback",
+  "shield_hp",
+  "spawn_count",
+  "death_spawn_count",
+  "spawn_rate",
+  "death_damage",
+  "tower_damage",
+  "deploy_time",
+  "size",
+  "kamikaze",
+  "has_ability",
+  "is_evolved",
+  "is_hero"
+ ],
+ "tower_attribute_keys": [
+  "hitpoints",
+  "dps",
+  "damage",
+  "hit_speed",
+  "range",
+  "splash_radius",
+  "targets_air"
+ ],
+ "attr_level": 11,
+ "layout": {
+  "global": [
+   0,
+   8
+  ],
+  "towers": [
+   8,
+   20
+  ],
+  "tower_troops": [
+   20,
+   48
+  ],
+  "opp_summary": [
+   48,
+   53
+  ],
+  "opp_cards": [
+   53,
+   301
+  ],
+  "hand": [
+   301,
+   476
+  ],
+  "units": [
+   476,
+   1616
+  ],
+  "spells": [
+   1616,
+   1752
+  ]
+ },
+ "gate_threshold": 0.5
+}

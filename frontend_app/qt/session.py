@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 
 from backend_engine.brain.coach_analyzer import Candidate, CoachAnalyzer, MatchReview
 from backend_engine.brain.human_delay_buffer import HumanDelayBuffer, ReactionProfile
-from backend_engine.brain.neural_bot import make_agent, model_available
+from backend_engine.brain.neural_bot import make_agent, model_status
 from backend_engine.contracts import ElixirEstimate, LatencyClass
 from backend_engine.meta.archetypes import archetype_name
 from backend_engine.perception.bayesian_deck_guesser import DeckGuess, default_guesser
@@ -40,20 +40,24 @@ PERSONAS: Dict[str, dict] = {
     "aggressor":  {"label": "The Aggressor (Dual-Lane Pressure)", "aggression": 0.95, "profile": "aggressor"},
     "spell_cycler": {"label": "Spell-Cycler (Turtle/Chip)",       "aggression": 0.2, "profile": "spell_cycler"},
     "adaptive_counter": {"label": "Adaptive Counter",             "aggression": 0.5, "profile": "adaptive_counter"},
-    # imitation-learning policy (pretrained_weights/crbot_il_v1/); falls back to the rules if the model is missing
-    "neural":     {"label": "Neural (IL v1)",                    "aggression": 0.5, "profile": "adaptive_counter",
-                   "agent": "neural"},
-    # PPO self-play fine-tune of IL v1 (pretrained_weights/crbot_ppo_v1/); same fallback
-    "neural_ppo": {"label": "Neural (PPO v1)",                   "aggression": 0.5, "profile": "adaptive_counter",
-                   "agent": "neural", "model": "crbot_ppo_v1"},
+    # imitation-learning policy (pretrained_weights/crbot_il_v2/); falls back to the rules if the model is missing
+    "neural":     {"label": "Neural (IL v2)",                    "aggression": 0.5, "profile": "adaptive_counter",
+                   "agent": "neural", "model": "crbot_il_v2"},
+    # PPO self-play fine-tune of IL v2 (pretrained_weights/crbot_ppo_v2/); same fallback
+    "neural_ppo": {"label": "Neural (PPO v2)",                   "aggression": 0.5, "profile": "adaptive_counter",
+                   "agent": "neural", "model": "crbot_ppo_v2"},
 }
 
 
 def persona_label(key: str) -> str:
-    """Label for persona pickers (says when the neural model isn't installed)."""
+    """Label for persona pickers (says when the neural model isn't installed or is a legacy card-ID model)."""
     p = PERSONAS[key]
-    if p.get("agent") == "neural" and not model_available(name=p.get("model", "crbot_il_v1")):
-        return p["label"][:-1] + ", not installed)"
+    if p.get("agent") == "neural":
+        status = model_status(p["model"])
+        if status == "missing":
+            return p["label"][:-1] + ", not installed)"
+        if status in ("legacy", "incompatible"):
+            return p["label"][:-1] + f", {status} model: retrain)"
     return p["label"]
 
 
@@ -281,7 +285,7 @@ class GameSession:
         """The AI agent of the current persona: (agent, note). `note` explains a fallback to the rules."""
         p = PERSONAS[self.cfg.persona]
         return make_agent(self.db, AI, p.get("agent", "scripted"), p["aggression"],
-                          model=p.get("model", "crbot_il_v1"))
+                          **({"model": p["model"]} if "model" in p else {}))
 
     # -- 赛后复盘分析调度 ----------------------------------------------------
     def fork(self, cp: Checkpoint) -> Tuple[Match, MatchRunner]:

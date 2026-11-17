@@ -34,10 +34,10 @@ def test_sweep_and_write_meta(tmp_path):
         assert c["matches"] == 2 and c["wins"] + c["losses"] + c["draws"] == 2
         assert c["neural_plays"] > 0 and c["neural_rejected"] == 0
     assert json.loads((tmp_path / "r.json").read_text())["best"] == report["best"]
-    meta = json.loads((model / "crbot_il_v1.json").read_text())
+    meta = json.loads((model / "crbot_il_v2.json").read_text())
     assert (meta["gate_threshold"], meta["decide_every_ms"]) == (report["best"]["gate_threshold"],
                                                                  report["best"]["decide_every_ms"])
-    assert (model / "crbot_il_v1.json.bak").exists()
+    assert (model / "crbot_il_v2.json.bak").exists()
     bot = load_neural_bot(CardDB.load(), 1, model)
     assert bot.decide_every_ms == meta["decide_every_ms"] and bot.gate_threshold == meta["gate_threshold"]
 

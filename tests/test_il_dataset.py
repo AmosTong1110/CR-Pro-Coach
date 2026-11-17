@@ -4,7 +4,7 @@ import json
 import numpy as np
 import pytest
 
-from backend_engine.brain import il_features as F
+from backend_engine.brain import obs_encoder as F
 from backend_engine.simulator.card_db import CardDB
 from tools.build_il_dataset import (
     ProxyMap, ShardWriter, Stats, load_card_catalog, parse_payload, replay_battle, split_card_key,
@@ -68,8 +68,8 @@ def test_parse_payload(db):
 def _run(db, proxies, payload, tmp_path, **kw):
     w = ShardWriter(tmp_path, shard_size=1000)
     st = Stats()
-    ok = replay_battle(parse_payload(payload, "x"), db, F.card_vocab(db), w, 7, st, proxies, None, **kw)
-    w.close(F.card_vocab(db), {"stats": st.as_dict()})
+    ok = replay_battle(parse_payload(payload, "x"), db, w, 7, st, proxies, None, **kw)
+    w.close({"stats": st.as_dict()})
     data = np.load(tmp_path / "shard_0000.npz") if ok and w.total_samples else None
     return ok, w, st, data
 
@@ -93,7 +93,8 @@ def test_replay_both_sides_learn_with_legal_labels(db, proxies, tmp_path):
     assert first[0] // 18 < 15 and first[1] // 18 < 15
     assert (d["tile_index"][~play] == -1).all() and (d["card_slot"][~play] == -1).all()
     manifest = json.loads((tmp_path / "manifest.json").read_text())
-    assert manifest["obs_dim"] == F.OBS_DIM and manifest["schema"] == "il_shards_v1"
+    assert manifest["obs_dim"] == F.OBS_DIM and manifest["schema"] == "il_shards_v2"
+    assert manifest["attribute_keys"] == list(F.ATTRIBUTE_KEYS) and "vocab" not in manifest
 
 
 def test_proxy_side_is_not_a_learner_and_proxy_plays_still_happen(db, proxies, tmp_path):
@@ -122,7 +123,7 @@ def test_shard_writer_lifecycle(tmp_path):
     for i in range(12):
         w.add_sample(np.zeros(F.OBS_DIM, np.float32), i % 2, 0 if i % 2 else -1, 100 if i % 2 else -1, 1.0)
     assert w.current_shard_idx == 2
-    w.close(["a"])
+    w.close()
     m = json.loads((tmp_path / "manifest.json").read_text())
     assert (m["total_samples"], m["total_plays"], m["num_shards"]) == (12, 6, 3)
     z = np.load(tmp_path / "shard_0000.npz")

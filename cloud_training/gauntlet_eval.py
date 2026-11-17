@@ -1,4 +1,4 @@
-"""Gauntlet: NeuralBot (crbot_il_v1.onnx) vs ScriptedBot, sweeping the gate threshold and decision cadence.
+"""Gauntlet: NeuralBot (crbot_il_v2.onnx) vs ScriptedBot, sweeping the gate threshold and decision cadence.
 
 Runs locally on the Mac (CPU, project venv), not on Colab. Every configuration plays the **same** games:
 deck pairs drawn deterministically from the preset decks (NeuralBot: any simulated preset; ScriptedBot: presets
@@ -271,7 +271,7 @@ def write_meta(folder: Path, best: dict, model: str = MODEL_NAME) -> Path:
 
 def main(argv: Optional[Sequence[str]] = None) -> dict:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--model", default=MODEL_NAME, help="model name: crbot_il_v1 (default) or crbot_ppo_v1")
+    ap.add_argument("--model", default=MODEL_NAME, help="model name: crbot_il_v2 (default) or crbot_ppo_v2")
     ap.add_argument("--model-dir", default="", help="folder with <model>.onnx + .json (default pretrained_weights/<model>)")
     ap.add_argument("--thresholds", default="0.3:0.7:0.05")
     ap.add_argument("--cadences", default="250,500", help="decision cadences in ms (multiples of 50)")

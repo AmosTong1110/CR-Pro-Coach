@@ -20,12 +20,14 @@ simulated evolution / hero slots). For every learner side:
   * wait sample  at 1 s decision points where a card is affordable and the side doesn't play in the next 0.5 s;
                  subsampled to --wait-ratio x the number of play samples of that side.
   * value target final result from that side's view (1 win, 0 loss, 0.5 draw).
-Observations come from backend_engine/brain/il_features.py (the same code NeuralBot uses): own hand / elixir,
-visible units, the side's own OppElixirTracker + deck guess. No hidden opponent state.
+Observations come from backend_engine/brain/obs_encoder.py (il_obs_v2, the same code NeuralBot uses): own hand /
+elixir, visible units and spells, the side's own OppElixirTracker + deck guess, every card described by its
+physical attributes (no card ids). No hidden opponent state. Shards stay valid when cards are added.
 
-Shards: data/il_shards/shard_NNNN.npz with obs f32[N,333], gate i8, card_slot i8 (-1 for waits),
+Shards: data/il_shards/shard_NNNN.npz with obs f32[N,1752], gate i8, card_slot i8 (-1 for waits),
 tile_index i16 (-1), value_target f32, slot_mask bool[N,4], tile_mask u8[N,72] (packed bits of the played
-card's legal tiles), battle u32, side i8. manifest.json has the counts, filter statistics and the vocab.
+card's legal tiles), battle u32, side i8. manifest.json has the counts, filter statistics and the obs schema
+(obs_version, obs_dim, attribute_keys, layout).
 
     .venv/bin/python tools/build_il_dataset.py --max-samples 100000            # streams parts until 100k
     .venv/bin/python tools/build_il_dataset.py --parts 0-3 --keep-raw
@@ -53,7 +55,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 
-from backend_engine.brain import il_features as F
+from backend_engine.brain import obs_encoder as F
 from backend_engine.perception.bayesian_deck_guesser import default_guesser
 from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator import geometry as G
@@ -64,7 +66,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HF_REPO = "VanguardX101/IL_Replay"
 HF_BASE = f"https://huggingface.co/datasets/{HF_REPO}/resolve/main"
 N_PARTS = 52
-SCHEMA = "il_shards_v1"
+SCHEMA = "il_shards_v2"
 WAIT_EVERY_MS = 1000
 WAIT_QUIET_MS = 500
 logger = logging.getLogger("build_il_dataset")
@@ -282,21 +284,19 @@ class ShardWriter:
         gc.collect()
         return path
 
-    def close(self, vocab: Sequence[str], extra: Optional[dict] = None) -> Path:
+    def close(self, extra: Optional[dict] = None) -> Path:
         self.flush()
         manifest = {
             "schema": SCHEMA,
-            "obs_version": F.OBS_VERSION,
+            **F.schema(),
             "total_samples": self.total_samples,
             "total_plays": self.total_plays,
             "total_waits": self.total_waits,
             "total_battles": self.total_battles,
             "num_shards": self.current_shard_idx,
             "shard_size": self.shard_size,
-            "obs_dim": F.obs_dim(vocab),
             "num_tiles": F.NUM_TILES,
             "num_card_slots": F.HAND_SLOTS,
-            "vocab": list(vocab),
             **(extra or {}),
         }
         path = self.output_dir / "manifest.json"
@@ -341,7 +341,7 @@ def _repair_hand(st, card: str, upcoming: Sequence[str]) -> None:
     st.hand[slot], st.queue[q] = st.queue[q], st.hand[slot]
 
 
-def replay_battle(rep: Replay, db: CardDB, vocab: Sequence[str], writer: ShardWriter, battle_idx: int,
+def replay_battle(rep: Replay, db: CardDB, writer: ShardWriter, battle_idx: int,
                   stats: Stats, proxies: ProxyMap, guesser=None, min_coverage: int = 8,
                   min_opp_coverage: int = 4, wait_ratio: float = 1.0, max_elixir_deficit: float = 1.0) -> bool:
     """Replay one battle and write its samples. Returns False if the replay was filtered out."""
@@ -388,7 +388,7 @@ def replay_battle(rep: Replay, db: CardDB, vocab: Sequence[str], writer: ShardWr
     def sample(s: int):
         obs = match.observation(s)
         est, guess = persp[s].view(match.t_ms)
-        return obs, F.encode_observation(obs, est, guess, db, vocab)
+        return obs, F.encode_observation(obs, est, guess, db)
 
     for ev in rep.events:
         t_target = ev.tick * G.TICK_MS
@@ -577,7 +577,6 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     args = ap.parse_args(argv)
 
     db = CardDB.load()
-    vocab = F.card_vocab(db)
     cache = Path(args.cache_dir)
     parts = parse_parts(args.parts)
     if args.survey:
@@ -602,7 +601,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     for part in parts:
         path = part_path(cache, part)
         for rep in iter_replays(path):
-            replay_battle(rep, db, vocab, writer, battle_idx, stats, proxies, guesser, args.min_coverage,
+            replay_battle(rep, db, writer, battle_idx, stats, proxies, guesser, args.min_coverage,
                           args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit)
             battle_idx += 1
             if stats.replays_seen % 500 == 0:
@@ -622,8 +621,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
                     "wait_ratio": args.wait_ratio, "max_elixir_deficit": args.max_elixir_deficit},
         "stats": stats.as_dict(),
         "build_seconds": round(time.time() - t0, 1),
+        "card_pool": sorted(db.cards),          # informational: the encoder does not depend on it
     }
-    path = writer.close(vocab, extra)
+    path = writer.close(extra)
     logger.info("done: %d samples (%d plays, %d waits) from %d battles -> %s", writer.total_samples,
                 writer.total_plays, writer.total_waits, writer.total_battles, path)
 

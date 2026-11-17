@@ -1,10 +1,11 @@
 """Pack what the Colab PPO notebook needs into dist/crbot_ppo_bundle.zip.
 
     .venv/bin/python tools/pack_ppo_bundle.py            # -> dist/crbot_ppo_bundle.zip (~11 MB, mostly the IL weights)
+    .venv/bin/python tools/pack_ppo_bundle.py --code-only   # -> dist/crbot_code_bundle.zip (for the IL notebook)
 
 Contents: the git-tracked files of backend_engine/ and configs/ (the engine, perception, NeuralBot features,
-il_model / ppo_trainer, card data, preset decks, reaction profiles), pretrained_weights/crbot_il_v1/ (.onnx +
-.json, the PPO starting point) and BUNDLE_MANIFEST.json (git commit, file list with SHA-256, Python packages the
+il_model / ppo_trainer, card data, preset decks, reaction profiles), pretrained_weights/crbot_il_v2/ (.onnx +
+.npz + .json, the PPO starting point) and BUNDLE_MANIFEST.json (git commit, file list with SHA-256, Python packages the
 notebook installs). Untracked files, user data, datasets, recordings and other weights are never included.
 Upload the zip to Google Drive as MyDrive/CRbot_Training/crbot_ppo_bundle.zip, then run
 cloud_training/train_ppo_colab.ipynb.
@@ -22,7 +23,7 @@ from pathlib import Path
 from typing import List
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL_FILES = ("pretrained_weights/crbot_il_v1/crbot_il_v1.onnx", "pretrained_weights/crbot_il_v1/crbot_il_v1.json")
+MODEL_FILES = tuple(f"pretrained_weights/crbot_il_v2/crbot_il_v2.{ext}" for ext in ("onnx", "npz", "json"))
 TRACKED_DIRS = ("backend_engine", "configs")
 PACKAGES = ["torch", "numpy", "pyyaml", "onnx", "onnxruntime", "onnxscript"]
 
@@ -56,18 +57,24 @@ def build(out: Path, files: List[str]) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--out", default=str(ROOT / "dist" / "crbot_ppo_bundle.zip"))
+    ap.add_argument("--out", default=None, help="default dist/crbot_ppo_bundle.zip (dist/crbot_code_bundle.zip "
+                    "with --code-only)")
+    ap.add_argument("--code-only", action="store_true",
+                    help="no weights: the code the IL notebook imports (model, encoder, augmentation)")
     args = ap.parse_args(argv)
-    for f in MODEL_FILES:
-        if not (ROOT / f).exists():
-            raise SystemExit(f"missing {f}: put crbot_il_v1.onnx + .json in pretrained_weights/crbot_il_v1/ first")
-    files = tracked_files() + list(MODEL_FILES)
-    out = Path(args.out)
+    files = tracked_files()
+    if not args.code_only:
+        for f in MODEL_FILES:
+            if not (ROOT / f).exists():
+                raise SystemExit(f"missing {f}: put crbot_il_v2.onnx + .npz + .json (from the IL notebook) in "
+                                 "pretrained_weights/crbot_il_v2/ first")
+        files += list(MODEL_FILES)
+    out = Path(args.out or ROOT / "dist" / ("crbot_code_bundle.zip" if args.code_only else "crbot_ppo_bundle.zip"))
     m = build(out, files)
     total = sum(e["bytes"] for e in m["files"])
     print(f"wrote {out} ({out.stat().st_size / 1e6:.1f} MB zipped, {total / 1e6:.1f} MB raw, {len(files)} files, "
           f"commit {m['git_commit']}{' + uncommitted changes' if m['uncommitted_changes'] else ''})")
-    print("upload it to Google Drive as MyDrive/CRbot_Training/crbot_ppo_bundle.zip")
+    print(f"upload it to Google Drive as MyDrive/CRbot_Training/{out.name}")
     return 0
 
 

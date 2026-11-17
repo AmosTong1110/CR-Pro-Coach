@@ -1,42 +1,42 @@
-"""The crbot policy / value network in PyTorch (same architecture as cloud_training/train_imitation_colab.ipynb).
+"""The crbot policy / value network in PyTorch, for il_obs_v2 (backend_engine/brain/obs_encoder.py).
 
-Used by the PPO trainer (backend_engine/brain/ppo_trainer.py) and anything else that needs gradients. The app
-itself never imports this module: NeuralBot runs the exported ONNX file with onnxruntime. Needs `torch`.
+Used by cloud_training/train_imitation_colab.ipynb (training), the PPO trainer and anything that needs gradients.
+The app never imports this module: NeuralBot runs the exported ONNX file with onnxruntime. Needs `torch`.
 
-* `CRbotIL`: token transformer over 1 global token, 5 hand tokens and up to 30 unit tokens built from the
-  il_features observation (OBS_VERSION il_obs_v1); heads gate [B], slot [B,4], tile [B,4,576], value [B] (sigmoid).
-* `load_onnx_weights(path)`: rebuild the PyTorch weights from an exported ONNX file (no pickle). The exporter
-  keeps the parameter names of biases / norms / heads, stores Linear weights as transposed MatMul constants
-  named after their module path (/blocks.0/qkv/MatMul) and folds the token-type embedding into four Add
-  constants; all are mapped back, and the result is checked against onnxruntime (`verify=True`).
-* `export_onnx(model, path)`: the same inputs / outputs NeuralBot expects.
+`CRbotIL` is a token transformer whose size does not depend on the card pool: every card-like token (opponent
+hand candidates, own hand, units, spells) is projected from the same fixed attribute vector by one shared
+`attr_in` layer, plus a small per-group projection of its dynamic features (position, hp, affordability, ...).
+There is no card-id embedding, so a new card is just a new attribute vector.
+
+    tokens: cls, global (global + towers + tower troops + opponent summary), 8 opponent cards, 5 hand
+            (4 slots + next), 30 units, 4 spells  ->  49 tokens, padded ones masked out of attention
+    heads:  gate [B] (play logit), slot [B,4], tile [B,4,576], value [B] (sigmoid)
+
+Weights travel as `<name>.onnx` (inference) + `<name>.npz` (plain arrays, no pickle: `save_weights` /
+`load_weights`, checked against the ONNX file by `check_against_onnx`).
 """
 from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from backend_engine.brain import il_features as Fe
+from backend_engine.brain import obs_encoder as E
 
-NUM_TILES = Fe.NUM_TILES
-GW, GH = Fe.GRID_W, Fe.GRID_H
-HF, NH = Fe.HAND_FEAT_DIM, Fe.HAND_SLOTS + 1
-UF, NU = Fe.UNIT_FEAT_DIM, Fe.MAX_VISIBLE_UNITS
+NUM_TILES = E.NUM_TILES
+GW, GH = E.GRID_W, E.GRID_H
 OUTPUTS = ("gate_logit", "slot_logits", "tile_logits", "value")
-ARCH = dict(d=256, h=8, layers=4, ff=512)          # crbot_il_v1
-
-
-def layout(vocab_size: int) -> Tuple[int, int, int, int]:
-    """(G_END, H0, U0, OBS_DIM) for a card vocabulary of this size."""
-    g_end = Fe.N_GLOBAL + Fe.N_TOWER + 4 + vocab_size + 1
-    h0 = g_end
-    u0 = h0 + NH * HF
-    return g_end, h0, u0, u0 + NU * UF
+ARCH = dict(d=256, h=8, layers=4, ff=512)
+G_END = E.LAYOUT["opp_summary"][1]                     # global token input: everything before opp_cards
+GROUPS = (("opp", "opp_cards", E.N_OPP_CARDS, E.OPP_TOK, E.OPP_DYN),
+          ("hand", "hand", E.HAND_TOKENS, E.HAND_TOK, E.HAND_DYN),
+          ("unit", "units", E.MAX_UNITS, E.UNIT_TOK, E.UNIT_DYN),
+          ("spell", "spells", E.MAX_SPELLS, E.SPELL_TOK, E.SPELL_DYN))
+HAND_POS = 2 + E.N_OPP_CARDS                           # index of hand slot 0 in the token sequence
 
 
 class Block(nn.Module):
@@ -48,7 +48,7 @@ class Block(nn.Module):
         self.ff = nn.Sequential(nn.Linear(d, ff), nn.GELU(), nn.Linear(ff, d))
         self.drop = nn.Dropout(p)
 
-    def forward(self, x, key_bias):
+    def forward(self, x, key_bias):                    # key_bias [B, 1, 1, S]: 0 or -1e4
         B, S, D = x.shape
         q, k, v = self.qkv(self.ln1(x)).reshape(B, S, 3, self.h, self.dk).permute(2, 0, 3, 1, 4)
         att = torch.softmax(q @ k.transpose(-1, -2) / math.sqrt(self.dk) + key_bias, dim=-1)
@@ -58,15 +58,14 @@ class Block(nn.Module):
 
 
 class CRbotIL(nn.Module):
-    def __init__(self, vocab_size: int, d=256, h=8, layers=4, ff=512, p=0.0):
+    def __init__(self, d=256, h=8, layers=4, ff=512, p=0.0):
         super().__init__()
-        self.V = vocab_size
-        self.G_END, self.H0, self.U0, self.OBS_DIM = layout(vocab_size)
-        self.glob = nn.Sequential(nn.Linear(self.G_END, d), nn.GELU(), nn.Linear(d, d))
-        self.card_emb = nn.Embedding(vocab_size + 1, d)
-        self.hand_in = nn.Linear(HF, d)
-        self.unit_in = nn.Sequential(nn.Linear(UF, d), nn.GELU(), nn.Linear(d, d))
-        self.type_emb = nn.Parameter(torch.zeros(1 + 1 + NH + 1, d))
+        self.OBS_DIM = E.OBS_DIM
+        self.glob = nn.Sequential(nn.Linear(G_END, d), nn.GELU(), nn.Linear(d, d))
+        self.attr_in = nn.Sequential(nn.Linear(E.N_ATTR, d), nn.GELU(), nn.Linear(d, d))   # shared by all cards
+        self.dyn_in = nn.ModuleDict({g: nn.Linear(dyn, d) for g, _, _, _, dyn in GROUPS})
+        # type rows: cls, global, opp, hand slot 0..4, unit, spell
+        self.type_emb = nn.Parameter(torch.zeros(2 + 1 + E.HAND_TOKENS + 2, d))
         nn.init.normal_(self.type_emb, std=0.02)
         self.cls = nn.Parameter(torch.zeros(1, 1, d))
         self.blocks = nn.ModuleList(Block(d, h, ff, p) for _ in range(layers))
@@ -84,22 +83,30 @@ class CRbotIL(nn.Module):
         self.tile_free = nn.Parameter(torch.zeros(NUM_TILES, d))
         self.tile_bias = nn.Parameter(torch.zeros(NUM_TILES))
 
+    def _group(self, obs, name, block, n, tok, dyn):
+        a, b = E.LAYOUT[block]
+        x = obs[:, a:b].reshape(obs.shape[0], n, tok)
+        return self.dyn_in[name](x[:, :, :dyn]) + self.attr_in(x[:, :, dyn:]), x[:, :, 0]
+
     def forward(self, obs):
         B = obs.shape[0]
-        g = self.glob(obs[:, :self.G_END])[:, None]
-        hand = obs[:, self.H0:self.U0].reshape(B, NH, HF)
-        idx = torch.clamp(torch.round(hand[:, :, 0] * (self.V + 1)), 0, self.V).long()
-        h = self.hand_in(hand) + self.card_emb(idx)
-        units = obs[:, self.U0:].reshape(B, NU, UF)
-        u = self.unit_in(units)
         te = self.type_emb
-        x = torch.cat([self.cls.expand(B, 1, -1) + te[0], g + te[1], h + te[2:2 + NH], u + te[2 + NH]], 1)
-        pad = torch.cat([torch.zeros(B, 2 + NH, device=obs.device), (units[:, :, 0] <= 0).float()], 1)
+        g = self.glob(obs[:, :G_END])[:, None] + te[1]
+        opp, opp_p = self._group(obs, *GROUPS[0])
+        hand, _ = self._group(obs, *GROUPS[1])
+        unit, unit_p = self._group(obs, *GROUPS[2])
+        spell, spell_p = self._group(obs, *GROUPS[3])
+        hand_te = te[3:3 + E.HAND_TOKENS]
+        x = torch.cat([self.cls.expand(B, 1, -1) + te[0], g, opp + te[2], hand + hand_te,
+                       unit + te[3 + E.HAND_TOKENS], spell + te[4 + E.HAND_TOKENS]], 1)
+        always = torch.zeros(B, 2, device=obs.device)
+        pad = torch.cat([always, (opp_p <= 0).float(), torch.zeros(B, E.HAND_TOKENS, device=obs.device),
+                         (unit_p <= 0).float(), (spell_p <= 0).float()], 1)
         key_bias = (pad * -1e4)[:, None, None, :]
         for blk in self.blocks:
             x = blk(x, key_bias)
         x = self.ln(x)
-        c, hs = x[:, 0], x[:, 2:6]
+        c, hs = x[:, 0], x[:, HAND_POS:HAND_POS + 4]
         ch = torch.cat([c[:, None].expand(B, 4, -1), hs], -1)
         gate = self.gate_head(c)[:, 0]
         slot = self.slot_head(ch)[:, :, 0]
@@ -110,88 +117,81 @@ class CRbotIL(nn.Module):
         return gate, slot, tile, value
 
 
-# -- ONNX <-> PyTorch ------------------------------------------------------------------------------------------
-def _scope_to_param(node_name: str) -> str:
-    """Exporter scope -> module path: each child scope repeats its parent's local name
-    ('/blocks.0/ff/ff.0/MatMul' -> 'blocks.0.ff.0', '/unit_in/unit_in.0/MatMul' -> 'unit_in.0')."""
-    parts = [p for p in node_name.split("/") if p][:-1]
-    path = parts[0]
-    for p in parts[1:]:
-        head, _, last = path.rpartition(".") if "." in path and not path.split(".")[-1].isdigit() else ("", "", path)
-        if p.startswith(last + "."):
-            path = (head + "." if head else "") + p
-        else:
-            path = path + "." + p
-    return path
+def arch_of(model: CRbotIL) -> Dict[str, int]:
+    return {"d": int(model.cls.shape[-1]), "h": int(model.blocks[0].h), "layers": len(model.blocks),
+            "ff": int(model.blocks[0].ff[0].out_features)}
 
 
-def state_dict_from_onnx(path: Path | str) -> Tuple[Dict[str, torch.Tensor], int]:
-    """(state_dict, vocab_size) rebuilt from an ONNX file exported by the IL notebook / export_onnx."""
-    import onnx
-    from onnx import numpy_helper
-    m = onnx.load(str(path))
-    inits = {t.name: numpy_helper.to_array(t) for t in m.graph.initializer}
-    sd: Dict[str, torch.Tensor] = {}
-    for name, arr in inits.items():
-        if not name.startswith("onnx::"):
-            sd[name] = torch.from_numpy(np.array(arr))
-    type_rows: Dict[int, np.ndarray] = {}
-    for node in m.graph.node:
-        for inp in node.input:
-            if not inp.startswith("onnx::") or inp not in inits:
-                continue
-            arr = inits[inp]
-            if node.op_type == "MatMul":                    # /blocks.0/ff/ff.0/MatMul -> blocks.0.ff.0.weight
-                sd[_scope_to_param(node.name) + ".weight"] = torch.from_numpy(np.array(arr.T))
-            elif node.op_type == "Add" and node.name.startswith("/Add_"):
-                type_rows[int(node.name.split("_")[1])] = arr  # /Add_1..4: type_emb[0], [1], [2:7], [7]
-    if sorted(type_rows) != [1, 2, 3, 4]:
-        raise ValueError(f"{path}: unexpected type-embedding constants {sorted(type_rows)}")
-    sd["type_emb"] = torch.from_numpy(np.concatenate([type_rows[1][None], type_rows[2][None], type_rows[3],
-                                                      type_rows[4][None]], 0).astype(np.float32))
-    vocab_size = int(sd["card_emb.weight"].shape[0]) - 1
-    return sd, vocab_size
+# -- training augmentation (the notebook and the PPO trainer use this, so it always matches the layout) ----------
+_MIRROR = E.mirror_spec()
 
 
-def load_onnx_weights(path: Path | str, verify: bool = True, atol: float = 1e-4) -> CRbotIL:
-    sd, vocab = state_dict_from_onnx(path)
-    d = int(sd["cls"].shape[-1])
-    layers = len({k.split(".")[1] for k in sd if k.startswith("blocks.")})
-    ff = int(sd["blocks.0.ff.0.bias"].shape[0])
-    model = CRbotIL(vocab, d=d, h=ARCH["h"], layers=layers, ff=ff)
+def augment(obs, slot, tile, smask, tmask, mirror: bool = True, hand_perm: bool = True):
+    """Random left-right mirror (towers swap, x -> 1 - x, tiles mirrored) and hand-slot permutation."""
+    B, dev = obs.shape[0], obs.device
+    if mirror:
+        perm, xs, tmir = (torch.as_tensor(a, device=dev) for a in _MIRROR)
+        flip = torch.rand(B, device=dev) < 0.5
+        o = obs[:, perm].clone()
+        present = o[:, xs - 2] > 0
+        o[:, xs] = torch.where(present, 1.0 - o[:, xs], o[:, xs])
+        obs = torch.where(flip[:, None], o, obs)
+        tile = torch.where(flip & (tile >= 0), tmir[tile.clamp(min=0)], tile)
+        tmask = torch.where(flip[:, None], tmask[:, tmir], tmask)
+    if hand_perm:
+        h0, tok = E.LAYOUT["hand"][0], E.HAND_TOK
+        perm = torch.argsort(torch.rand(B, 4, device=dev), dim=1)          # new slot j shows old slot perm[j]
+        hand = obs[:, h0:h0 + 4 * tok].reshape(B, 4, tok)
+        hand = torch.gather(hand, 1, perm[:, :, None].expand(B, 4, tok))
+        obs = obs.clone()
+        obs[:, h0:h0 + 4 * tok] = hand.reshape(B, -1)
+        smask = torch.gather(smask, 1, perm)
+        inv = torch.argsort(perm, dim=1)
+        slot = torch.where(slot >= 0, torch.gather(inv, 1, slot.clamp(min=0)[:, None])[:, 0], slot)
+    return obs, slot, tile, smask, tmask
+
+
+# -- weights: .npz (no pickle) <-> PyTorch, ONNX export / check -------------------------------------------------
+def save_weights(model: CRbotIL, path: Path | str) -> None:
+    arrays = {k: v.detach().cpu().numpy() for k, v in model.state_dict().items()}
+    arrays["__arch__"] = np.array([arch_of(model)[k] for k in ("d", "h", "layers", "ff")], dtype=np.int64)
+    np.savez(str(path), **arrays)
+
+
+def load_weights(path: Path | str) -> CRbotIL:
+    with np.load(str(path), allow_pickle=False) as z:
+        d, h, layers, ff = (int(v) for v in z["__arch__"])
+        sd = {k: torch.from_numpy(np.array(z[k])) for k in z.files if k != "__arch__"}
+    model = CRbotIL(d=d, h=h, layers=layers, ff=ff)
     missing, unexpected = model.load_state_dict(sd, strict=False)
     if missing or unexpected:
         raise ValueError(f"{path}: weights don't match the architecture (missing {missing}, unexpected {unexpected})")
-    model.eval()
-    if verify:
-        check_against_onnx(model, path, atol)
-    return model
+    return model.eval()
 
 
-def _probe(obs_dim: int, n: int = 16, seed: int = 0) -> np.ndarray:
-    """Plausible random observations (present units, hand cards) to compare two implementations."""
+def _probe(n: int = 16, seed: int = 0) -> np.ndarray:
+    """Random observations with some present tokens, to compare two implementations."""
     rng = np.random.default_rng(seed)
-    x = rng.random((n, obs_dim)).astype(np.float32)
-    return x
+    return rng.random((n, E.OBS_DIM)).astype(np.float32)
 
 
 def check_against_onnx(model: CRbotIL, path: Path | str, atol: float = 1e-4) -> float:
     import onnxruntime as ort
-    x = _probe(model.OBS_DIM)
+    x = _probe()
     sess = ort.InferenceSession(str(path), providers=["CPUExecutionProvider"])
     ref = sess.run(list(OUTPUTS), {sess.get_inputs()[0].name: x})
     with torch.no_grad():
-        out = [t.numpy() for t in model(torch.from_numpy(x))]
+        out = [t.numpy() for t in model.eval()(torch.from_numpy(x))]
     diff = max(float(np.abs(a - b).max()) for a, b in zip(out, ref))
     if diff > atol:
-        raise ValueError(f"{path}: rebuilt PyTorch model differs from ONNX by {diff:.2e}")
+        raise ValueError(f"{path}: PyTorch model differs from ONNX by {diff:.2e}")
     return diff
 
 
 def export_onnx(model: CRbotIL, path: Path | str, verify: bool = True) -> float:
     """Export with the inputs / outputs NeuralBot expects; returns the max |torch - onnxruntime|."""
     model = model.eval()
-    sample = torch.from_numpy(_probe(model.OBS_DIM, 2))
+    sample = torch.from_numpy(_probe(2))
     kw = dict(input_names=["obs"], output_names=list(OUTPUTS),
               dynamic_axes={n: {0: "batch"} for n in ("obs", *OUTPUTS)}, opset_version=17)
     with torch.no_grad():
@@ -200,3 +200,11 @@ def export_onnx(model: CRbotIL, path: Path | str, verify: bool = True) -> float:
         except TypeError:
             torch.onnx.export(model, (sample,), str(path), **kw)
     return check_against_onnx(model, path) if verify else 0.0
+
+
+def model_meta(name: str, **extra) -> dict:
+    """The .json NeuralBot reads: obs schema (version, dim, attribute keys, layout) + outputs + extras."""
+    return {"name": name, **E.schema(),
+            "outputs": {"gate_logit": "[B] play logit", "slot_logits": "[B,4]",
+                        "tile_logits": "[B,4,576] gy*18+gx in the acting side's frame", "value": "[B] win probability"},
+            **extra}
