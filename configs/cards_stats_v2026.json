@@ -4719,6 +4719,8 @@
       "rarity": "rare",
       "elixir": 3,
       "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "manual entry (building audit 0ef653b); not yet checked against the wiki",
       "deploy_time_s": 1.0,
       "lifetime_s": 30.0,
       "footprint_tiles": [

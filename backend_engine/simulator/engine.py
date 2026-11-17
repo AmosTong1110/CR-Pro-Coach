@@ -37,7 +37,7 @@ from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_FORMATIONS, SPAWN_R
 #   5: wiki timings (hit speed, first hit, range) of the simulated cards
 #   6: batch 2: charge, shield, burrow, ramp damage, recoil, hide underground, form change, Earthquake / Lightning /
 #      Vines / Royal Delivery spell kinds, 50% slow; champion abilities (`Match.use_ability`, `card#ability` log entries)
-ENGINE_VERSION = 6
+ENGINE_VERSION = 7
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
@@ -657,7 +657,7 @@ class Match:
         nx_, ny_ = min(max(nx, 0.0), G.W - 0.01), min(max(ny, 0.0), G.H - 0.01)
         # 地面单位若不是跳河兵种，严禁被推挤进河水区域 (桥梁除外)
         if u.layer == "ground" and not self._river_passable(u) and G.region(ny_) == "river" and not G.on_bridge(nx_):
-            if G.region(oy) == "river":       # 原本在桥上被挤：限制在桥面范围内滑动
+            if G.region(oy) == "river" and G.on_bridge(ox):   # 原本在桥上被挤：限制在桥面范围内滑动
                 bx = min(G.BRIDGE_X, key=lambda b: abs(b - ox))
                 nx_ = min(max(nx_, bx - G.BRIDGE_HALF_W), bx + G.BRIDGE_HALF_W)
             else:                              # 原本在岸上：禁止落入河水

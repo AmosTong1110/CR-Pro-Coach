@@ -64,8 +64,9 @@ def test_tile_mask_matches_engine_rules(db):
     m.tower(1, "princess_left").hp = 0             # opens a pocket for side 0 on the left
     m.tower(0, "princess_right").hp = 0            # and for side 1 on its right
     m.step()
+    buildings = [c for c, d in db.cards.items() if d["type"] == "building"]
     for side in (0, 1):
-        for card in ("hog_rider", "miner", "cannon", "fireball"):
+        for card in ["hog_rider", "miner", "fireball", *buildings]:            # buildings: footprint rules
             st = m.sides[side]
             st.hand, st.elixir = [card, "skeletons", "the_log", "knight"], 10.0
             mask = F.tile_mask(m.observation(side), card, db)

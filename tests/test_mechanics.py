@@ -32,6 +32,7 @@ def play(m, side, card, x, y, ready=True, still=True):
     units = [m.units[k] for k in sorted(set(m.units) - before)]
     for u in units:
         u.x, u.y = u.x - legal[0] + x, u.y - legal[1] + y
+        u.lane = "left" if u.x < G.W / 2 else "right"       # the lane follows the moved unit, as at spawn
         if ready:
             u.deploy_ms = 0
         if still:
@@ -40,7 +41,7 @@ def play(m, side, card, x, y, ready=True, still=True):
 
 
 def test_engine_version():
-    assert ENGINE_VERSION == 6
+    assert ENGINE_VERSION == 7
 
 
 # ---------------------------------------------------------------- projectiles

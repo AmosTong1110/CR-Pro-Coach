@@ -172,17 +172,23 @@ _FX, _FY = _GX.ravel(), _GY.ravel()                      # index = gy * 18 + gx
 def tile_mask(obs: Mapping, card_id: str, db: CardDB) -> np.ndarray:
     """bool[576] in the acting side's frame: tiles where `card_id` may be deployed now (same rules as
     Match.check_play: spells anywhere, burrowers anywhere on the ground, otherwise own half / pocket, never the
-    river, never on a structure). Elixir and hand are not checked here (see slot_mask)."""
+    river, never on a structure; buildings: own half only, their footprint must stay inside the arena, off the
+    river and off other structures). Elixir and hand are not checked here (see slot_mask)."""
     side = int(obs["side"])
     card = db.cards[card_id]
     wx = _FX
     wy = _FY if side == 0 else G.H - _FY
     if card["type"] == "spell":
         return np.ones(NUM_TILES, dtype=bool)
+    building = card["type"] == "building"
+    if building and "footprint_tiles" in card:
+        rad = card["footprint_tiles"][0] / 2.0
+    else:
+        rad = float(card.get("collision_radius_tiles", 0.5))
     blocked = np.zeros(NUM_TILES, dtype=bool)
     for u in obs["units"]:
         if u["kind"] in ("tower", "building") and u["hp"] > 0:
-            r = u["radius"]
+            r = (rad + u["radius"] - 1e-4) if building else u["radius"]
             blocked |= (np.abs(wx - u["x"]) < r) & (np.abs(wy - u["y"]) < r)
     river = (wy >= G.RIVER_Y0) & (wy < G.RIVER_Y1)
     if any(m["kind"] == "burrow" for m in card["mechanics"]):
@@ -191,6 +197,10 @@ def tile_mask(obs: Mapping, card_id: str, db: CardDB) -> np.ndarray:
             on_bridge |= np.abs(wx - b) <= G.BRIDGE_HALF_W
         return ~(river & ~on_bridge) & ~blocked
     home = (wy < G.RIVER_Y0) if side == 0 else (wy >= G.RIVER_Y1)
+    if building:                                     # geometry.deploy_check's building rules
+        inside = (wx - rad >= 0.0) & (wx + rad <= G.W) & (wy - rad >= 0.0) & (wy + rad <= G.H)
+        off_river = (wy + rad <= G.RIVER_Y0) if side == 0 else (wy - rad >= G.RIVER_Y1)
+        return home & inside & off_river & ~river & ~blocked
     alive = {role: False for role in ("princess_left", "princess_right")}
     for u in obs["units"]:
         if u["kind"] == "tower" and u["side"] != side and u["hp"] > 0 and u["tower_role"] in alive:

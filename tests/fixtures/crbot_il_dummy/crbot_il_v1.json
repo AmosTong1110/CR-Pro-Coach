@@ -2,7 +2,7 @@
  "name": "crbot_il_v1",
  "dummy": true,
  "obs_version": "il_obs_v1",
- "obs_dim": 341,
+ "obs_dim": 342,
  "vocab": [
   "archers",
   "baby_dragon",
@@ -44,6 +44,7 @@
   "skeletons",
   "tesla",
   "the_log",
+  "tombstone",
   "tornado",
   "valkyrie",
   "vines",
