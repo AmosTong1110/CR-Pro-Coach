@@ -41,7 +41,6 @@ class BoardWidget(QWidget):
         self.selected_card: Optional[str] = None
         self.legal: Set[Tuple[float, float]] = set()
         self.hover: Optional[Tuple[float, float]] = None
-        self.show_ai_vision = True
         self.overlay_text: Optional[str] = None   # 倒计时遮罩大字 (如快退接管后的 3-2-1)
         # 复盘虚影：(card_id, x, y, "actual"实际打法 | "best"推荐最优解)
         self.ghosts: List[Tuple[str, float, float, str]] = []
@@ -295,24 +294,20 @@ class BoardWidget(QWidget):
         self._hp_bar(p, c.x(), c.y() - r - 6, 2 * r, u.hp / u.max_hp, u.side)
 
     def _paint_unit(self, p: QPainter, u, ts: float) -> None:
-        """绘制活体单位与建筑，支持部署半透明、空中飞行单位阴影、迷雾盲区虚线高亮"""
+        """绘制活体单位与建筑，支持部署半透明与空中飞行单位阴影"""
         r = max(u.radius, 0.4) * ts
         c = self.to_px(u.x, u.y)
         col = QColor(SIDE_COLOR[u.side])
         if u.deploy_ms > 0:
             # 部署生效延迟期 (半透明提示未完全登场)
             col.setAlpha(110)
-        unseen = self.show_ai_vision and not self.session.ai_has_seen(u)
         if u.layer == "air":
             # 飞行空中单位 (在地面下方绘制椭圆暗影，增强空间立体感)
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(0, 0, 0, 60))
             p.drawEllipse(QPointF(c.x() + r * 0.3, c.y() + r * 0.5), r * 0.8, r * 0.5)
         p.setBrush(col)
-        pen = QPen(QColor("#ffd400") if unseen else col.darker(170), 2.5 if unseen else 1.5)
-        if unseen:
-            pen.setStyle(Qt.DashLine)
-        p.setPen(pen)
+        p.setPen(QPen(col.darker(170), 1.5))
         if u.kind == "building":
             # 建筑绘制为方形
             p.drawRect(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r))

@@ -30,7 +30,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from PySide6.QtCore import QEvent, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QShortcut
 from PySide6.QtWidgets import (
-    QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFrame, QHBoxLayout,
+    QApplication, QButtonGroup, QComboBox, QDialog, QDialogButtonBox, QFrame, QHBoxLayout,
     QInputDialog, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSizePolicy, QSlider, QVBoxLayout, QWidget,
 )
 
@@ -843,10 +843,6 @@ class MainWindow(QMainWindow):
         self.counter_mode.currentIndexChanged.connect(
             lambda _: self.counter.set_quiz(self.counter_mode.currentData() == "quiz"))
         ol.addWidget(self.counter_mode)
-        self.vision = QCheckBox("Outline units the AI hasn't seen yet")
-        self.vision.setChecked(True)
-        self.vision.toggled.connect(self._toggle_vision)
-        ol.addWidget(self.vision)
         iv.addWidget(opts)
         iv.addStretch(1)
 
@@ -1505,10 +1501,6 @@ class MainWindow(QMainWindow):
         self.flash(f"AI had {r.truth:.1f} · you guessed {r.guess:.1f} · error {r.error:.1f} ({verdict})")
         self.running = was_running
         self.refresh()
-
-    def _toggle_vision(self, on: bool) -> None:
-        self.board.show_ai_vision = on
-        self.board.update()
 
     # -- timeline jumps with a countdown (live play) ------------------------------------------------------------
     def _start_countdown(self) -> None:
