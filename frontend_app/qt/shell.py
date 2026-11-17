@@ -17,15 +17,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import QSize, Qt, QUrl
+from PySide6.QtCore import QSize, QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QFileDialog, QFormLayout, QFrame,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
-    QMessageBox, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout,
-    QWidget,
+    QMessageBox, QProgressBar, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget,
 )
 
+from backend_engine.brain.coach_analyzer import MatchReview
 from backend_engine.meta.archetypes import avg_elixir, fmt_avg, pretty
 from backend_engine.meta.recommend import coverage, meta_info, recommend
 from backend_engine.simulator.engine import ENGINE_VERSION
@@ -34,7 +35,7 @@ from backend_engine.storage import default_data_dir
 from backend_engine.storage.match_store import MatchMeta, MatchStore, MatchStoreError
 from backend_engine.storage.profile import Profile, load_profile, save_profile
 from frontend_app.qt.app import SPEEDS, MainWindow, avg_cost, deck_label
-from frontend_app.qt.review import LABEL_COLOR, WinRateGraph, grade_chips_html, mmss
+from frontend_app.qt.review import LABEL_COLOR, WinRateGraph, grade_chips_html, mmss, tooltip_html
 from frontend_app.qt.session import PERSONAS, persona_label, GameSession, ReplayMismatch, SessionConfig
 from frontend_app.qt.theme import C, STYLE, cls, dark_palette  # noqa: F401  (C/STYLE/dark_palette re-exported)
 from frontend_app.qt.widgets import DeckView, StatTile, card_frame, deck_costs, deck_names
@@ -106,13 +107,70 @@ class MatchRow(QWidget):
         top.addWidget(when)
         title = QLabel(match_title(m))
         title.setStyleSheet(f"color:{C['text']}; font-size:12px; background:transparent;")
-        acc = f"accuracy {m.accuracy:.0f}%" if m.accuracy is not None else "not analyzed"
+        if m.accuracy is not None:
+            blunders = m.counts.get("blunder", 0) if m.counts else 0
+            mistakes = m.counts.get("mistake", 0) if m.counts else 0
+            blunder_note = ""
+            if blunders > 0:
+                blunder_note = f" ({blunders} blunder{'s' if blunders > 1 else ''})"
+            elif mistakes > 0:
+                blunder_note = f" ({mistakes} mistake{'s' if mistakes > 1 else ''})"
+            acc = f"accuracy {m.accuracy:.0f}%{blunder_note}"
+        else:
+            acc = "not analyzed"
         sub = QLabel(f"{mmss(m.duration_ms)}  ·  {m.n_plays} plays  ·  {acc}")
         sub.setStyleSheet(f"color:{C['muted']}; font-size:11px; background:transparent;")
         v.addLayout(top)
         v.addWidget(title)
         v.addWidget(sub)
         h.addLayout(v, 1)
+
+
+class AnalysisCancelled(Exception):
+    """Raised when in-place analysis is stopped by the user."""
+    pass
+
+
+class AnalysisWorker(QThread):
+    progress = Signal(int, int)               # done, total
+    analysisComplete = Signal(object, object) # MatchMeta, MatchReview
+    analysisFailed = Signal(str)
+    analysisCancelled = Signal()
+
+    def __init__(self, store: MatchStore, match_id: str, db, parent=None):
+        super().__init__(parent)
+        self.store = store
+        self.match_id = match_id
+        self.db = db
+        self._cancelled = False
+
+    def cancel(self) -> None:
+        self._cancelled = True
+
+    def run(self) -> None:
+        try:
+            meta = self.store.load_meta(self.match_id)
+            record = self.store.load_record(self.match_id)
+            session = GameSession.rebuild(record, db=self.db)
+            if not session.has_human_plays():
+                self.analysisFailed.emit("No cards were played in this match, so there is nothing to analyze.")
+                return
+
+            def on_progress(done: int, total: int) -> None:
+                if self._cancelled:
+                    raise AnalysisCancelled()
+                self.progress.emit(done, total)
+
+            review = session.analyze(progress=on_progress)
+            if self._cancelled:
+                self.analysisCancelled.emit()
+                return
+            updated_meta = self.store.save_review(self.match_id, review)
+            self.analysisComplete.emit(updated_meta, review)
+        except AnalysisCancelled:
+            self.analysisCancelled.emit()
+        except Exception as e:
+            self.analysisFailed.emit(str(e))
 
 
 class AnalysisPage(QWidget):
@@ -124,6 +182,7 @@ class AnalysisPage(QWidget):
         self.shell = shell
         self.metas: List[MatchMeta] = []
         self.review = None
+        self.worker: Optional[AnalysisWorker] = None
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 20, 24, 20)
         root.setSpacing(14)
@@ -132,11 +191,34 @@ class AnalysisPage(QWidget):
         head.addWidget(_label("Analysis", "h1"))
         head.addStretch(1)
         self.filter = QComboBox()
+        self.filter.setToolTip("Filter by game mode")
         for text, mode in (("All matches", None), ("Practice", "practice"), ("Recordings", "recording"),
                            ("Drills", "drill")):
             self.filter.addItem(text, mode)
         self.filter.currentIndexChanged.connect(lambda _: self.reload())
         head.addWidget(self.filter)
+
+        self.outcome_filter = QComboBox()
+        self.outcome_filter.setToolTip("Filter by match outcome")
+        for text, out in (("All results", None), ("Wins", "win"), ("Losses", "loss"), ("Draws", "draw")):
+            self.outcome_filter.addItem(text, out)
+        self.outcome_filter.currentIndexChanged.connect(lambda _: self.reload())
+        head.addWidget(self.outcome_filter)
+
+        self.sort_box = QComboBox()
+        self.sort_box.setToolTip("Sort matches list")
+        for text, key in (
+            ("Newest first", "newest"),
+            ("Oldest first", "oldest"),
+            ("Lowest accuracy", "worst_acc"),
+            ("Highest accuracy", "best_acc"),
+            ("Most mistakes", "most_mistakes"),
+            ("Longest duration", "longest"),
+            ("Shortest duration", "shortest"),
+        ):
+            self.sort_box.addItem(text, key)
+        self.sort_box.currentIndexChanged.connect(lambda _: self.reload())
+        head.addWidget(self.sort_box)
         root.addLayout(head)
 
         tiles = QHBoxLayout()
@@ -202,6 +284,7 @@ class AnalysisPage(QWidget):
         self.graph = WinRateGraph()
         self.graph.setFixedHeight(220)
         self.graph.empty_text = "Not analyzed yet. Press Analyze to grade every play."
+        self.graph.names = self._card_name
         self.graph.timeClicked.connect(lambda t: self.slider.setValue(t))
         self.graph.moveClicked.connect(self._move_clicked)
         gl.addWidget(self.graph)
@@ -225,12 +308,39 @@ class AnalysisPage(QWidget):
         gl.addWidget(self.moment)
         dv.addWidget(self.graph_card)
 
+        self.moments_card = card_frame(spacing=8, margins=14)
+        ml = self.moments_card.layout()
+        m_head = QHBoxLayout()
+        m_head.addWidget(_label("KEY MOMENTS", "section"))
+        m_head.addStretch(1)
+        self.mistakes_only = QCheckBox("Mistakes only")
+        self.mistakes_only.setChecked(True)
+        self.mistakes_only.setToolTip("Show only blunders, mistakes and inaccuracies")
+        self.mistakes_only.toggled.connect(lambda _: self._populate_moments())
+        m_head.addWidget(self.mistakes_only)
+        ml.addLayout(m_head)
+
+        self.moments_list = QListWidget()
+        self.moments_list.setFixedHeight(120)
+        self.moments_list.setStyleSheet(
+            f"QListWidget{{background:{C['panel2']}; border:1px solid {C['line']}; border-radius:6px;}} "
+            f"QListWidget::item{{padding:4px 8px; font-size:12px;}} "
+            f"QListWidget::item:selected{{background:#2b3a4a;}}"
+        )
+        self.moments_list.currentRowChanged.connect(self._moment_selected)
+        self.moments_list.itemDoubleClicked.connect(lambda _: self.open_selected())
+        ml.addWidget(self.moments_list)
+
+        self.moments_empty = _label("Not analyzed yet. Press Analyze to find key moments.", "sub")
+        ml.addWidget(self.moments_empty)
+        dv.addWidget(self.moments_card)
+
         btns = QHBoxLayout()
         self.open_btn = _cls(QPushButton("▶  Open review"), "primary")
         self.open_btn.setToolTip("Open this match in Fight with the coach review, at the chosen moment")
         self.open_btn.clicked.connect(lambda: self.open_selected())
         self.analyze_btn = _cls(QPushButton("Analyze"), "ghost")
-        self.analyze_btn.clicked.connect(lambda: self.open_selected(analyze=True))
+        self.analyze_btn.clicked.connect(self.start_in_place_analysis)
         self.delete_btn = _cls(QPushButton("Delete"), "danger")
         self.delete_btn.clicked.connect(self.delete_selected)
         btns.addWidget(self.open_btn)
@@ -238,6 +348,27 @@ class AnalysisPage(QWidget):
         btns.addStretch(1)
         btns.addWidget(self.delete_btn)
         dv.addLayout(btns)
+
+        self.busy_box = QWidget()
+        bl = QVBoxLayout(self.busy_box)
+        bl.setContentsMargins(0, 4, 0, 4)
+        bl.setSpacing(4)
+        brow = QHBoxLayout()
+        self.progress_label = _label("Analyzing… 0%", "sub")
+        self.stop_btn = _cls(QPushButton("■  Stop"), "danger")
+        self.stop_btn.setToolTip("Stop the running analysis (Esc)")
+        self.stop_btn.clicked.connect(self.cancel_analysis)
+        brow.addWidget(self.progress_label, 1)
+        brow.addWidget(self.stop_btn)
+        bl.addLayout(brow)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setTextVisible(False)
+        bl.addWidget(self.progress_bar)
+        self.busy_box.setVisible(False)
+        dv.addWidget(self.busy_box)
+
+        QShortcut(QKeySequence("Escape"), self, activated=self._escape)
+
         self.notice = _label("", "sub", wrap=True)
         self.notice.setStyleSheet(f"color:{C['warn']}; font-size:12px;")
         dv.addWidget(self.notice)
@@ -252,12 +383,14 @@ class AnalysisPage(QWidget):
         self.detail.setWidget(inner)
 
         self.empty = card_frame(spacing=10, margins=24)
-        self.empty.layout().addWidget(_label("No saved matches yet", "h2"))
-        self.empty.layout().addWidget(_label("Play a match in Fight: it is saved automatically when it ends or "
-                                             "when you start a new one.", "sub", wrap=True))
-        go = _cls(QPushButton("Go to Fight"), "primary")
-        go.clicked.connect(lambda: self.shell.show_page("fight"))
-        self.empty.layout().addWidget(go, 0, Qt.AlignLeft)
+        self.empty_title = _label("No saved matches yet", "h2")
+        self.empty.layout().addWidget(self.empty_title)
+        self.empty_sub = _label("Play a match in Fight: it is saved automatically when it ends or "
+                                "when you start a new one.", "sub", wrap=True)
+        self.empty.layout().addWidget(self.empty_sub)
+        self.empty_go = _cls(QPushButton("Go to Fight"), "primary")
+        self.empty_go.clicked.connect(lambda: self.shell.show_page("fight"))
+        self.empty.layout().addWidget(self.empty_go, 0, Qt.AlignLeft)
         self.empty.layout().addStretch(1)
 
         right = QVBoxLayout()
@@ -267,8 +400,57 @@ class AnalysisPage(QWidget):
         root.addLayout(body, 1)
 
     # ------------------------------------------------------------------
+    def _card_name(self, cid: str) -> str:
+        db = self.shell.fight.session.db
+        rec = db.cards.get(cid) or (getattr(db, "tokens", {}).get(cid))
+        return rec.get("name", cid) if rec else cid
+
     def reload(self, select_id: Optional[str] = None) -> None:
-        self.metas = self.shell.store.list(self.filter.currentData())
+        target_id = select_id
+        if target_id is None:
+            sel = self.selected()
+            if sel is not None:
+                target_id = sel.match_id
+
+        raw_metas = self.shell.store.list(self.filter.currentData())
+        outcome = self.outcome_filter.currentData()
+        if outcome is not None:
+            filtered = [m for m in raw_metas if m.outcome == outcome]
+        else:
+            filtered = list(raw_metas)
+
+        sort_mode = self.sort_box.currentData() if hasattr(self, "sort_box") else "newest"
+        if sort_mode == "oldest":
+            filtered.sort(key=lambda m: (m.created, m.match_id))
+        elif sort_mode == "worst_acc":
+            filtered.sort(key=lambda m: (
+                m.accuracy is None,
+                m.accuracy if m.accuracy is not None else 1e9,
+                -m.duration_ms,
+            ))
+        elif sort_mode == "best_acc":
+            filtered.sort(key=lambda m: (
+                m.accuracy is None,
+                -(m.accuracy if m.accuracy is not None else -1.0),
+                -m.duration_ms,
+            ))
+        elif sort_mode == "most_mistakes":
+            def _mistake_key(m: MatchMeta):
+                if m.accuracy is None:
+                    return (1, 0, 0, 0)
+                blunders = m.counts.get("blunder", 0) if m.counts else 0
+                mistakes = m.counts.get("mistake", 0) if m.counts else 0
+                inacc = m.counts.get("inaccuracy", 0) if m.counts else 0
+                return (0, -(blunders + mistakes), -blunders, -inacc)
+            filtered.sort(key=_mistake_key)
+        elif sort_mode == "longest":
+            filtered.sort(key=lambda m: (m.duration_ms, m.created), reverse=True)
+        elif sort_mode == "shortest":
+            filtered.sort(key=lambda m: (m.duration_ms, m.created))
+        else:  # "newest"
+            filtered.sort(key=lambda m: (m.created, m.match_id), reverse=True)
+
+        self.metas = filtered
         self.list.blockSignals(True)
         self.list.clear()
         for m in self.metas:
@@ -279,21 +461,42 @@ class AnalysisPage(QWidget):
             self.list.addItem(it)
             self.list.setItemWidget(it, row)
         self.list.blockSignals(False)
-        w = sum(m.outcome == "win" for m in self.metas)
-        l_ = sum(m.outcome == "loss" for m in self.metas)
-        d = sum(m.outcome == "draw" for m in self.metas)
+        w = sum(m.outcome == "win" for m in raw_metas)
+        l_ = sum(m.outcome == "loss" for m in raw_metas)
+        d = sum(m.outcome == "draw" for m in raw_metas)
         decided = w + l_ + d
-        accs = [m.accuracy for m in self.metas if m.accuracy is not None]
-        self.t_matches.set(str(len(self.metas)))
+        accs = [m.accuracy for m in raw_metas if m.accuracy is not None]
+        self.t_matches.set(str(len(raw_metas)))
         self.t_winrate.set(f"{w / decided:.0%}" if decided else "—",
                            C["win"] if decided and w >= l_ else (C["loss"] if decided else None))
         self.t_record.set(f"{w} · {l_} · {d}")
         self.t_acc.set(f"{sum(accs) / len(accs):.0f}%" if accs else "—")
-        self.stats.setText(f"{len(self.metas)} matches  ·  {w}W {l_}L {d}D"
-                           + (f"  ·  average accuracy {sum(accs) / len(accs):.0f}%" if accs else ""))
+        filtered_note = f"  ·  showing {len(self.metas)} {outcome}s" if outcome else ""
+        self.stats.setText(f"{len(raw_metas)} matches  ·  {w}W {l_}L {d}D"
+                           + (f"  ·  average accuracy {sum(accs) / len(accs):.0f}%" if accs else "")
+                           + filtered_note)
+        mode = self.filter.currentData()
+        if not self.metas:
+            if outcome is not None:
+                self.empty_title.setText(f"No {outcome} matches found")
+                self.empty_sub.setText(f"You don't have any recorded {outcome} matches under the current filter.")
+                self.empty_go.setVisible(False)
+            elif mode == "recording":
+                self.empty_title.setText("No recorded matches yet")
+                self.empty_sub.setText("Mode B recordings will appear here once saved from the companion overlay.")
+                self.empty_go.setVisible(False)
+            elif mode == "drill":
+                self.empty_title.setText("No drill matches yet")
+                self.empty_sub.setText("Scenario drills and targeted practice are coming in a future update.")
+                self.empty_go.setVisible(False)
+            else:
+                self.empty_title.setText("No saved matches yet")
+                self.empty_sub.setText("Play a match in Fight: it is saved automatically when it ends or "
+                                       "when you start a new one.")
+                self.empty_go.setVisible(True)
         row = 0
-        if select_id is not None:
-            row = next((i for i, m in enumerate(self.metas) if m.match_id == select_id), 0)
+        if target_id is not None:
+            row = next((i for i, m in enumerate(self.metas) if m.match_id == target_id), 0)
         if self.metas:
             self.list.setCurrentRow(row)
         self.show_match(self.list.currentRow())
@@ -303,6 +506,8 @@ class AnalysisPage(QWidget):
         return self.metas[i] if 0 <= i < len(self.metas) else None
 
     def show_match(self, i: int) -> None:
+        if self.is_analyzing():
+            return
         m = self.metas[i] if 0 <= i < len(self.metas) else None
         has = m is not None
         self.detail.setVisible(has)
@@ -333,6 +538,7 @@ class AnalysisPage(QWidget):
             pass
         self.review = review
         self.graph.set_review(review, m.duration_ms)
+        self._populate_moments()
         if review is not None:
             self.grades.setText(f"<b>Accuracy {review.accuracy:.0f}%</b>&nbsp;&nbsp;&nbsp;&nbsp;"
                                 f"{grade_chips_html(review)}")
@@ -345,14 +551,72 @@ class AnalysisPage(QWidget):
         self.slider.blockSignals(False)
         self._time_changed(self.slider.value())
         replayable = m.mode == "practice" and m.engine_version == ENGINE_VERSION
-        self.open_btn.setEnabled(replayable)
-        self.analyze_btn.setEnabled(replayable)
-        self.slider.setEnabled(replayable)
+        has_plays = m.n_plays > 0
+        self.open_btn.setEnabled(replayable and not self.is_analyzing())
+        self.analyze_btn.setEnabled(replayable and has_plays and not self.is_analyzing())
+        self.slider.setEnabled(m.duration_ms > 0)
+        if not has_plays:
+            self.analyze_btn.setToolTip("No cards were played in this match, so there is nothing to analyze.")
+        elif not replayable:
+            self.analyze_btn.setToolTip("Matches from an older engine version cannot be re-analyzed.")
+        else:
+            self.analyze_btn.setToolTip("Grade every play and find best alternatives")
+        if not replayable:
+            self.open_btn.setToolTip("Matches from an older engine version cannot be opened in Fight.")
+        else:
+            self.open_btn.setToolTip("Open this match in Fight with the coach review, at the chosen moment")
         self.notice.setText("" if m.engine_version == ENGINE_VERSION else
                             f"Made with an older engine (v{m.engine_version}): summary and saved review only, "
                             "it can't be replayed.")
         self.notice.setVisible(bool(self.notice.text()))
         self.foot.setText(f"card data {m.data_version or 'unknown'} · id {m.match_id}")
+
+    def _populate_moments(self) -> None:
+        self.moments_list.blockSignals(True)
+        self.moments_list.clear()
+        if self.review is None or not self.review.moves:
+            self.moments_empty.setText("Not analyzed yet. Press Analyze to find key moments.")
+            self.moments_empty.setVisible(True)
+            self.moments_list.setVisible(False)
+            self.mistakes_only.setVisible(False)
+            self.moments_list.blockSignals(False)
+            return
+
+        self.moments_empty.setVisible(False)
+        self.moments_list.setVisible(True)
+        self.mistakes_only.setVisible(True)
+        moves = self.review.moves
+        if self.mistakes_only.isChecked():
+            targets = [mv for mv in moves if mv.label in ("blunder", "mistake", "inaccuracy", "brilliant")]
+        else:
+            targets = list(moves)
+
+        if not targets:
+            it = QListWidgetItem("★ Clean match — no mistakes found!")
+            it.setForeground(QColor("#5ad15a"))
+            self.moments_list.addItem(it)
+        else:
+            for mv in targets:
+                col = LABEL_COLOR.get(mv.label, QColor(C["text"]))
+                name = self._card_name(mv.actual.card_id)
+                swing = f"−{mv.loss * 100:.0f}%" if mv.loss > 0.005 else "±0%"
+                sym = mv.symbol or "·"
+                it = QListWidgetItem(f"{mmss(mv.t_ms)}   {name:<16} {sym} {mv.label_text:<12} {swing}")
+                it.setData(Qt.UserRole, mv.t_ms)
+                it.setForeground(col)
+                it.setToolTip(tooltip_html(mv, self._card_name))
+                self.moments_list.addItem(it)
+        self.moments_list.blockSignals(False)
+
+    def _moment_selected(self, row: int) -> None:
+        if row < 0 or not self.review or not self.review.moves:
+            return
+        it = self.moments_list.item(row)
+        if not it:
+            return
+        t_ms = it.data(Qt.UserRole)
+        if t_ms is not None:
+            self.slider.setValue(t_ms)
 
     def _move_clicked(self, i: int) -> None:
         if self.review and 0 <= i < len(self.review.moves):
@@ -372,12 +636,30 @@ class AnalysisPage(QWidget):
             mv = near if abs(near.t_ms - t) <= 1500 else None
         if mv is not None:
             col = LABEL_COLOR[mv.label].name()
-            name = self.shell.fight.session.db.cards.get(mv.actual.card_id, {}).get("name", mv.actual.card_id)
+            name = self._card_name(mv.actual.card_id)
             self.moment.setText(f"{mmss(mv.t_ms)} · your {name} — <span style='color:{col}; font-weight:700'>"
                                 f"{mv.label_text} {mv.symbol}</span> (−{mv.loss * 100:.0f}% win chance)")
+            self.moments_list.blockSignals(True)
+            matched = False
+            for r in range(self.moments_list.count()):
+                item = self.moments_list.item(r)
+                if item and item.data(Qt.UserRole) == mv.t_ms:
+                    self.moments_list.setCurrentRow(r)
+                    matched = True
+                    break
+            if not matched:
+                self.moments_list.setCurrentRow(-1)
+            self.moments_list.blockSignals(False)
+            idx = next((k for k, m_ in enumerate(self.review.moves) if m_.t_ms == mv.t_ms), None)
+            if idx is not None and self.graph.selected != idx:
+                self.graph.selected = idx
+                self.graph.update()
         else:
             self.moment.setText(f"<span style='color:{C['muted']}'>Drag the slider or click the graph to choose "
                                 "where the review opens. Click a dot to open at that play.</span>")
+            self.moments_list.blockSignals(True)
+            self.moments_list.setCurrentRow(-1)
+            self.moments_list.blockSignals(False)
         if self.graph.selected is not None and self.review is not None and (
                 self.graph.selected >= len(self.review.moves) or self.review.moves[self.graph.selected].t_ms != t):
             self.graph.selected = None
@@ -387,10 +669,16 @@ class AnalysisPage(QWidget):
         m = self.selected()
         if m is None:
             return
+        if analyze and m.n_plays == 0:
+            QMessageBox.information(self, "Analyze match",
+                                    "No cards were played in this match, so there is nothing to analyze.")
+            return
         t = self.slider.value()
         self.shell.open_match(m.match_id, analyze=analyze, at_ms=t if t < m.duration_ms else None)
 
     def delete_selected(self) -> None:
+        if self.is_analyzing():
+            return
         m = self.selected()
         if m is None:
             return
@@ -398,7 +686,96 @@ class AnalysisPage(QWidget):
                                 "This removes its saved review too.") != QMessageBox.Yes:
             return
         self.shell.store.delete(m.match_id)
+        if self.shell.fight.session.match_id == m.match_id:
+            self.shell.fight.session.match_id = None
+            self.shell.fight.session.loaded_from = None
         self.reload()
+
+    def is_analyzing(self) -> bool:
+        return self.worker is not None and self.worker.isRunning()
+
+    def wait_analysis(self, timeout_ms: int = 2000) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            self.worker.wait(timeout_ms)
+
+    def cancel_analysis(self) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            self.progress_label.setText("Stopping…")
+            self.worker.cancel()
+
+    def _escape(self) -> None:
+        if self.is_analyzing():
+            self.cancel_analysis()
+
+    def start_in_place_analysis(self) -> None:
+        m = self.selected()
+        if m is None or self.is_analyzing():
+            return
+        if m.n_plays == 0:
+            QMessageBox.information(self, "Analyze match",
+                                    "No cards were played in this match, so there is nothing to analyze.")
+            return
+        if m.engine_version != ENGINE_VERSION:
+            QMessageBox.information(self, "Analyze match",
+                                    f"This match was played on an older engine (v{m.engine_version}, now v{ENGINE_VERSION}), "
+                                    "so it cannot be re-analyzed.")
+            return
+
+        self._set_analyzing(True)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setValue(0)
+        self.progress_label.setText(f"Analyzing {m.title}… 0%")
+        self.notice.setText("")
+
+        worker = AnalysisWorker(self.shell.store, m.match_id, self.shell.fight.session.db, parent=self)
+        worker.progress.connect(self._on_worker_progress)
+        worker.analysisComplete.connect(self._on_worker_complete)
+        worker.analysisFailed.connect(self._on_worker_failed)
+        worker.analysisCancelled.connect(self._on_worker_cancelled)
+        self.worker = worker
+        worker.start()
+
+    def _set_analyzing(self, busy: bool) -> None:
+        self.busy_box.setVisible(busy)
+        self.analyze_btn.setEnabled(not busy)
+        self.open_btn.setEnabled(not busy)
+        self.delete_btn.setEnabled(not busy)
+        self.filter.setEnabled(not busy)
+        self.outcome_filter.setEnabled(not busy)
+        self.list.setEnabled(not busy)
+
+    def _on_worker_progress(self, done: int, total: int) -> None:
+        total = max(total, 1)
+        pct = 100 * done // total
+        self.progress_bar.setMaximum(total)
+        self.progress_bar.setValue(done)
+        self.progress_label.setText(f"Analyzing plays 8 s ahead… {pct}% ({done}/{total})")
+
+    def _on_worker_complete(self, meta: MatchMeta, review: MatchReview) -> None:
+        self._set_analyzing(False)
+        self.worker = None
+        if self.shell.fight.session.match_id == meta.match_id:
+            self.shell.fight.session.review = review
+            self.shell.fight.review_panel.set_review(review, meta.duration_ms)
+        self.reload(select_id=meta.match_id)
+        self.notice.setText(f"✓ Analysis complete: accuracy {review.accuracy:.0f}%")
+        self.notice.setStyleSheet(f"color:{C['teal']}; font-size:12px;")
+        self.notice.setVisible(True)
+
+    def _on_worker_cancelled(self) -> None:
+        self._set_analyzing(False)
+        self.worker = None
+        self.notice.setText("Analysis stopped. Press Analyze to grade your plays.")
+        self.notice.setStyleSheet(f"color:{C['muted']}; font-size:12px;")
+        self.notice.setVisible(True)
+
+    def _on_worker_failed(self, err: str) -> None:
+        self._set_analyzing(False)
+        self.worker = None
+        self.notice.setText(f"Analysis failed: {err}")
+        self.notice.setStyleSheet(f"color:{C['warn']}; font-size:12px;")
+        self.notice.setVisible(True)
+        QMessageBox.warning(self, "Analysis failed", str(err))
 
 
 # ---------------------------------------------------------------------------
@@ -741,7 +1118,8 @@ class CRbotWindow(QMainWindow):
             sc.setEnabled(key == "fight")
         if key == "analysis":
             self.save_current()
-            self.analysis.reload(select_id=self.fight.session.match_id)
+            if not self.analysis.is_analyzing():
+                self.analysis.reload(select_id=self.fight.session.match_id)
         elif key == "account":
             self.account.refresh_freshness()
         self.nav_buttons[key].setChecked(True)
@@ -823,6 +1201,9 @@ class CRbotWindow(QMainWindow):
 
     def closeEvent(self, e) -> None:
         self.fight.cancel_analysis()
+        if hasattr(self, "analysis") and self.analysis.is_analyzing():
+            self.analysis.cancel_analysis()
+            self.analysis.wait_analysis(2000)
         try:
             self.save_current()
         finally:

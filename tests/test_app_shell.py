@@ -270,6 +270,158 @@ def test_old_engine_match_is_summary_only(shell):
     shell.store.save(meta, shell.store.load_record(mid))
     shell.show_page("analysis")
     assert not shell.analysis.open_btn.isEnabled() and "older engine" in shell.analysis.notice.text()
+    assert shell.analysis.slider.isEnabled()               # slider stays enabled to inspect moments
+
+
+def test_analysis_page_bugfixes(shell):
+    f = shell.fight
+    shell.show_page("analysis")
+    a = shell.analysis
+    # 1. Tooltip card name lookup wired up
+    assert a.graph.names is not None
+    assert a.graph.names("knight") == "Knight"
+
+    # 2. Filter empty states explained clearly
+    a.filter.setCurrentIndex(a.filter.findData("recording"))
+    assert "No recorded matches yet" in a.empty_title.text() and not a.empty_go.isVisible()
+    a.filter.setCurrentIndex(a.filter.findData("drill"))
+    assert "No drill matches yet" in a.empty_title.text() and not a.empty_go.isVisible()
+    a.filter.setCurrentIndex(a.filter.findData(None))
+    assert a.empty_go.isVisible()
+
+    # 3. Match with 0 plays has analyze button disabled with tooltip
+    from backend_engine.storage.match_store import MatchMeta, MatchRecord
+    from backend_engine.simulator.engine import ENGINE_VERSION
+    m_zero = MatchMeta(
+        match_id="20261117-000000_practice_00000000", mode="practice",
+        created="2026-11-17T00:00:00", duration_ms=5000, outcome="draw",
+        crowns=(0, 0), reason="timeout", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=0, engine_version=ENGINE_VERSION,
+    )
+    rec_zero = MatchRecord({}, [], 5000, "0" * 16)
+    shell.store.save(m_zero, rec_zero)
+    a.reload()
+    assert not a.analyze_btn.isEnabled()
+    assert "No cards were played" in a.analyze_btn.toolTip()
+
+    # 4. Deleting active match clears fight.session.match_id
+    f.session.match_id = m_zero.match_id
+    f.session.loaded_from = m_zero.match_id
+    from PySide6.QtWidgets import QMessageBox
+    orig_question = QMessageBox.question
+    QMessageBox.question = staticmethod(lambda *args, **kwargs: QMessageBox.Yes)
+    try:
+        a.delete_selected()
+        assert f.session.match_id is None and f.session.loaded_from is None
+        assert not shell.store.exists(m_zero.match_id)
+    finally:
+        QMessageBox.question = orig_question
+
+
+def test_analysis_outcome_filter_and_key_moments(shell):
+    from PySide6.QtCore import Qt
+    from backend_engine.storage.match_store import MatchMeta, MatchRecord
+    from backend_engine.simulator.engine import ENGINE_VERSION
+
+    a = shell.analysis
+    shell.show_page("analysis")
+
+    # Save a win match and a loss match
+    m_win = MatchMeta(
+        match_id="20261117-100000_practice_11111111", mode="practice",
+        created="2026-11-17T10:00:00", duration_ms=60_000, outcome="win",
+        crowns=(1, 0), reason="towers", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=2, engine_version=ENGINE_VERSION,
+    )
+    m_loss = MatchMeta(
+        match_id="20261117-110000_practice_22222222", mode="practice",
+        created="2026-11-17T11:00:00", duration_ms=90_000, outcome="loss",
+        crowns=(0, 1), reason="towers", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=2, engine_version=ENGINE_VERSION,
+    )
+    rec = MatchRecord({}, [], 60_000, "0" * 16)
+    rev = MatchReview([(0, 0.5), (30000, 0.6)], [
+        MoveReview(1, 10000, Candidate("knight", 8.5, 9.5), 0.5, 0.45, 0.55, 0.5, Candidate(None), 0.10, "mistake", 5),
+        MoveReview(2, 25000, Candidate("cannon", 9.5, 12.5), 0.5, 0.5, 0.5, 0.5, Candidate(None), 0.0, "good", 5),
+    ], None, {})
+    shell.store.save(m_win, rec, rev)
+    shell.store.save(m_loss, rec, None)
+    a.reload()
+
+    # 1. Outcome filtering
+    assert len(a.metas) == 2
+    a.outcome_filter.setCurrentIndex(a.outcome_filter.findData("win"))
+    assert len(a.metas) == 1 and a.metas[0].outcome == "win"
+    a.outcome_filter.setCurrentIndex(a.outcome_filter.findData("loss"))
+    assert len(a.metas) == 1 and a.metas[0].outcome == "loss"
+    a.outcome_filter.setCurrentIndex(a.outcome_filter.findData("draw"))
+    assert len(a.metas) == 0 and "No draw matches found" in a.empty_title.text()
+    a.outcome_filter.setCurrentIndex(a.outcome_filter.findData(None))
+    assert len(a.metas) == 2
+
+    # 2. Key moments list
+    # Select m_win (which has rev)
+    win_row = next(i for i, m in enumerate(a.metas) if m.match_id == m_win.match_id)
+    a.list.setCurrentRow(win_row)
+    assert a.moments_list.isVisible()
+    # By default, mistakes_only is True -> only 1 mistake (the good play is excluded)
+    assert a.moments_list.count() == 1
+    item = a.moments_list.item(0)
+    assert "0:10" in item.text() and "Mistake" in item.text()
+    assert item.data(Qt.UserRole) == 10000
+
+    # Clicking moment jumps slider and updates text
+    a.moments_list.setCurrentRow(0)
+    a._moment_selected(0)
+    assert a.slider.value() == 10000
+    assert "0:10" in a.time_label.text()
+    assert "your Knight" in a.moment.text()
+
+    # Toggling mistakes_only to False shows all 2 moves
+    a.mistakes_only.setChecked(False)
+    assert a.moments_list.count() == 2
+
+    # Select m_loss (not analyzed)
+    loss_row = next(i for i, m in enumerate(a.metas) if m.match_id == m_loss.match_id)
+    a.list.setCurrentRow(loss_row)
+    assert not a.moments_list.isVisible()
+    assert a.moments_empty.isVisible()
+
+
+def test_analysis_in_place_background(shell):
+    f = shell.fight
+    play_at(f.session, 1000, 8.5, 10.5)
+    f.session.tick(20 * 3)
+    mid = shell.save_current()
+    assert mid is not None
+
+    shell.show_page("analysis")
+    a = shell.analysis
+    a.reload(select_id=mid)
+    assert shell.current_page() == "analysis"
+    assert a.selected().match_id == mid
+    assert not a.selected().analyzed
+    assert not a.is_analyzing()
+    assert not a.busy_box.isVisible()
+
+    # Trigger in-place analysis
+    a.analyze_btn.click()
+    assert a.is_analyzing()
+    assert a.busy_box.isVisible()
+    assert not a.analyze_btn.isEnabled()
+    assert shell.current_page() == "analysis"  # Stayed on Analysis page without jumping to Fight
+
+    # Wait for background analysis to finish
+    a.wait_analysis(15000)
+    from PySide6.QtWidgets import QApplication
+    QApplication.processEvents()
+
+    assert not a.is_analyzing()
+    assert not a.busy_box.isVisible()
+    assert a.selected().analyzed
+    assert a.review is not None
+    assert "Analysis complete" in a.notice.text()
+    assert a.moments_card.isVisible()
 
 
 def test_sidebar_hidden_while_live_and_analysis_never_locked(shell):
@@ -292,3 +444,80 @@ def test_sidebar_hidden_while_live_and_analysis_never_locked(shell):
     f.analyzing = False
     f.busyChanged.emit(False)
     assert shell.current_page() == "analysis"
+
+
+def test_analysis_sorting(shell):
+    from backend_engine.storage.match_store import MatchMeta, MatchRecord
+    from backend_engine.simulator.engine import ENGINE_VERSION
+
+    a = shell.analysis
+    shell.show_page("analysis")
+
+    m1 = MatchMeta(
+        match_id="20261117-090000_practice_11111111", mode="practice",
+        created="2026-11-17T09:00:00", duration_ms=120_000, outcome="loss",
+        crowns=(0, 1), reason="towers", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=5, accuracy=45.0, counts={"blunder": 3, "mistake": 1},
+        engine_version=ENGINE_VERSION,
+    )
+    m2 = MatchMeta(
+        match_id="20261117-100000_practice_22222222", mode="practice",
+        created="2026-11-17T10:00:00", duration_ms=60_000, outcome="win",
+        crowns=(1, 0), reason="towers", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=3, accuracy=88.0, counts={"blunder": 0, "mistake": 1},
+        engine_version=ENGINE_VERSION,
+    )
+    m3 = MatchMeta(
+        match_id="20261117-110000_practice_33333333", mode="practice",
+        created="2026-11-17T11:00:00", duration_ms=180_000, outcome="draw",
+        crowns=(0, 0), reason="timeout", player_deck=tuple(HOG26), opp_deck=tuple(HOG26),
+        n_plays=4, accuracy=None, counts={},
+        engine_version=ENGINE_VERSION,
+    )
+    rec = MatchRecord({}, [], 60_000, "0" * 16)
+    shell.store.save(m1, rec, None)
+    shell.store.save(m2, rec, None)
+    shell.store.save(m3, rec, None)
+    a.reload()
+
+    # 1. Newest first (default)
+    a.sort_box.setCurrentIndex(a.sort_box.findData("newest"))
+    assert [m.match_id for m in a.metas] == [m3.match_id, m2.match_id, m1.match_id]
+
+    # 2. Oldest first
+    a.sort_box.setCurrentIndex(a.sort_box.findData("oldest"))
+    assert [m.match_id for m in a.metas] == [m1.match_id, m2.match_id, m3.match_id]
+
+    # 3. Lowest accuracy (worst performance first, unanalyzed at end)
+    a.sort_box.setCurrentIndex(a.sort_box.findData("worst_acc"))
+    assert [m.match_id for m in a.metas] == [m1.match_id, m2.match_id, m3.match_id]
+
+    # 4. Highest accuracy (best performance first, unanalyzed at end)
+    a.sort_box.setCurrentIndex(a.sort_box.findData("best_acc"))
+    assert [m.match_id for m in a.metas] == [m2.match_id, m1.match_id, m3.match_id]
+
+    # 5. Most mistakes (most blunders+mistakes first, unanalyzed at end)
+    a.sort_box.setCurrentIndex(a.sort_box.findData("most_mistakes"))
+    assert [m.match_id for m in a.metas] == [m1.match_id, m2.match_id, m3.match_id]
+
+    # 6. Longest duration
+    a.sort_box.setCurrentIndex(a.sort_box.findData("longest"))
+    assert [m.match_id for m in a.metas] == [m3.match_id, m1.match_id, m2.match_id]
+
+    # 7. Shortest duration
+    a.sort_box.setCurrentIndex(a.sort_box.findData("shortest"))
+    assert [m.match_id for m in a.metas] == [m2.match_id, m1.match_id, m3.match_id]
+
+    # 8. Selection preservation across sorting change
+    # Select m1 (currently row 1 in "shortest": m2, m1, m3)
+    a.list.setCurrentRow(1)
+    assert a.selected().match_id == m1.match_id
+    # Switch to "longest" (m3, m1, m2) -> m1 should still be selected, now at row 1
+    a.sort_box.setCurrentIndex(a.sort_box.findData("longest"))
+    assert a.selected().match_id == m1.match_id
+    assert a.list.currentRow() == 1
+    # Switch to "oldest" (m1, m2, m3) -> m1 should still be selected, now at row 0
+    a.sort_box.setCurrentIndex(a.sort_box.findData("oldest"))
+    assert a.selected().match_id == m1.match_id
+    assert a.list.currentRow() == 0
+
