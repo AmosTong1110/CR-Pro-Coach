@@ -236,10 +236,11 @@ class ReviewPanel(QWidget):
     moveSelected = Signal(int)
 
     def __init__(self, names: Callable[[str], str], on_analyze, on_take_over, on_exit=None, on_cancel=None,
-                 parent=None):
+                 on_show_me=None, parent=None):
         super().__init__(parent)
         self.names = names
         self.review: Optional[MatchReview] = None
+        self.selected_move_index: Optional[int] = None
         self.diverged = False
         self.graph = WinRateGraph()
         self.graph.names = names
@@ -289,14 +290,20 @@ class ReviewPanel(QWidget):
         self.detail.setMinimumHeight(96)
         self.detail.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
-        self.take_btn = cls(QPushButton("▶  Take over from here"), "primary")
+        self.take_btn = cls(QPushButton("▶  Take over"), "primary")
         self.take_btn.setToolTip("Play on from the moment shown on the board (3-2-1 countdown)")
         self.take_btn.setEnabled(False)
         self.take_btn.clicked.connect(on_take_over)
+        self.show_me_btn = cls(QPushButton("👁  Show me (S)"), "ghost")
+        self.show_me_btn.setToolTip("Simulate and watch how the recommended move plays out for 8 seconds (S)")
+        self.show_me_btn.setEnabled(False)
+        if on_show_me:
+            self.show_me_btn.clicked.connect(on_show_me)
         self.analyze_btn = cls(QPushButton("Analyze (R)"), "ghost")
         self.analyze_btn.clicked.connect(on_analyze)
         row = QHBoxLayout()
         row.addWidget(self.take_btn, 1)
+        row.addWidget(self.show_me_btn)
         row.addWidget(self.analyze_btn)
 
         self.progress = QProgressBar()
@@ -342,15 +349,19 @@ class ReviewPanel(QWidget):
         if busy:
             self.progress.setMaximum(1)
             self.progress.setValue(0)
-        for w in (self.list, self.take_btn, self.analyze_btn, self.exit_btn):
+        for w in (self.list, self.take_btn, self.show_me_btn, self.analyze_btn, self.exit_btn):
             w.setEnabled(not busy)
 
     def set_review(self, review: Optional[MatchReview], end_ms: int) -> None:
         self.review = review
+        self.selected_move_index = None
         self.diverged = False
         self.graph.set_review(review, end_ms)
         self.list.blockSignals(True)
         self.list.clear()
+        self.show_me_btn.setEnabled(False)
+        self.show_me_btn.setText("👁  Show me (S)")
+        self.show_me_btn.setStyleSheet("")
         self._placeholder()
         if review is None:
             self.accuracy.setText("—")
@@ -380,6 +391,7 @@ class ReviewPanel(QWidget):
     def select(self, i: int, from_list: bool = False) -> None:
         if not self.review or not (0 <= i < len(self.review.moves)):
             return
+        self.selected_move_index = i
         mv = self.review.moves[i]
         self.graph.selected = i
         self.graph.update()
@@ -388,9 +400,14 @@ class ReviewPanel(QWidget):
             self.list.setCurrentRow(i)
             self.list.blockSignals(False)
         self.detail.setText(describe(mv, self.names))
+        self.show_me_btn.setEnabled(True)
+        rec_name = "Wait" if mv.best.is_wait else self.names(mv.best.card_id)
+        self.show_me_btn.setToolTip(f"Simulate 8s ahead with recommended play: {rec_name} (S)")
         self.moveSelected.emit(i)
 
     def clear_selection(self) -> None:
+        self.selected_move_index = None
+        self.show_me_btn.setEnabled(False)
         self.graph.selected = None
         self.graph.update()
         self.list.blockSignals(True)
@@ -398,6 +415,11 @@ class ReviewPanel(QWidget):
         self.list.setCurrentRow(-1)
         self.list.blockSignals(False)
         self._placeholder()
+
+    def selected_move(self) -> Optional[MoveReview]:
+        if self.review and self.selected_move_index is not None and 0 <= self.selected_move_index < len(self.review.moves):
+            return self.review.moves[self.selected_move_index]
+        return None
 
 
 def where(x: float, y: float) -> str:

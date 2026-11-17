@@ -1113,6 +1113,8 @@ class CRbotWindow(QMainWindow):
             self.fight.cancel_analysis()
             return
         if key != "fight":
+            if getattr(self.fight, "showing_me", False):
+                self.fight.stop_show_me()
             self.fight.pause_for_away()         # never let a match run unseen
         for sc in self._fight_shortcuts:        # fight hotkeys (Space, 1-4, N, …) only on the Fight page
             sc.setEnabled(key == "fight")
@@ -1200,6 +1202,8 @@ class CRbotWindow(QMainWindow):
         self.fight.edit_decks()
 
     def closeEvent(self, e) -> None:
+        if getattr(self.fight, "showing_me", False):
+            self.fight.stop_show_me()
         self.fight.cancel_analysis()
         if hasattr(self, "analysis") and self.analysis.is_analyzing():
             self.analysis.cancel_analysis()

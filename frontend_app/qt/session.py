@@ -294,6 +294,21 @@ class GameSession:
             r.trackers[s].restore(snap)
         return m, r
 
+    def fork_session(self, cp: Optional[Checkpoint] = None) -> "GameSession":
+        """Fork an independent, fully playable GameSession clone at checkpoint `cp`
+        (defaults to current match state). Used for interactive 'Show me' rollouts."""
+        cp = cp or self._capture()
+        s = GameSession(self.db, self.cfg)
+        s.started_at = self.started_at
+        s.match_id = None
+        s.loaded_from = self.match_id or self.loaded_from
+        s.review = self.review
+        s._restore(cp)
+        s.timeline = [c for c in self.timeline if c.t_ms <= cp.t_ms]
+        s.pre_play = {k: v for k, v in self.pre_play.items() if v.t_ms <= cp.t_ms}
+        s.redo = []
+        return s
+
     def analyze(self, progress=None, horizon_ms: int = 8000) -> MatchReview:
         """启动赛后复盘教练：计算胜率曲线并深度复盘玩家本局所有出牌"""
         analyzer = CoachAnalyzer(self.fork, horizon_ms=horizon_ms)

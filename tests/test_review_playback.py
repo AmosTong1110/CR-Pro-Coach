@@ -165,3 +165,104 @@ def test_play_and_stop_buttons(win):
     assert w.playing and s.match.t_ms == 0
     w.exit_review()
     assert not w.playing
+
+
+def test_fork_session():
+    s = _played_session(until_ms=30_000)
+    cp = s._capture()
+    forked = s.fork_session(cp)
+    assert forked.match.t_ms == s.match.t_ms == 30_000
+    assert forked.match.state_hash() == s.match.state_hash()
+    assert forked.match is not s.match
+    assert forked.runner is not s.runner
+
+    # Mutating the fork does not touch the original session
+    h0 = s.match.state_hash()
+    forked.tick(10)
+    assert forked.match.t_ms == 30_000 + 10 * 50
+    assert s.match.t_ms == 30_000
+    assert s.match.state_hash() == h0
+
+
+def test_show_me_animated_rollout(win):
+    from frontend_app.qt.app import TICK_MS
+    w = win
+    s = w.session
+    first_human_ev = next(e for e in s.match.events if e.side == HUMAN)
+    mv_blunder = MoveReview(
+        first_human_ev.event_id, first_human_ev.t_ms,
+        Candidate(first_human_ev.card_id, first_human_ev.tile.x, first_human_ev.tile.y),
+        0.5, 0.25, 0.70, 0.55,
+        Candidate("knight", 8.5, 6.0), 0.45, "blunder", 30
+    )
+    mv_wait = MoveReview(
+        first_human_ev.event_id, first_human_ev.t_ms,
+        Candidate(first_human_ev.card_id, first_human_ev.tile.x, first_human_ev.tile.y),
+        0.5, 0.25, 0.60, 0.60,
+        Candidate(None), 0.35, "blunder", 30
+    )
+    review = MatchReview([(0, 0.5), (s.max_known_ms(), 0.5)], [mv_blunder, mv_wait])
+    w.session.analyze = lambda **_: review
+    w._set_mode("ended")
+    w.run_review()
+    assert w.mode == "review"
+
+    # Select the blunder move
+    w.review_panel.select(0)
+    assert w.review_panel.show_me_btn.isEnabled()
+    assert "Show me" in w.review_panel.show_me_btn.text()
+    assert not w.showing_me
+
+    # 1. Start Show Me
+    origin = w.session
+    origin_t = origin.match.t_ms
+    w.review_panel.show_me_btn.click()
+    assert w.showing_me
+    assert "Stop" in w.review_panel.show_me_btn.text()
+    assert w._show_me_origin_session is origin
+    assert w.session is not origin
+    assert "Show me: Knight" in w.board.banner
+    # The actual play is drawn as a red ghost during rollout
+    assert any(kind == "actual" for _, _, _, kind in w.board.ghosts)
+
+    # 2. Advance ticks during Show Me
+    start_ms = w._show_me_start_ms
+    for _ in range(10):
+        w.on_timer()
+    assert w.showing_me
+    assert w.session.match.t_ms == start_ms + 10 * TICK_MS
+    assert origin.match.t_ms == origin_t  # Origin untouched
+
+    # 3. Simulate until 8.0s rollout ends
+    while w.session.match.t_ms < w._show_me_end_ms:
+        w.on_timer()
+    w.on_timer()
+    assert "complete" in w.board.banner
+    assert "Exit preview" in w.review_panel.show_me_btn.text()
+
+    # 4. Revert / Stop Show Me back to review
+    w.review_panel.show_me_btn.click()
+    assert not w.showing_me
+    assert w.session is origin
+    assert w.board.session is origin
+    assert "Show me" in w.review_panel.show_me_btn.text()
+
+    # 5. Show Me on a "Wait" recommendation
+    w.review_panel.select(1)
+    w.toggle_show_me()
+    assert w.showing_me
+    assert "Wait" in w.board.banner
+    w.on_timer()
+    w.stop_show_me()
+    assert not w.showing_me
+
+    # 6. Take over directly from Show Me
+    w.review_panel.select(0)
+    w.toggle_show_me()
+    assert w.showing_me
+    forked_branch = w.session
+    w.review_panel.take_btn.click()
+    assert not w.showing_me
+    assert w.session is forked_branch
+    assert w.mode == "live"
+

@@ -479,6 +479,12 @@ class MainWindow(QMainWindow):
         self._cancel = False
         self.away_paused = False
         self.playing = False                    # review playback (watch the match like a video)
+        self.showing_me = False                 # "Show me" animated rollout of recommended line
+        self._show_me_origin_session: Optional[GameSession] = None
+        self._show_me_start_ms = 0
+        self._show_me_end_ms = 0
+        self._show_me_move_index: Optional[int] = None
+        self._show_me_move: Optional[MoveReview] = None
         self.play_speed = 1
         self._play_actions = None
         self._banner_until: Optional[int] = None
@@ -491,7 +497,7 @@ class MainWindow(QMainWindow):
 
         names = lambda c: self.session.db.cards.get(c, {}).get("name", c)  # noqa: E731
         self.review_panel = ReviewPanel(names, self.run_review, self.take_over_review, self.exit_review,
-                                        self.cancel_analysis)
+                                        self.cancel_analysis, on_show_me=self.toggle_show_me)
         self.review_panel.moveSelected.connect(self.show_review_move)
         graph = self.review_panel.graph
         graph.setMinimumHeight(110)
@@ -587,7 +593,14 @@ class MainWindow(QMainWindow):
             QShortcut(QKeySequence(seq), self, activated=lambda: None if self.analyzing else fn())
         for i in range(4):
             key(str(i + 1), lambda i=i: self.on_hand_slot(i))
-        key(Qt.Key_Space, lambda: self.toggle_playback() if self.mode == REVIEW else self.start_match())
+        def _on_space():
+            if self.mode != REVIEW:
+                self.start_match()
+            elif self.showing_me:
+                self.stop_show_me()
+            else:
+                self.toggle_playback()
+        key(Qt.Key_Space, _on_space)
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._escape)
         key("A", self.use_ability)
         key("N", self.new_match)
@@ -595,6 +608,7 @@ class MainWindow(QMainWindow):
         key("U", lambda: self.step(-10))
         key("F", lambda: self.step(10))
         key("R", self.run_review)
+        key("S", self.toggle_show_me)
 
         self.timer = QTimer(self)
         self.timer.setInterval(TICK_MS)
@@ -820,6 +834,9 @@ class MainWindow(QMainWindow):
 
     # -- simulation loop --------------------------------------------------------------------------------------
     def on_timer(self) -> None:
+        if self.showing_me:
+            self._show_me_tick()
+            return
         if self.playing:
             self._playback_tick()
             return
@@ -925,6 +942,8 @@ class MainWindow(QMainWindow):
 
     def exit_review(self) -> None:
         """Leave the review: back to the final position and the result screen."""
+        if self.showing_me:
+            self.stop_show_me()
         if self.analyzing:
             self.cancel_analysis()
             return
@@ -937,13 +956,17 @@ class MainWindow(QMainWindow):
         self.flash("")
 
     def _escape(self) -> None:
-        if self.analyzing:
+        if self.showing_me:
+            self.stop_show_me()
+        elif self.analyzing:
             self.cancel_analysis()
         else:
             self.select(None)
 
     def show_review_move(self, i: int) -> None:
         """Show graded play i on the board: just before it, your play in red, the recommendation in green."""
+        if self.showing_me:
+            self.stop_show_me()
         self.stop_playback()
         review = self.review_panel.review
         mv = review.moves[i]
@@ -964,9 +987,112 @@ class MainWindow(QMainWindow):
         self.board.banner = f"{mmss(mv.t_ms)}  {mv.label_text} {mv.symbol}  ·  {tip}"
         self.refresh()
 
+    # -- show me (animate recommended line) --------------------------------------------------------------------
+    def toggle_show_me(self) -> None:
+        """Toggle Show Me simulation of the recommended line (S)."""
+        if getattr(self, "showing_me", False):
+            self.stop_show_me()
+        else:
+            self.start_show_me()
+
+    def start_show_me(self) -> None:
+        """Simulate the coach's recommended alternative 8 seconds ahead in an isolated fork."""
+        if self.mode != REVIEW or self.analyzing:
+            return
+        mv = self.review_panel.selected_move()
+        if mv is None:
+            self.flash("Select a move first, then press Show me")
+            return
+        self.stop_playback()
+        self._stop_countdown()
+
+        cp = self.session.pre_play.get(mv.event_id)
+        if cp is None:
+            self.flash("That play is no longer on this timeline; re-analyze")
+            return
+
+        origin = self.session
+        forked = origin.fork_session(cp)
+        self._show_me_origin_session = origin
+        self._show_me_move_index = self.review_panel.selected_move_index
+        self._show_me_move = mv
+        self._show_me_start_ms = forked.match.t_ms
+        self._show_me_end_ms = self._show_me_start_ms + 8000
+        self.showing_me = True
+
+        b, a = mv.best, mv.actual
+        if not b.is_wait:
+            res = forked.play(b.card_id, b.x, b.y)
+            if not res.ok:
+                self.flash(f"Could not simulate {b.card_id}: {res.reason}")
+                self.stop_show_me()
+                return
+            rec_name = self.session.db.cards.get(b.card_id, {}).get("name", b.card_id)
+        else:
+            rec_name = "Wait (hold elixir)"
+
+        self.session = forked
+        self.board.session = forked
+        self.counter.session = forked
+        self.board.ghosts = [(a.card_id, a.x, a.y, "actual")]
+        diff_str = f"+{mv.loss:.0%} win chance" if mv.loss > 0.01 else "best move"
+        self.board.banner = f"👁 Show me: {rec_name} ({diff_str})  ·  0.0s / 8.0s  ·  Stop (S/Space) to exit"
+        self.review_panel.show_me_btn.setText("■  Stop (S)")
+        self.review_panel.show_me_btn.setStyleSheet(f"background:{C['loss']}; color:white;")
+        self.flash(f"Simulating recommended line for 8s ({rec_name}) · Press Stop or S to exit")
+        self.refresh()
+
+    def _show_me_tick(self) -> None:
+        cur_t = self.session.match.t_ms
+        mv = self._show_me_move
+        if mv is None:
+            self.stop_show_me()
+            return
+        b = mv.best
+        rec_name = "Wait (hold elixir)" if b.is_wait else self.session.db.cards.get(b.card_id, {}).get("name", b.card_id)
+        diff_str = f"+{mv.loss:.0%} win chance" if mv.loss > 0.01 else "optimal"
+
+        if cur_t >= self._show_me_end_ms or self.session.result is not None:
+            self.board.banner = f"✓ Recommended line complete: win chance {mv.v_best:.0%} ({diff_str})  ·  Take over or Stop to exit"
+            self.review_panel.show_me_btn.setText("↺  Exit preview")
+            self.refresh()
+            return
+
+        self.add_log(self.session.tick(self.play_speed))
+        cur_t = self.session.match.t_ms
+        elapsed = min(8.0, max(0.0, (cur_t - self._show_me_start_ms) / 1000.0))
+        self.board.banner = f"👁 Show me: {rec_name} ({diff_str})  ·  {elapsed:.1f}s / 8.0s  ·  Stop (S/Space) to exit"
+        self.refresh()
+
+    def stop_show_me(self) -> None:
+        if not getattr(self, "showing_me", False):
+            return
+        origin = self._show_me_origin_session
+        idx = self._show_me_move_index
+        self.showing_me = False
+        self._show_me_origin_session = None
+        self._show_me_move_index = None
+        self._show_me_move = None
+        self.review_panel.show_me_btn.setText("👁  Show me (S)")
+        self.review_panel.show_me_btn.setStyleSheet("")
+        if origin is not None:
+            self.session = origin
+            self.board.session = origin
+            self.counter.session = origin
+            self.board.ghosts = []
+            self.board.banner = None
+            if idx is not None:
+                self.show_review_move(idx)
+            else:
+                self.refresh()
+            self.flash("Returned to review")
+
     # -- review playback ---------------------------------------------------------------------------------------
     def toggle_playback(self) -> None:
         """Play / Stop: watch the reviewed match from the moment on the board (Space)."""
+        if self.showing_me:
+            self.stop_show_me()
+            return
         if self.playing:
             self.stop_playback()
             self.flash("Stopped · Take over from here, or press Play to continue")
@@ -1034,6 +1160,8 @@ class MainWindow(QMainWindow):
         """Review mode: jump straight to t_ms (no countdown, nothing runs)."""
         if self.mode != REVIEW or self.analyzing:
             return
+        if self.showing_me:
+            self.stop_show_me()
         self.stop_playback()
         if self.session.seek(int(t_ms)) is not None:
             self._after_scrub()
@@ -1053,6 +1181,8 @@ class MainWindow(QMainWindow):
         """U / F and the ⏪ / ⏩ buttons. Review: jump. Live: take over from there after a countdown."""
         if self.analyzing or self.mode not in (LIVE, REVIEW):
             return
+        if self.showing_me:
+            self.stop_show_me()
         self.stop_playback()
         s = self.session
         restored = s.rewind(-seconds) if seconds < 0 else s.forward(seconds)
@@ -1065,7 +1195,16 @@ class MainWindow(QMainWindow):
     def take_over_review(self) -> None:
         if self.analyzing:
             return
-        self.stop_playback()
+        if self.showing_me:
+            self.showing_me = False
+            self._show_me_origin_session = None
+            self._show_me_move_index = None
+            self.review_panel.show_me_btn.setText("👁  Show me (S)")
+            self.review_panel.show_me_btn.setStyleSheet("")
+            self.board.ghosts, self.board.banner = [], None
+            self.review_panel.mark_diverged()
+        else:
+            self.stop_playback()
         if self.session.result is not None:
             self.flash("This is the end of the match. Pick an earlier moment on the timeline first.")
             return
@@ -1122,6 +1261,8 @@ class MainWindow(QMainWindow):
         """Show another session (e.g. a match reopened from Analysis), with its review if it has one."""
         if self.analyzing:
             return
+        if self.showing_me:
+            self.stop_show_me()
         self.aboutToReset.emit()
         self.session = session
         self.board.session = session
