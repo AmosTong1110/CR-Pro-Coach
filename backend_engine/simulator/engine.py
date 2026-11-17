@@ -207,15 +207,20 @@ class Match:
         if not G.in_bounds(x, y):
             return "out_of_bounds"
         sx, sy = G.snap(x, y)
+        card = self.db.cards[card_id]
+        if card["type"] == "building" and "footprint_tiles" in card:
+            card_radius = card["footprint_tiles"][0] / 2.0
+        else:
+            card_radius = float(card.get("collision_radius_tiles", UNIT_RADIUS))
         blockers = [(u.x, u.y, u.radius) for u in self.units.values() if u.is_structure and u.hp > 0]
-        if any(m["kind"] == "burrow" for m in self.db.cards[card_id]["mechanics"]):
+        if any(m["kind"] == "burrow" for m in card["mechanics"]):
             # burrowing units (Miner) may be dug in anywhere on the ground: not in the river, not on a structure
             if G.region(sy) == "river" and not G.on_bridge(sx):
                 return "river"
             if any(abs(sx - bx) < br and abs(sy - by) < br for bx, by, br in blockers):
                 return "blocked_by_structure"
             return None
-        return G.deploy_check(side, self.db.cards[card_id]["type"], sx, sy, self._princess_alive(1 - side), blockers)
+        return G.deploy_check(side, card["type"], sx, sy, self._princess_alive(1 - side), blockers, radius=card_radius)
 
     # -- 出牌动作执行 ----------------------------------------------------------
     def play(self, side: int, card_id: str, x: float, y: float) -> PlayResult:

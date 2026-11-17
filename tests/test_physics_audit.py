@@ -479,3 +479,81 @@ def test_task6_the_log_rolling_knockback_direction(db):
 
     assert enemy_knight.hp < initial_hp
     assert enemy_knight.y > initial_y, f"Expected forward knockback along roll direction, got y={enemy_knight.y}"
+
+
+def test_task7_building_placement_bounds_and_river_blocking(db):
+    """Buildings cannot be placed overlapping river, outside arena, or in enemy half (even in pocket)."""
+    deck = ("cannon", "tombstone", "knight", "archers", "fireball", "the_log", "zap", "skeletons")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Placing building overlapping river
+    m.sides[0].elixir = 10.0
+    res_river = m.play(0, "cannon", 9.5, 14.5)  # top touches river (15.5)
+    assert not res_river.ok
+    assert res_river.reason == "river"
+
+    # Placing building in enemy half
+    res_enemy = m.play(0, "cannon", 9.5, 20.5)
+    assert not res_enemy.ok
+    assert res_enemy.reason == "enemy_half"
+
+
+def test_task7_building_overlapping_placement_blocked(db):
+    """Two buildings cannot be placed overlapping each other's footprints."""
+    deck = ("cannon", "tombstone", "knight", "archers", "fireball", "the_log", "zap", "skeletons")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    res1 = m.play(0, "cannon", 9.5, 9.5)
+    assert res1.ok
+
+    m.sides[0].elixir = 10.0
+    # Attempt to place Tombstone overlapping the Cannon
+    res2 = m.play(0, "tombstone", 10.5, 9.5)
+    assert not res2.ok
+    assert res2.reason == "blocked_by_structure"
+
+
+def test_task7_building_lifetime_decay(db):
+    """Defensive buildings lose HP steadily over their lifetime and perish upon expiration."""
+    deck = ("cannon", "tombstone", "knight", "archers", "fireball", "the_log", "zap", "skeletons")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    res = m.play(0, "cannon", 9.5, 9.5)
+    assert res.ok
+    cannon = [u for u in m.units.values() if u.card_id == "cannon" and u.side == 0][0]
+    initial_hp = cannon.hp
+
+    # Step for 320 ticks (1.0s deploy + 15.0s decay = exactly 50% lifetime elapsed)
+    for _ in range(320):
+        m.step()
+
+    # Half HP should remain
+    assert abs(cannon.hp - initial_hp / 2.0) <= 5.0, f"Expected ~{initial_hp/2}, got {cannon.hp}"
+
+    # Step remaining 300 ticks to finish lifetime
+    for _ in range(305):
+        m.step()
+
+    assert cannon.hp <= 0 or cannon.uid not in m.units
+
+
+def test_task7_spawner_tombstone_death_spawns(db):
+    """Tombstone spawner spawns 4 skeletons upon death."""
+    deck = ("tombstone", "cannon", "knight", "archers", "fireball", "the_log", "zap", "skeletons")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    res = m.play(0, "tombstone", 9.5, 8.5)
+    assert res.ok
+    tomb = [u for u in m.units.values() if u.card_id == "tombstone" and u.side == 0][0]
+
+    # Destroy tombstone
+    tomb.hp = 0
+    m.step()
+
+    # Verify 4 death-spawned skeletons appear on side 0
+    skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 0]
+    assert len(skels) == 4

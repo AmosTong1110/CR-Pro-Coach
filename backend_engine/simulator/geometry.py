@@ -104,6 +104,7 @@ def deploy_check(
     y: float,
     enemy_princess_alive: Dict[str, bool],
     blockers: Iterable[Tuple[float, float, float]] = (),
+    radius: float = 0.5,
 ) -> Optional[str]:
     """
     下牌物理合法性校验 (Deploy Validity Check)
@@ -115,23 +116,41 @@ def deploy_check(
       x, y: 已吸附到中心点的目标坐标
       enemy_princess_alive: 敌方左右公主塔存活状态字典 {"left": bool, "right": bool}
       blockers: 场上现存防御塔或建筑的占地范围集合 [(x, y, radius), ...]
+      radius: 本次下牌单位/建筑的几何占地半径
     """
     if not in_bounds(x, y):
         return "out_of_bounds"
     # 法术类卡牌（火球、箭雨、小电等）全图任意位置可下
     if card_type == "spell":
         return None
+    # 建筑不能超出竞技场外边界
+    if card_type == "building":
+        if x - radius < 0.0 or x + radius > W or y - radius < 0.0 or y + radius > H:
+            return "out_of_bounds"
     # 军队与建筑绝对不能直接放置在河道中央
     if region(y) == "river":
         return "river"
-    # 检查是否与场上已有防御塔或建筑模型重叠冲突
+    # 建筑严禁在敌方半场建造 (包括口袋区)
+    if card_type == "building" and region(y) != home_region(side):
+        return "enemy_half"
+    # 建筑占地范围绝对不能延伸侵入河道
+    if card_type == "building":
+        if side == 0 and y + radius > RIVER_Y0:
+            return "river"
+        if side == 1 and y - radius < RIVER_Y1:
+            return "river"
+    # 检查是否与场上已有防御塔或建筑模型重叠冲突 (建筑需考虑自身占地半径，军队检测点是否落入建筑内)
     for bx, by, br in blockers:
-        if abs(x - bx) < br and abs(y - by) < br:
+        req_dist = (radius + br - 1e-4) if card_type == "building" else br
+        if abs(x - bx) < req_dist and abs(y - by) < req_dist:
             return "blocked_by_structure"
     # 自家半场内下牌完全合法
     if region(y) == home_region(side):
         return None
-    # 破塔口袋区逻辑 (Pocket Deploy): 
+    # 建筑严禁在敌方半场建造 (包括口袋区)
+    if card_type == "building":
+        return "enemy_half"
+    # 破塔口袋区逻辑 (Pocket Deploy - 仅限军队): 
     # 若敌方某一路公主塔已被拔掉，允许在靠近河道的该路敌方半场前沿 (深度 < POCKET_DEPTH) 下兵偷袭
     depth = (y - RIVER_Y1) if side == 0 else (RIVER_Y0 - y)
     if 0 <= depth < POCKET_DEPTH and not enemy_princess_alive[lane_of(x)]:

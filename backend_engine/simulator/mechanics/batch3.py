@@ -109,3 +109,20 @@ class PeriodicSpawn(Mechanic):
                     pass
         return False
 
+
+# ---------------------------------------------------------------- Death Spawn
+@register("death_spawn")
+class DeathSpawn(Mechanic):
+    """Spawns tokens upon unit death (e.g. Tombstone spawning 4 Skeletons, Golem splitting)."""
+
+    def on_death(self, m, u) -> None:
+        p = u.params.get("death_spawn", {})
+        token = p.get("token", "skeletons")
+        count = int(p.get("count", 1))
+        eid = u.source_event_id or 0
+        try:
+            m._spawn_card_units(u.side, token, u.x, u.y, eid, False, count=count, deploy_ms=int(p.get("deploy_ms", 0)))
+        except (KeyError, ValueError):
+            pass
+
+

@@ -4702,6 +4702,84 @@
       },
       "data_source": "wiki-fandom-html:Witch",
       "data_as_of": "2026-11-16"
+    },
+    "tombstone": {
+      "name": "Tombstone",
+      "internal_name": "Tombstone",
+      "game_id": 27000001,
+      "aliases": {
+        "display": "Tombstone",
+        "hf": "tombstone",
+        "royaleapi": "tombstone",
+        "detector": [
+          "tombstone"
+        ]
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "deploy_time_s": 1.0,
+      "lifetime_s": 30.0,
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "base_stats": {
+        "hitpoints": 207
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 530
+        },
+        "12": {
+          "hitpoints": 583
+        },
+        "13": {
+          "hitpoints": 641
+        },
+        "14": {
+          "hitpoints": 705
+        },
+        "15": {
+          "hitpoints": 775
+        },
+        "16": {
+          "hitpoints": 853
+        }
+      },
+      "mechanics": [
+        {
+          "kind": "decay",
+          "params": {}
+        },
+        {
+          "kind": "pulls_building_targeters",
+          "params": {}
+        },
+        {
+          "kind": "periodic_spawn",
+          "params": {
+            "token": "skeletons",
+            "count": 1,
+            "interval_ms": 3800,
+            "initial_delay_ms": 1000
+          }
+        },
+        {
+          "kind": "death_spawn",
+          "params": {
+            "token": "skeletons",
+            "count": 4
+          }
+        }
+      ],
+      "collision_radius_tiles": 0.8,
+      "mass": 0,
+      "variants": {
+        "evo": null,
+        "hero": null
+      }
     }
   },
   "tokens": {
