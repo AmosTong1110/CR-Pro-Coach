@@ -674,3 +674,33 @@ def test_task9_match_clock_elixir_ramp_and_tiebreaker(db):
     assert m.result is not None
     assert m.result.winner == 0
     assert m.result.reason == "tiebreaker"
+
+
+def test_task10_companion_app_import_and_debug_overlay():
+    """Companion app imports cleanly, start_coach.command exists and BoardWidget overlay toggles."""
+    import sys
+    from pathlib import Path
+    from PySide6.QtWidgets import QApplication
+
+    # Verify launcher script exists and is executable
+    launcher = Path(__file__).resolve().parents[1] / "start_coach.command"
+    assert launcher.exists(), "start_coach.command must exist in repo root"
+    import os
+    assert os.access(launcher, os.X_OK), "start_coach.command must be executable"
+
+    # Verify companion app imports without ModuleNotFoundError
+    from frontend_app.companion import app as companion_app
+    assert companion_app is not None
+
+    # Verify BoardWidget Coach/Physics debug overlay toggle
+    app = QApplication.instance() or QApplication(sys.argv)
+    from frontend_app.qt.session import GameSession, SessionConfig
+    from frontend_app.qt.board import BoardWidget
+
+    sess = GameSession(cfg=SessionConfig(seed=3))
+    board = BoardWidget(sess)
+    assert board.debug_overlay is True
+    assert board.toggle_debug_overlay() is False
+    assert board.debug_overlay is False
+    assert board.toggle_debug_overlay() is True
+    assert board.debug_overlay is True

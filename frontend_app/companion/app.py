@@ -14,6 +14,11 @@ import time
 from pathlib import Path
 from typing import Optional
 
+# Ensure repository root is in sys.path when invoked directly or via script launcher
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from PySide6.QtCore import QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QGuiApplication, QKeySequence, QPainter, QPixmap, QShortcut
 from PySide6.QtWidgets import (
