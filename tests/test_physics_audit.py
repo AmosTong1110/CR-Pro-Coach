@@ -375,3 +375,107 @@ def test_task5_melee_and_ranged_attack_loops(db):
         m.step()
 
     assert enemy_knight.hp < initial_hp
+
+
+def test_task6_river_crossing_air_and_jumpers(db):
+    """Ground units require bridges to cross river, while air units and Hog Rider jump directly."""
+    deck = ("hog_rider", "knight", "minions", "fireball", "the_log", "poison", "zap", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # 1. Deploy Hog Rider near center at (9.5, 14.5)
+    m.sides[0].elixir = 10.0
+    res_hog = m.play(0, "hog_rider", 9.5, 14.5)
+    assert res_hog.ok
+    hog = [u for u in m.units.values() if u.card_id == "hog_rider" and u.side == 0][0]
+    hog.deploy_ms = 0
+
+    # 2. Deploy Knight near center at (9.5, 14.5)
+    m.sides[0].elixir = 10.0
+    res_k = m.play(0, "knight", 9.5, 14.5)
+    assert res_k.ok
+    knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 0][0]
+    knight.deploy_ms = 0
+
+    # 3. Deploy Minions (air) at (9.5, 14.5)
+    m.sides[0].elixir = 10.0
+    res_m = m.play(0, "minions", 9.5, 14.5)
+    assert res_m.ok
+    minion = [u for u in m.units.values() if u.card_id == "minions" and u.side == 0][0]
+    minion.deploy_ms = 0
+
+    # Step match for 50 ticks (2.5s)
+    for _ in range(50):
+        m.step()
+
+    # Hog Rider jumped across river directly (already in enemy territory y > 17.0)
+    assert hog.y > 17.0, f"Hog should have jumped across river, but y={hog.y}"
+
+    # Minions flew straight across river (layer == 'air')
+    assert minion.y > 17.0, f"Minions should have flown across river, but y={minion.y}"
+
+    # Ground Knight CANNOT cross river at x ~ 9.5; must still be on south bank (y < 15.0) routing toward bridge
+    assert knight.y < 15.0, f"Ground knight illegally crossed river without bridge: y={knight.y}"
+    assert knight.x > 11.0, f"Knight should be heading towards right bridge (x=14.5), but x={knight.x}"
+
+
+def test_task6_spell_travel_and_radial_knockback(db):
+    """Area spells apply damage after travel time and knock back units radially away from spell center."""
+    deck = ("fireball", "the_log", "knight", "skeletons", "minions", "poison", "zap", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn enemy Knight in north territory
+    res_k = m.play(1, "knight", 9.5, 20.5)
+    assert res_k.ok
+    enemy_knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 1][0]
+    enemy_knight.deploy_ms = 0
+    enemy_knight.speed = 0.0  # isolate knockback displacement
+    initial_hp = enemy_knight.hp
+    initial_y = enemy_knight.y
+
+    # Cast Fireball centered below enemy Knight at (9.5, 19.5)
+    res_fb = m.play(0, "fireball", 9.5, 19.5)
+    assert res_fb.ok
+    assert len(m.spells) == 1
+    assert m.spells[0].impact_in_ms > 0
+
+    # Step while projectile is in flight: enemy takes zero damage
+    for _ in range(5):
+        m.step()
+    assert enemy_knight.hp == initial_hp
+
+    # Step until impact
+    while len(m.spells) > 0:
+        m.step()
+
+    # After impact: damage applied and knocked radially upward (+y)
+    assert enemy_knight.hp < initial_hp
+    assert enemy_knight.y > initial_y, f"Expected knockback upward, got y={enemy_knight.y}"
+
+
+def test_task6_the_log_rolling_knockback_direction(db):
+    """The Log rolls forward, damaging ground units and pushing them forward along the roll vector."""
+    deck = ("the_log", "knight", "skeletons", "minions", "fireball", "poison", "zap", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn enemy Knight at (9.5, 18.5)
+    res_k = m.play(1, "knight", 9.5, 18.5)
+    assert res_k.ok
+    enemy_knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 1][0]
+    enemy_knight.deploy_ms = 0
+    enemy_knight.speed = 0.0
+    initial_hp = enemy_knight.hp
+    initial_y = enemy_knight.y
+
+    # Cast The Log from (9.5, 14.0) rolling north (direction = +1)
+    res_log = m.play(0, "the_log", 9.5, 14.0)
+    assert res_log.ok
+
+    # Step match until Log hits and advances
+    for _ in range(40):
+        m.step()
+
+    assert enemy_knight.hp < initial_hp
+    assert enemy_knight.y > initial_y, f"Expected forward knockback along roll direction, got y={enemy_knight.y}"
