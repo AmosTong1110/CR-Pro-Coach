@@ -25,35 +25,29 @@ if str(REPO_ROOT) not in sys.path:
 
 from backend_engine.meta.archetypes import archetype_name
 from backend_engine.simulator.card_db import CardDB
+from backend_engine.simulator.quarantine import CardQuarantine
 
 DEFAULT_TAG = "#VLYCGJGQR"
 DEFAULT_BATTLELOG = REPO_ROOT / "my_battlelog.json"
 PRESET_DECKS_PATH = REPO_ROOT / "configs" / "preset_decks.json"
 
 
-def normalize_card_id(raw_name: str, db: CardDB) -> Optional[str]:
-    """Resolve an official card name or id to our internal simulator card_id."""
+def normalize_card_id(raw_name: str, db: CardDB, quarantine: Optional[CardQuarantine] = None) -> Optional[str]:
+    """Resolve an official card name or id to its catalog card_id (playable or not); None if unknown."""
     if not raw_name:
         return None
-    # 1. CardDB alias lookup
-    cid = db.by_alias(raw_name)
-    if cid:
-        return cid
-    # 2. Slug / formatting fallback
-    slug = raw_name.strip().lower().replace(" ", "_").replace(".", "").replace("-", "_")
-    if slug in db.cards:
-        return slug
-    return None
+    return (quarantine or CardQuarantine(db)).resolve(raw_name)
 
 
-def extract_deck(player_data: Dict[str, Any], db: CardDB) -> Tuple[List[str], List[str]]:
+def extract_deck(player_data: Dict[str, Any], db: CardDB,
+                 quarantine: Optional[CardQuarantine] = None) -> Tuple[List[str], List[str]]:
     """Extract (resolved_cards, missing_cards) from a battlelog player entry."""
     cards_list = player_data.get("cards", [])
     resolved = []
     missing = []
     for c in cards_list:
         raw_name = c.get("name", "")
-        cid = normalize_card_id(raw_name, db)
+        cid = normalize_card_id(raw_name, db, quarantine)
         if cid:
             resolved.append(cid)
         else:
@@ -65,8 +59,14 @@ def parse_battlelog(
     path: Path,
     player_tag: str,
     db: CardDB,
+    quarantine: Optional[CardQuarantine] = None,
 ) -> List[Dict[str, Any]]:
-    """Parse battlelog JSON and return a list of parsed match records."""
+    """Parse battlelog JSON and return a list of parsed match records.
+
+    Unknown-card quarantine: a battle with a card the card data does not know at all (a brand-new release) is
+    skipped and counted in `quarantine` (pass one in to read `summary()` afterwards); it never raises.
+    """
+    quarantine = quarantine if quarantine is not None else CardQuarantine(db)
     if not path.exists():
         return []
 
@@ -123,8 +123,11 @@ def parse_battlelog(
         else:
             result = "DRAW"
 
-        user_deck, _ = extract_deck(user_entry, db)
-        opp_deck, opp_missing = extract_deck(opp_entry, db)
+        names = [c.get("name", "") for p in (user_entry, opp_entry) for c in p.get("cards", [])]
+        if quarantine.check(names):
+            continue                                   # unknown card: skip this battle (see quarantine.summary())
+        user_deck, _ = extract_deck(user_entry, db, quarantine)
+        opp_deck, opp_missing = extract_deck(opp_entry, db, quarantine)
 
         opp_arch = archetype_name(opp_deck) if opp_deck else "Unknown"
         user_arch = archetype_name(user_deck) if user_deck else "Unknown"
@@ -303,7 +306,10 @@ def main() -> None:
         generate_sample_battlelog(args.input, args.tag)
 
     db = CardDB.load()
-    matches = parse_battlelog(args.input, args.tag, db)
+    quarantine = CardQuarantine(db)
+    matches = parse_battlelog(args.input, args.tag, db, quarantine)
+    if quarantine.summary():
+        print(f"Warning: {quarantine.summary()}")
     if not matches:
         print(f"No matches found for player {args.tag} in {args.input}.")
         return

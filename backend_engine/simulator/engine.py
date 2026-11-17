@@ -71,6 +71,8 @@ class MatchConfig:
     seed: int = 0                                  # 确定性随机数种子
     shuffle: bool = True                           # 开局是否随机洗切初始手牌顺序
     collisions: bool = True                        # 是否开启单位软碰撞推挤物理模拟
+    # princess slot Tower Troop per side: a `towers` entry of the card data (Cannoneer, Dagger Duchess, ...)
+    tower_troops: Tuple[str, str] = ("princess_tower", "princess_tower")
 
 
 @dataclass(frozen=True)
@@ -161,16 +163,24 @@ class Match:
     def _spawn_towers(self) -> None:
         """在竞技场固定点位生成双方的国王塔与左右公主塔"""
         for side in (0, 1):
+            troop = self.cfg.tower_troops[side]
+            rec = self.db.towers.get(troop)
+            if rec is None or not rec.get("enabled", True) or not rec.get("attack") or \
+                    not (rec.get("stats_l11") or rec.get("base_stats") or {}).get("hitpoints"):
+                raise ValueError(f"side {side}: tower troop '{troop}' is unknown or not playable yet (needs "
+                                 f"stats_l11 + attack in the card data)")
             for role in ("king", "princess_left", "princess_right"):
-                tid = "king_tower" if role == "king" else "princess_tower"
+                tid = "king_tower" if role == "king" else troop
                 st = self.db.tower_stats(tid, self.sides[side].level)
                 atk = self.db.towers[tid]["attack"]
                 x, y, rad = G.tower_pos(side, role)
                 proj = atk.get("projectile_speed_tiles_s")
+                splash = float(atk.get("splash_radius_tiles", 0.0))
+                mechs = ("projectile",) if proj else (("splash",) if splash > 0 else ())
                 u = Unit(self._uid(), side, tid, "tower", "ground", x, y, rad, st["hitpoints"], st["hitpoints"],
                          st["damage"], int(atk["hit_speed_s"] * 1000), int(atk["hit_speed_s"] * 1000),
                          atk["range_tiles"], tuple(atk["targets"]), tower_role=role, active=(role != "king"),
-                         mechanics=("projectile",) if proj else (),
+                         splash=splash, mechanics=mechs,
                          params={"projectile": {"speed_tiles_s": proj}} if proj else {})
                 self.units[u.uid] = u
                 self.tower_uid[(side, role)] = u.uid

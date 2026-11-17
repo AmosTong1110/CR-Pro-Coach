@@ -121,7 +121,9 @@
         3
       ],
       "rarity": "common",
-      "_note": "Towers scale with King Tower level; approximated from L11 values with the common table (not exact)."
+      "_note": "Towers scale with King Tower level; approximated from L11 values with the common table (not exact).",
+      "game_id": 159000000,
+      "name": "Tower Princess"
     },
     "king_tower": {
       "verified": false,
@@ -149,6 +151,30 @@
       ],
       "rarity": "common",
       "_note": "Towers scale with King Tower level; approximated from L11 values with the common table (not exact)."
+    },
+    "cannoneer": {
+      "name": "Cannoneer",
+      "rarity": "epic",
+      "enabled": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "game_id": 159000001
+    },
+    "dagger_duchess": {
+      "name": "Dagger Duchess",
+      "rarity": "legendary",
+      "enabled": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "game_id": 159000002
+    },
+    "royal_chef": {
+      "name": "Royal Chef",
+      "rarity": "legendary",
+      "enabled": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "game_id": 159000004
     }
   },
   "cards": {
@@ -4729,7 +4755,7 @@
     "tombstone": {
       "name": "Tombstone",
       "internal_name": "Tombstone",
-      "game_id": 27000001,
+      "game_id": 27000009,
       "aliases": {
         "display": "Tombstone",
         "hf": "tombstone",
@@ -4805,6 +4831,1906 @@
         "evo": null,
         "hero": null
       }
+    },
+    "balloon": {
+      "name": "Balloon",
+      "internal_name": "Balloon",
+      "game_id": 26000006,
+      "aliases": {
+        "display": "Balloon",
+        "hf": "balloon",
+        "royaleapi": "balloon",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "barbarians": {
+      "name": "Barbarians",
+      "internal_name": "Barbarians",
+      "game_id": 26000008,
+      "aliases": {
+        "display": "Barbarians",
+        "hf": "barbarians",
+        "royaleapi": "barbarians",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "golem": {
+      "name": "Golem",
+      "internal_name": "Golem",
+      "game_id": 26000009,
+      "aliases": {
+        "display": "Golem",
+        "hf": "golem",
+        "royaleapi": "golem",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 8,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "bomber": {
+      "name": "Bomber",
+      "internal_name": "Bomber",
+      "game_id": 26000013,
+      "aliases": {
+        "display": "Bomber",
+        "hf": "bomber",
+        "royaleapi": "bomber",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "prince": {
+      "name": "Prince",
+      "internal_name": "Prince",
+      "game_id": 26000016,
+      "aliases": {
+        "display": "Prince",
+        "hf": "prince",
+        "royaleapi": "prince",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "wizard": {
+      "name": "Wizard",
+      "internal_name": "Wizard",
+      "game_id": 26000017,
+      "aliases": {
+        "display": "Wizard",
+        "hf": "wizard",
+        "royaleapi": "wizard",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "spear_goblins": {
+      "name": "Spear Goblins",
+      "internal_name": "SpearGoblins",
+      "game_id": 26000019,
+      "aliases": {
+        "display": "Spear Goblins",
+        "hf": "spear_goblins",
+        "royaleapi": "spear-goblins",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "giant_skeleton": {
+      "name": "Giant Skeleton",
+      "internal_name": "GiantSkeleton",
+      "game_id": 26000020,
+      "aliases": {
+        "display": "Giant Skeleton",
+        "hf": "giant_skeleton",
+        "royaleapi": "giant-skeleton",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "minion_horde": {
+      "name": "Minion Horde",
+      "internal_name": "MinionHorde",
+      "game_id": 26000022,
+      "aliases": {
+        "display": "Minion Horde",
+        "hf": "minion_horde",
+        "royaleapi": "minion-horde",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "ice_wizard": {
+      "name": "Ice Wizard",
+      "internal_name": "IceWizard",
+      "game_id": 26000023,
+      "aliases": {
+        "display": "Ice Wizard",
+        "hf": "ice_wizard",
+        "royaleapi": "ice-wizard",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "royal_giant": {
+      "name": "Royal Giant",
+      "internal_name": "RoyalGiant",
+      "game_id": 26000024,
+      "aliases": {
+        "display": "Royal Giant",
+        "hf": "royal_giant",
+        "royaleapi": "royal-giant",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "guards": {
+      "name": "Guards",
+      "internal_name": "Guards",
+      "game_id": 26000025,
+      "aliases": {
+        "display": "Guards",
+        "hf": "guards",
+        "royaleapi": "guards",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "princess": {
+      "name": "Princess",
+      "internal_name": "Princess",
+      "game_id": 26000026,
+      "aliases": {
+        "display": "Princess",
+        "hf": "princess",
+        "royaleapi": "princess",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "three_musketeers": {
+      "name": "Three Musketeers",
+      "internal_name": "ThreeMusketeers",
+      "game_id": 26000028,
+      "aliases": {
+        "display": "Three Musketeers",
+        "hf": "three_musketeers",
+        "royaleapi": "three-musketeers",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 9,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "lava_hound": {
+      "name": "Lava Hound",
+      "internal_name": "LavaHound",
+      "game_id": 26000029,
+      "aliases": {
+        "display": "Lava Hound",
+        "hf": "lava_hound",
+        "royaleapi": "lava-hound",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 7,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "sparky": {
+      "name": "Sparky",
+      "internal_name": "Sparky",
+      "game_id": 26000033,
+      "aliases": {
+        "display": "Sparky",
+        "hf": "sparky",
+        "royaleapi": "sparky",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "bowler": {
+      "name": "Bowler",
+      "internal_name": "Bowler",
+      "game_id": 26000034,
+      "aliases": {
+        "display": "Bowler",
+        "hf": "bowler",
+        "royaleapi": "bowler",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "lumberjack": {
+      "name": "Lumberjack",
+      "internal_name": "Lumberjack",
+      "game_id": 26000035,
+      "aliases": {
+        "display": "Lumberjack",
+        "hf": "lumberjack",
+        "royaleapi": "lumberjack",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "battle_ram": {
+      "name": "Battle Ram",
+      "internal_name": "BattleRam",
+      "game_id": 26000036,
+      "aliases": {
+        "display": "Battle Ram",
+        "hf": "battle_ram",
+        "royaleapi": "battle-ram",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "inferno_dragon": {
+      "name": "Inferno Dragon",
+      "internal_name": "InfernoDragon",
+      "game_id": 26000037,
+      "aliases": {
+        "display": "Inferno Dragon",
+        "hf": "inferno_dragon",
+        "royaleapi": "inferno-dragon",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "mega_minion": {
+      "name": "Mega Minion",
+      "internal_name": "MegaMinion",
+      "game_id": 26000039,
+      "aliases": {
+        "display": "Mega Minion",
+        "hf": "mega_minion",
+        "royaleapi": "mega-minion",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_gang": {
+      "name": "Goblin Gang",
+      "internal_name": "GoblinGang",
+      "game_id": 26000041,
+      "aliases": {
+        "display": "Goblin Gang",
+        "hf": "goblin_gang",
+        "royaleapi": "goblin-gang",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "electro_wizard": {
+      "name": "Electro Wizard",
+      "internal_name": "ElectroWizard",
+      "game_id": 26000042,
+      "aliases": {
+        "display": "Electro Wizard",
+        "hf": "electro_wizard",
+        "royaleapi": "electro-wizard",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "elite_barbarians": {
+      "name": "Elite Barbarians",
+      "internal_name": "EliteBarbarians",
+      "game_id": 26000043,
+      "aliases": {
+        "display": "Elite Barbarians",
+        "hf": "elite_barbarians",
+        "royaleapi": "elite-barbarians",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "hunter": {
+      "name": "Hunter",
+      "internal_name": "Hunter",
+      "game_id": 26000044,
+      "aliases": {
+        "display": "Hunter",
+        "hf": "hunter",
+        "royaleapi": "hunter",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "executioner": {
+      "name": "Executioner",
+      "internal_name": "Executioner",
+      "game_id": 26000045,
+      "aliases": {
+        "display": "Executioner",
+        "hf": "executioner",
+        "royaleapi": "executioner",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "bandit": {
+      "name": "Bandit",
+      "internal_name": "Bandit",
+      "game_id": 26000046,
+      "aliases": {
+        "display": "Bandit",
+        "hf": "bandit",
+        "royaleapi": "bandit",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "royal_recruits": {
+      "name": "Royal Recruits",
+      "internal_name": "RoyalRecruits",
+      "game_id": 26000047,
+      "aliases": {
+        "display": "Royal Recruits",
+        "hf": "royal_recruits",
+        "royaleapi": "royal-recruits",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 7,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "night_witch": {
+      "name": "Night Witch",
+      "internal_name": "NightWitch",
+      "game_id": 26000048,
+      "aliases": {
+        "display": "Night Witch",
+        "hf": "night_witch",
+        "royaleapi": "night-witch",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "ram_rider": {
+      "name": "Ram Rider",
+      "internal_name": "RamRider",
+      "game_id": 26000051,
+      "aliases": {
+        "display": "Ram Rider",
+        "hf": "ram_rider",
+        "royaleapi": "ram-rider",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "zappies": {
+      "name": "Zappies",
+      "internal_name": "Zappies",
+      "game_id": 26000052,
+      "aliases": {
+        "display": "Zappies",
+        "hf": "zappies",
+        "royaleapi": "zappies",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "rascals": {
+      "name": "Rascals",
+      "internal_name": "Rascals",
+      "game_id": 26000053,
+      "aliases": {
+        "display": "Rascals",
+        "hf": "rascals",
+        "royaleapi": "rascals",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "cannon_cart": {
+      "name": "Cannon Cart",
+      "internal_name": "CannonCart",
+      "game_id": 26000054,
+      "aliases": {
+        "display": "Cannon Cart",
+        "hf": "cannon_cart",
+        "royaleapi": "cannon-cart",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "mega_knight": {
+      "name": "Mega Knight",
+      "internal_name": "MegaKnight",
+      "game_id": 26000055,
+      "aliases": {
+        "display": "Mega Knight",
+        "hf": "mega_knight",
+        "royaleapi": "mega-knight",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 7,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "skeleton_barrel": {
+      "name": "Skeleton Barrel",
+      "internal_name": "SkeletonBarrel",
+      "game_id": 26000056,
+      "aliases": {
+        "display": "Skeleton Barrel",
+        "hf": "skeleton_barrel",
+        "royaleapi": "skeleton-barrel",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "flying_machine": {
+      "name": "Flying Machine",
+      "internal_name": "FlyingMachine",
+      "game_id": 26000057,
+      "aliases": {
+        "display": "Flying Machine",
+        "hf": "flying_machine",
+        "royaleapi": "flying-machine",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "wall_breakers": {
+      "name": "Wall Breakers",
+      "internal_name": "WallBreakers",
+      "game_id": 26000058,
+      "aliases": {
+        "display": "Wall Breakers",
+        "hf": "wall_breakers",
+        "royaleapi": "wall-breakers",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "royal_hogs": {
+      "name": "Royal Hogs",
+      "internal_name": "RoyalHogs",
+      "game_id": 26000059,
+      "aliases": {
+        "display": "Royal Hogs",
+        "hf": "royal_hogs",
+        "royaleapi": "royal-hogs",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_giant": {
+      "name": "Goblin Giant",
+      "internal_name": "GoblinGiant",
+      "game_id": 26000060,
+      "aliases": {
+        "display": "Goblin Giant",
+        "hf": "goblin_giant",
+        "royaleapi": "goblin-giant",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "fisherman": {
+      "name": "Fisherman",
+      "internal_name": "Fisherman",
+      "game_id": 26000061,
+      "aliases": {
+        "display": "Fisherman",
+        "hf": "fisherman",
+        "royaleapi": "fisherman",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "magic_archer": {
+      "name": "Magic Archer",
+      "internal_name": "MagicArcher",
+      "game_id": 26000062,
+      "aliases": {
+        "display": "Magic Archer",
+        "hf": "magic_archer",
+        "royaleapi": "magic-archer",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "electro_dragon": {
+      "name": "Electro Dragon",
+      "internal_name": "ElectroDragon",
+      "game_id": 26000063,
+      "aliases": {
+        "display": "Electro Dragon",
+        "hf": "electro_dragon",
+        "royaleapi": "electro-dragon",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "elixir_golem": {
+      "name": "Elixir Golem",
+      "internal_name": "ElixirGolem",
+      "game_id": 26000067,
+      "aliases": {
+        "display": "Elixir Golem",
+        "hf": "elixir_golem",
+        "royaleapi": "elixir-golem",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "battle_healer": {
+      "name": "Battle Healer",
+      "internal_name": "BattleHealer",
+      "game_id": 26000068,
+      "aliases": {
+        "display": "Battle Healer",
+        "hf": "battle_healer",
+        "royaleapi": "battle-healer",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "skeleton_king": {
+      "name": "Skeleton King",
+      "internal_name": "SkeletonKing",
+      "game_id": 26000069,
+      "aliases": {
+        "display": "Skeleton King",
+        "hf": "skeleton_king",
+        "royaleapi": "skeleton-king",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "archer_queen": {
+      "name": "Archer Queen",
+      "internal_name": "ArcherQueen",
+      "game_id": 26000072,
+      "aliases": {
+        "display": "Archer Queen",
+        "hf": "archer_queen",
+        "royaleapi": "archer-queen",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "monk": {
+      "name": "Monk",
+      "internal_name": "Monk",
+      "game_id": 26000077,
+      "aliases": {
+        "display": "Monk",
+        "hf": "monk",
+        "royaleapi": "monk",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "skeleton_dragons": {
+      "name": "Skeleton Dragons",
+      "internal_name": "SkeletonDragons",
+      "game_id": 26000080,
+      "aliases": {
+        "display": "Skeleton Dragons",
+        "hf": "skeleton_dragons",
+        "royaleapi": "skeleton-dragons",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "mother_witch": {
+      "name": "Mother Witch",
+      "internal_name": "MotherWitch",
+      "game_id": 26000083,
+      "aliases": {
+        "display": "Mother Witch",
+        "hf": "mother_witch",
+        "royaleapi": "mother-witch",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "electro_giant": {
+      "name": "Electro Giant",
+      "internal_name": "ElectroGiant",
+      "game_id": 26000085,
+      "aliases": {
+        "display": "Electro Giant",
+        "hf": "electro_giant",
+        "royaleapi": "electro-giant",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 7,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "phoenix": {
+      "name": "Phoenix",
+      "internal_name": "Phoenix",
+      "game_id": 26000087,
+      "aliases": {
+        "display": "Phoenix",
+        "hf": "phoenix",
+        "royaleapi": "phoenix",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_machine": {
+      "name": "Goblin Machine",
+      "internal_name": "GoblinMachine",
+      "game_id": 26000096,
+      "aliases": {
+        "display": "Goblin Machine",
+        "hf": "goblin_machine",
+        "royaleapi": "goblin-machine",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "suspicious_bush": {
+      "name": "Suspicious Bush",
+      "internal_name": "SuspiciousBush",
+      "game_id": 26000097,
+      "aliases": {
+        "display": "Suspicious Bush",
+        "hf": "suspicious_bush",
+        "royaleapi": "suspicious-bush",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblinstein": {
+      "name": "Goblinstein",
+      "internal_name": "Goblinstein",
+      "game_id": 26000099,
+      "aliases": {
+        "display": "Goblinstein",
+        "hf": "goblinstein",
+        "royaleapi": "goblinstein",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "berserker": {
+      "name": "Berserker",
+      "internal_name": "Berserker",
+      "game_id": 26000102,
+      "aliases": {
+        "display": "Berserker",
+        "hf": "berserker",
+        "royaleapi": "berserker",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "boss_bandit": {
+      "name": "Boss Bandit",
+      "internal_name": "BossBandit",
+      "game_id": 26000103,
+      "aliases": {
+        "display": "Boss Bandit",
+        "hf": "boss_bandit",
+        "royaleapi": "boss-bandit",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "champion",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "ronin": {
+      "name": "Ronin",
+      "internal_name": "Ronin",
+      "game_id": 26000106,
+      "aliases": {
+        "display": "Ronin",
+        "hf": "ronin",
+        "royaleapi": "ronin",
+        "detector": []
+      },
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_hut": {
+      "name": "Goblin Hut",
+      "internal_name": "GoblinHut",
+      "game_id": 27000001,
+      "aliases": {
+        "display": "Goblin Hut",
+        "hf": "goblin_hut",
+        "royaleapi": "goblin-hut",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "bomb_tower": {
+      "name": "Bomb Tower",
+      "internal_name": "BombTower",
+      "game_id": 27000004,
+      "aliases": {
+        "display": "Bomb Tower",
+        "hf": "bomb_tower",
+        "royaleapi": "bomb-tower",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "barbarian_hut": {
+      "name": "Barbarian Hut",
+      "internal_name": "BarbarianHut",
+      "game_id": 27000005,
+      "aliases": {
+        "display": "Barbarian Hut",
+        "hf": "barbarian_hut",
+        "royaleapi": "barbarian-hut",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "elixir_collector": {
+      "name": "Elixir Collector",
+      "internal_name": "ElixirCollector",
+      "game_id": 27000007,
+      "aliases": {
+        "display": "Elixir Collector",
+        "hf": "elixir_collector",
+        "royaleapi": "elixir-collector",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "furnace": {
+      "name": "Furnace",
+      "internal_name": "Furnace",
+      "game_id": 27000010,
+      "aliases": {
+        "display": "Furnace",
+        "hf": "furnace",
+        "royaleapi": "furnace",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_cage": {
+      "name": "Goblin Cage",
+      "internal_name": "GoblinCage",
+      "game_id": 27000012,
+      "aliases": {
+        "display": "Goblin Cage",
+        "hf": "goblin_cage",
+        "royaleapi": "goblin-cage",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_drill": {
+      "name": "Goblin Drill",
+      "internal_name": "GoblinDrill",
+      "game_id": 27000013,
+      "aliases": {
+        "display": "Goblin Drill",
+        "hf": "goblin_drill",
+        "royaleapi": "goblin-drill",
+        "detector": []
+      },
+      "type": "building",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "arrows": {
+      "name": "Arrows",
+      "internal_name": "Arrows",
+      "game_id": 28000001,
+      "aliases": {
+        "display": "Arrows",
+        "hf": "arrows",
+        "royaleapi": "arrows",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "common",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "rage": {
+      "name": "Rage",
+      "internal_name": "Rage",
+      "game_id": 28000002,
+      "aliases": {
+        "display": "Rage",
+        "hf": "rage",
+        "royaleapi": "rage",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_barrel": {
+      "name": "Goblin Barrel",
+      "internal_name": "GoblinBarrel",
+      "game_id": 28000004,
+      "aliases": {
+        "display": "Goblin Barrel",
+        "hf": "goblin_barrel",
+        "royaleapi": "goblin-barrel",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "freeze": {
+      "name": "Freeze",
+      "internal_name": "Freeze",
+      "game_id": 28000005,
+      "aliases": {
+        "display": "Freeze",
+        "hf": "freeze",
+        "royaleapi": "freeze",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "mirror": {
+      "name": "Mirror",
+      "internal_name": "Mirror",
+      "game_id": 28000006,
+      "aliases": {
+        "display": "Mirror",
+        "hf": "mirror",
+        "royaleapi": "mirror",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 0,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "graveyard": {
+      "name": "Graveyard",
+      "internal_name": "Graveyard",
+      "game_id": 28000010,
+      "aliases": {
+        "display": "Graveyard",
+        "hf": "graveyard",
+        "royaleapi": "graveyard",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "legendary",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "clone": {
+      "name": "Clone",
+      "internal_name": "Clone",
+      "game_id": 28000013,
+      "aliases": {
+        "display": "Clone",
+        "hf": "clone",
+        "royaleapi": "clone",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "heal_spirit": {
+      "name": "Heal Spirit",
+      "internal_name": "HealSpirit",
+      "game_id": 28000016,
+      "aliases": {
+        "display": "Heal Spirit",
+        "hf": "heal_spirit",
+        "royaleapi": "heal-spirit",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "rare",
+      "elixir": 1,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "giant_snowball": {
+      "name": "Giant Snowball",
+      "internal_name": "GiantSnowball",
+      "game_id": 28000017,
+      "aliases": {
+        "display": "Giant Snowball",
+        "hf": "giant_snowball",
+        "royaleapi": "giant-snowball",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "common",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "void": {
+      "name": "Void",
+      "internal_name": "Void",
+      "game_id": 28000023,
+      "aliases": {
+        "display": "Void",
+        "hf": "void",
+        "royaleapi": "void",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "goblin_curse": {
+      "name": "Goblin Curse",
+      "internal_name": "GoblinCurse",
+      "game_id": 28000024,
+      "aliases": {
+        "display": "Goblin Curse",
+        "hf": "goblin_curse",
+        "royaleapi": "goblin-curse",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "epic",
+      "elixir": 2,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
+    },
+    "spirit_empress": {
+      "name": "Spirit Empress",
+      "internal_name": "SpiritEmpress",
+      "game_id": 28000025,
+      "aliases": {
+        "display": "Spirit Empress",
+        "hf": "spirit_empress",
+        "royaleapi": "spirit-empress",
+        "detector": []
+      },
+      "type": "spell",
+      "rarity": "legendary",
+      "elixir": 6,
+      "verified": false,
+      "data_as_of": "2026-11-17",
+      "data_source": "official_cards.json",
+      "mechanics": [],
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "level_overrides": {},
+      "enabled": false,
+      "catalog_status": "incomplete"
     }
   },
   "tokens": {

@@ -5,6 +5,12 @@ the `replays/part-*.parquet` table holds the decks, crowns and full event stream
 downloaded one at a time into a git-ignored cache (`data/il_raw/`), checked against the dataset's SHA-256
 manifest, read in small record batches and (unless --keep-raw) deleted after use, so RAM and disk stay small.
 
+Unknown-card quarantine (backend_engine/simulator/quarantine.py): a replay with a card that
+configs/cards_stats_v2026.json does not know at all (a newly released card) is skipped and counted, never
+guessed; the build ends with one summary warning (run tools/sync_card_catalog.py to add the card). Catalog cards
+that are not playable yet (enabled: false / needs_hook) are proxied on the non-learner side as below, or skipped
+too with --strict-quarantine.
+
 Per replay, both decks are mapped to the simulated card pool. A side is a **learner** when its deck has at least
 --min-coverage simulated cards (default 8 = all). The other side may contain unsimulated cards: each one is
 replaced by a **proxy** (simulated card of the same type and air/ground layer, nearest elixir cost), so the
@@ -61,6 +67,7 @@ from backend_engine.perception.opp_elixir_count import OppElixirTracker
 from backend_engine.simulator import geometry as G
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.engine import Match, MatchConfig
+from backend_engine.simulator.quarantine import CardQuarantine
 
 ROOT = Path(__file__).resolve().parents[1]
 HF_REPO = "VanguardX101/IL_Replay"
@@ -343,9 +350,16 @@ def _repair_hand(st, card: str, upcoming: Sequence[str]) -> None:
 
 def replay_battle(rep: Replay, db: CardDB, writer: ShardWriter, battle_idx: int,
                   stats: Stats, proxies: ProxyMap, guesser=None, min_coverage: int = 8,
-                  min_opp_coverage: int = 4, wait_ratio: float = 1.0, max_elixir_deficit: float = 1.0) -> bool:
+                  min_opp_coverage: int = 4, wait_ratio: float = 1.0, max_elixir_deficit: float = 1.0,
+                  quarantine: Optional[CardQuarantine] = None) -> bool:
     """Replay one battle and write its samples. Returns False if the replay was filtered out."""
     stats.replays_seen += 1
+    if quarantine is not None:
+        reason = quarantine.check([*rep.decks[0], *rep.decks[1]])
+        if reason:
+            stats.rejected["quarantine"] += 1
+            logger.debug("replay %s skipped: %s", rep.rid, reason)
+            return False
     cov = [sum(c in db.cards for c in d) for d in rep.decks]
     learners = [s for s in (0, 1) if cov[s] >= min_coverage and cov[1 - s] >= min_opp_coverage]
     if not learners:
@@ -542,9 +556,11 @@ def survey(paths: Iterable[Path], db: CardDB) -> dict:
     n, cov_hist = 0, collections.Counter()
     use = collections.Counter()
     plays_by_rule = collections.Counter()
+    quarantine = CardQuarantine(db)
     for path in paths:
         for rep in iter_replays(path):
             n += 1
+            quarantine.check([*rep.decks[0], *rep.decks[1]])
             cov = [sum(c in db.cards for c in d) for d in rep.decks]
             cov_hist.update(cov)
             sides_plays = [sum(1 for e in rep.events if e.side == s and not e.ability) for s in (0, 1)]
@@ -555,7 +571,7 @@ def survey(paths: Iterable[Path], db: CardDB) -> dict:
                         use[f"learner>={mc} opp>={mo}"] += 1
                         plays_by_rule[f"learner>={mc} opp>={mo}"] += sum(sides_plays[s] for s in ls)
     return {"replays": n, "deck_coverage_hist": dict(sorted(cov_hist.items())),
-            "replays_used": dict(use), "learner_plays": dict(plays_by_rule)}
+            "replays_used": dict(use), "learner_plays": dict(plays_by_rule), "quarantine": quarantine.as_dict()}
 
 
 def main(argv: Optional[Sequence[str]] = None) -> None:
@@ -574,6 +590,8 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     ap.add_argument("--keep-raw", action="store_true", help="keep downloaded parquet parts in the cache")
     ap.add_argument("--survey", action="store_true", help="only report coverage / yield of the parts")
     ap.add_argument("--overwrite", action="store_true", help="replace existing shards in --output-dir")
+    ap.add_argument("--strict-quarantine", action="store_true",
+                    help="also skip replays with catalog cards that are not playable yet (default: proxy them)")
     args = ap.parse_args(argv)
 
     db = CardDB.load()
@@ -594,6 +612,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     stats = Stats()
     proxies = ProxyMap(db, load_card_catalog())
     guesser = default_guesser()
+    quarantine = CardQuarantine(db, strict=args.strict_quarantine)
     t0 = time.time()
     done_parts: List[int] = []
     battle_idx = 0
@@ -602,7 +621,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         path = part_path(cache, part)
         for rep in iter_replays(path):
             replay_battle(rep, db, writer, battle_idx, stats, proxies, guesser, args.min_coverage,
-                          args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit)
+                          args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit, quarantine)
             battle_idx += 1
             if stats.replays_seen % 500 == 0:
                 logger.info("part %d: %d replays read, %d used, %d samples (%.0f s)", part, stats.replays_seen,
@@ -620,10 +639,13 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         "filters": {"min_coverage": args.min_coverage, "min_opp_coverage": args.min_opp_coverage,
                     "wait_ratio": args.wait_ratio, "max_elixir_deficit": args.max_elixir_deficit},
         "stats": stats.as_dict(),
+        "quarantine": quarantine.as_dict(),
         "build_seconds": round(time.time() - t0, 1),
         "card_pool": sorted(db.cards),          # informational: the encoder does not depend on it
     }
     path = writer.close(extra)
+    if quarantine.summary():
+        logger.warning(quarantine.summary())
     logger.info("done: %d samples (%d plays, %d waits) from %d battles -> %s", writer.total_samples,
                 writer.total_plays, writer.total_waits, writer.total_battles, path)
 

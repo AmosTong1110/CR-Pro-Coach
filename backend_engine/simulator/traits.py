@@ -107,10 +107,10 @@ def is_playable(card: Mapping[str, Any]) -> bool:
 
 def quarantine_reason(card: Mapping[str, Any]) -> str:
     """Why a catalog card is not playable ('' if it is)."""
-    if not card.get("enabled", True):
-        return "disabled"
     if card.get("needs_hook", False):
         return "needs_hook"
+    if not card.get("enabled", True):
+        return "disabled"
     miss = unsupported_kinds(card)
     return f"unsupported mechanics: {', '.join(miss)}" if miss else ""
 

@@ -47,7 +47,8 @@ def test_disabled_and_needs_hook_cards_stay_in_the_catalog_only(raw):
     db = CardDB(r)                                        # an unknown mechanic is fine on a quarantined card
     assert "knight" in db.catalog and "knight" not in db.cards
     assert "future_card" in db.catalog and "future_card" not in db.cards
-    assert db.quarantined() == {"knight": "disabled", "future_card": "needs_hook"}
+    q = db.quarantined()
+    assert q["knight"] == "disabled" and q["future_card"] == "needs_hook"
     with pytest.raises(KeyError):
         db.entry("future_card")                           # nothing that plays can reach it
 
