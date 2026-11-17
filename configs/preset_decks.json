@@ -563,6 +563,61 @@
         "skeleton_army"
       ],
       "tip": "Bait out opponent spells with Goblins, Dart Goblin and Skeleton Army, then melt high-HP win conditions with Inferno Tower."
+    },
+    {
+      "name": "Classic Giant Witch",
+      "style": "Beatdown",
+      "evo": [
+        "skeletons",
+        "zap"
+      ],
+      "cards": [
+        "giant",
+        "witch",
+        "musketeer",
+        "mini_pekka",
+        "fireball",
+        "the_log",
+        "skeletons",
+        "zap"
+      ],
+      "tip": "Build a push from the back with Giant and Witch, supporting with Musketeer and spells."
+    },
+    {
+      "name": "Classic P.E.K.K.A Control",
+      "style": "Control / Counter-push",
+      "evo": [
+        "zap"
+      ],
+      "cards": [
+        "pekka",
+        "baby_dragon",
+        "poison",
+        "zap",
+        "miner",
+        "bats",
+        "ice_spirit",
+        "goblins"
+      ],
+      "tip": "Melt opponent tanks with P.E.K.K.A on defense, then counter-attack with Baby Dragon splash and Miner."
+    },
+    {
+      "name": "Giant Dragon Beatdown",
+      "style": "Heavy Beatdown",
+      "evo": [
+        "skeletons"
+      ],
+      "cards": [
+        "giant",
+        "baby_dragon",
+        "witch",
+        "mini_pekka",
+        "the_log",
+        "lightning",
+        "skeletons",
+        "ice_spirit"
+      ],
+      "tip": "Overwhelm single-target defense with Witch skeleton summons and Baby Dragon air splash."
     }
   ]
 }

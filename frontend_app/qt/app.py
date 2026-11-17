@@ -66,7 +66,8 @@ SPEEDS = [("1x", 1), ("2x", 2), ("4x", 4), ("8x", 8)]
 # Real-time 3-2-1 countdown after a take over / when you come back to a running match.
 COUNTDOWN_MS = 3000
 SETUP, LIVE, ENDED, REVIEW = "setup", "live", "ended", "review"
-RESULT_REASON = {"king_destroyed": "3 crowns", "crowns": "crown lead", "tiebreaker": "lowest tower HP", "draw": ""}
+RESULT_REASON = {"king_destroyed": "3 crowns", "crowns": "crown lead", "tiebreaker": "lowest tower HP", "draw": "",
+                 "drill_cleared": "cleared", "drill_failed": "failed"}
 
 
 class AnalysisCancelled(Exception):
@@ -733,7 +734,12 @@ class MainWindow(QMainWindow):
         key("E", self.quiz_guess)
         key("U", lambda: self.step(-10))
         key("F", lambda: self.step(10))
-        key("R", self.run_review)
+        def _on_r():
+            if self.mode == ENDED and self.session.is_drill():
+                self.retry_current_drill()
+            else:
+                self.run_review()
+        key("R", _on_r)
         key("S", self.toggle_show_me)
 
         self.timer = QTimer(self)
@@ -792,10 +798,16 @@ class MainWindow(QMainWindow):
             dl.addWidget(t)
             dl.addWidget(dv)
             self.deck_title[side], self.deck_view[side] = t, dv
+        drow = QHBoxLayout()
         self.deck_btn = cls(QPushButton("Deck Builder…"), "ghost")
-        self.deck_btn.setToolTip("Choose from 30 ready-made decks for you and the AI")
+        self.deck_btn.setToolTip("Choose from ready-made decks for you and the AI")
         self.deck_btn.clicked.connect(lambda: self.edit_decks())
-        dl.addWidget(self.deck_btn)
+        self.drills_btn = cls(QPushButton("🎯 Tactical Drills…"), "ghost")
+        self.drills_btn.setToolTip("Practice 5 curated tactical defense and micro-placement drills")
+        self.drills_btn.clicked.connect(self._open_drills_from_fight)
+        drow.addWidget(self.deck_btn, 1)
+        drow.addWidget(self.drills_btn, 1)
+        dl.addLayout(drow)
         iv.addWidget(decks)
 
         opts = card_frame(spacing=6)
@@ -856,14 +868,19 @@ class MainWindow(QMainWindow):
         lay = box.layout()
         self.result_title = QLabel()
         self.result_sub = label("", "sub", wrap=True)
+        self.retry_drill_btn = cls(QPushButton("🔄 Try Again (R)"), "big")
+        self.retry_drill_btn.setToolTip("Restart this drill scenario immediately (R)")
+        self.retry_drill_btn.clicked.connect(self.retry_current_drill)
+        self.retry_drill_btn.setVisible(False)
         self.review_btn = cls(QPushButton("Review (R)"), "big")
         self.review_btn.setToolTip("Grade every play and replay the match with the coach")
         self.review_btn.clicked.connect(self.run_review)
         self.new_btn = cls(QPushButton("New match (N)"), "ghost")
-        self.new_btn.clicked.connect(self.new_match)
+        self.new_btn.clicked.connect(self._on_new_or_exit_btn)
         lay.addWidget(self.result_title)
         lay.addWidget(self.result_sub)
         lay.addSpacing(6)
+        lay.addWidget(self.retry_drill_btn)
         lay.addWidget(self.review_btn)
         lay.addWidget(self.new_btn)
         return box
@@ -875,14 +892,17 @@ class MainWindow(QMainWindow):
         self.mode = mode
         self.stop_btn.setVisible(mode == LIVE)
         self.setup_box.setVisible(mode == SETUP)
-        self.counter.setVisible(mode == LIVE)
+        self.counter.setVisible(mode == LIVE and not self.session.is_drill())
         self.ended_box.setVisible(mode == ENDED)
         self.review_panel.setVisible(mode == REVIEW)
         self.log_box.setVisible(mode in (LIVE, ENDED))
         self.hand.setVisible(mode in (SETUP, LIVE))
         self.review_strip.setVisible(mode == REVIEW)
-        tag = {SETUP: ("SETUP", C["muted"]), LIVE: ("● LIVE", C["loss"]), ENDED: ("MATCH OVER", C["muted"]),
-               REVIEW: ("REVIEW", C["teal"])}[mode]
+        if self.session.is_drill():
+            tag = ("● DRILL", C["warn"])
+        else:
+            tag = {SETUP: ("SETUP", C["muted"]), LIVE: ("● LIVE", C["loss"]), ENDED: ("MATCH OVER", C["muted"]),
+                   REVIEW: ("REVIEW", C["teal"])}[mode]
         self.mode_tag.setText(tag[0])
         self.mode_tag.setStyleSheet(f"font-size:11px; font-weight:800; letter-spacing:1px; color:{tag[1]};")
         if mode == ENDED:
@@ -907,6 +927,29 @@ class MainWindow(QMainWindow):
     def _show_result(self) -> None:
         r = self.session.result
         m = self.session.match
+        if self.session.is_drill() and self.session.drill_runner is not None:
+            eval_res = self.session.drill_runner.evaluate()
+            stars = "⭐" * eval_res.stars if eval_res.stars > 0 else "❌"
+            grade_text = "Flawless ⭐⭐⭐" if eval_res.stars == 3 else ("Great Defense ⭐⭐" if eval_res.stars == 2 else ("Pass ⭐" if eval_res.stars == 1 else "Failed ❌"))
+            col = C["gold"] if eval_res.stars == 3 else (C["win"] if eval_res.stars >= 1 else C["loss"])
+            self.result_title.setText(f"{stars}  {grade_text}")
+            self.result_title.setStyleSheet(f"font-size:24px; font-weight:800; color:{col};")
+            lines = [
+                f"<b>{self.session.drill_runner.drill.title}</b>",
+                f"Tower damage taken: <b>{eval_res.tower_damage_taken:.0f}</b> · Elixir spent: <b>{eval_res.elixir_spent:.1f}</b>",
+                f"{eval_res.feedback}",
+            ]
+            if self.session.drill_runner.drill.custom_advice:
+                lines.append(f"<span style='color:{C['teal']}'>💡 Coach Advice: {self.session.drill_runner.drill.custom_advice}</span>")
+            self.result_sub.setText("<br>".join(lines))
+            self.retry_drill_btn.setVisible(True)
+            self.review_btn.setVisible(False)
+            self.new_btn.setText("Exit Drill (Esc)")
+            return
+
+        self.retry_drill_btn.setVisible(False)
+        self.review_btn.setVisible(True)
+        self.new_btn.setText("New match (N)")
         if r is None:
             text, col = "Match unfinished", C["draw"]
             sub = f"Stopped at {mmss(m.t_ms)} · {m.sides[HUMAN].crowns} – {m.sides[AI].crowns}"
@@ -920,6 +963,12 @@ class MainWindow(QMainWindow):
         has_plays = self.session.has_human_plays()
         self.result_sub.setText(sub + ("" if has_plays else "\nYou didn't play a card, so there is nothing to review."))
         self.review_btn.setEnabled(has_plays)
+
+    def _on_new_or_exit_btn(self) -> None:
+        if self.session.is_drill():
+            self.exit_drill()
+        else:
+            self.new_match()
 
     def start_match(self) -> None:
         """Setup → live. There is no pause: the match runs until it ends (it only waits while you're on
@@ -1086,8 +1135,41 @@ class MainWindow(QMainWindow):
             self.stop_show_me()
         elif self.analyzing:
             self.cancel_analysis()
+        elif self.session.is_drill() and self.mode in (LIVE, ENDED):
+            self.exit_drill()
         else:
             self.select(None)
+
+    def _open_drills_from_fight(self) -> None:
+        from frontend_app.qt.drills_dialog import DrillsDialog
+        dlg = DrillsDialog(self, on_start=self.start_drill)
+        dlg.exec()
+
+    def start_drill(self, drill: Any) -> None:
+        """Launch an isolated tactical defense drill sandbox."""
+        if self.analyzing:
+            return
+        if self.showing_me:
+            self.stop_show_me()
+        self.aboutToReset.emit()
+        self.session.start_drill(drill)
+        self._reset_view()
+        self.board.ghosts = []
+        self.board.banner = f"🎯 {drill.title}: Defend cleanly!"
+        self.add_log([])
+        self._set_mode(LIVE)
+        self.running = True
+        self.flash(f"🎯 Drill: {drill.title} · Defend with 0 tower damage!")
+
+    def retry_current_drill(self) -> None:
+        if self.session.is_drill() and self.session.drill_runner is not None:
+            self.start_drill(self.session.drill_runner.drill)
+
+    def exit_drill(self) -> None:
+        self.running = False
+        self.session.new_match()
+        self._reset_view()
+        self.flash("Exited drill · Back to sparring setup")
 
     def show_review_move(self, i: int) -> None:
         """Show graded play i on the board: just before it, your play in red, the recommendation in green."""
@@ -1542,8 +1624,14 @@ class MainWindow(QMainWindow):
         clock, phase = s.clock()
         self.clock.setText(clock)
         self.phase.setText(phase or " ")
-        self.crowns.setText(f"👑 <span style='color:{C['you']}'>You {st.crowns}</span>&nbsp; : &nbsp;"
-                            f"<span style='color:{C['ai']}'>{m.sides[AI].crowns} AI</span>")
+        if s.is_drill() and s.drill_runner is not None:
+            dmg = s.drill_runner.tower_damage_taken()
+            alive = s.drill_runner.threats_alive()
+            self.crowns.setText(f"<span style='color:{C['win']}'>Towers: −{dmg:.0f} hp</span>&nbsp; : &nbsp;"
+                                f"<span style='color:{C['loss']}'>Threats: {alive}</span>")
+        else:
+            self.crowns.setText(f"👑 <span style='color:{C['you']}'>You {st.crowns}</span>&nbsp; : &nbsp;"
+                                f"<span style='color:{C['ai']}'>{m.sides[AI].crowns} AI</span>")
         if self.mode in (SETUP, LIVE):
             names = {cid: c["name"] for cid, c in s.db.cards.items()}
             costs = {cid: c["elixir"] for cid, c in s.db.cards.items()}

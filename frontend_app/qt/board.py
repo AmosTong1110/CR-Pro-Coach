@@ -343,17 +343,29 @@ class BoardWidget(QWidget):
             p.drawRect(self.tile_rect(rs.x - rs.width / 2, rs.y - 0.4, rs.width, 0.8))
 
     def _paint_result(self, p: QPainter) -> None:
-        """绘制对局结算大屏：比分 (Crowns)、胜负判定文案与结算原因 (3皇冠、皇冠领先、破血比拼)"""
+        """绘制对局结算大屏：比分 (Crowns)、胜负判定文案与结算原因 (3皇冠、皇冠领先、破血比拼、训练通关)"""
         r = self.session.result
         if r is None:
             return
         p.fillRect(self.tile_rect(0, 0, G.W, G.H), QColor(0, 0, 0, 120))
-        if r.winner is None:
-            text, col = "Draw", QColor("#dddddd")
-        elif r.winner == HUMAN:
-            text, col = "Victory", QColor("#ffd400")
+        if getattr(self.session, "drill_runner", None) is not None:
+            eval_res = self.session.drill_runner.evaluate()
+            stars = "⭐" * eval_res.stars if eval_res.stars > 0 else "❌"
+            text = f"{stars}  Cleared!" if eval_res.solved else "❌  Failed!"
+            col = QColor("#ffd400") if eval_res.stars == 3 else (QColor("#5ad15a") if eval_res.solved else QColor("#ff6b5e"))
+            sub_line = f"Tower damage taken: {eval_res.tower_damage_taken:.0f}"
         else:
-            text, col = "Defeat", QColor("#ff6b5e")
+            if r.winner is None:
+                text, col = "Draw", QColor("#dddddd")
+            elif r.winner == HUMAN:
+                text, col = "Victory", QColor("#ffd400")
+            else:
+                text, col = "Defeat", QColor("#ff6b5e")
+            reason_map = {"king_destroyed": "3 Crowns", "crowns": "Crown lead",
+                          "tiebreaker": "Lowest tower HP", "draw": "",
+                          "drill_cleared": "Drill Cleared", "drill_failed": "Drill Failed"}
+            reason = reason_map.get(r.reason, "")
+            sub_line = f"{r.crowns[0]} : {r.crowns[1]}   {reason}"
         f = QFont()
         f.setPixelSize(max(24, self.width() // 10))
         f.setBold(True)
@@ -363,6 +375,4 @@ class BoardWidget(QWidget):
         f.setPixelSize(max(14, self.width() // 26))
         p.setFont(f)
         p.setPen(QColor("white"))
-        reason = {"king_destroyed": "3 Crowns", "crowns": "Crown lead",
-                  "tiebreaker": "Lowest tower HP", "draw": ""}[r.reason]
-        p.drawText(self.rect().adjusted(0, 40, 0, 40), Qt.AlignCenter, f"{r.crowns[0]} : {r.crowns[1]}   {reason}")
+        p.drawText(self.rect().adjusted(0, 40, 0, 40), Qt.AlignCenter, sub_line)

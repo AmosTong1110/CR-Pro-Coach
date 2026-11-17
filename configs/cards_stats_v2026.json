@@ -4393,6 +4393,315 @@
       "data_source": "wiki-fandom-html:Goblins",
       "wiki_as_of": "2026-11-16",
       "data_as_of": "2026-11-16"
+    },
+    "giant": {
+      "name": "Giant",
+      "internal_name": "Giant",
+      "game_id": 26000003,
+      "aliases": {
+        "display": "Giant",
+        "hf": "giant",
+        "royaleapi": "giant",
+        "detector": [
+          "giant"
+        ]
+      },
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 5,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.8,
+      "mass": 6,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 0.9
+      },
+      "attack": {
+        "targets": [
+          "buildings"
+        ],
+        "range_tiles": 1.2,
+        "hit_speed_s": 1.5,
+        "first_hit_s": 0.7,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 7.0
+      },
+      "mechanics": [
+        {
+          "kind": "building_targeting",
+          "params": {}
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 1930,
+        "damage": 120
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 4091,
+          "damage": 254
+        },
+        "12": {
+          "hitpoints": 4501,
+          "damage": 279
+        },
+        "13": {
+          "hitpoints": 4951,
+          "damage": 307
+        },
+        "14": {
+          "hitpoints": 5441,
+          "damage": 337
+        },
+        "15": {
+          "hitpoints": 5985,
+          "damage": 371
+        },
+        "16": {
+          "hitpoints": 6580,
+          "damage": 408
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Giant",
+      "data_as_of": "2026-11-16"
+    },
+    "pekka": {
+      "name": "P.E.K.K.A",
+      "internal_name": "Pekka",
+      "game_id": 26000004,
+      "aliases": {
+        "display": "P.E.K.K.A",
+        "hf": "pekka",
+        "royaleapi": "pekka",
+        "detector": [
+          "pekka",
+          "pekka-evolution"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 7,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.85,
+      "mass": 8,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 0.9
+      },
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 1.2,
+        "hit_speed_s": 1.8,
+        "first_hit_s": 0.8,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "mechanics": [],
+      "base_stats": {
+        "hitpoints": 2350,
+        "damage": 510
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 3760,
+          "damage": 816
+        },
+        "12": {
+          "hitpoints": 4136,
+          "damage": 897
+        },
+        "13": {
+          "hitpoints": 4549,
+          "damage": 987
+        },
+        "14": {
+          "hitpoints": 5001,
+          "damage": 1085
+        },
+        "15": {
+          "hitpoints": 5490,
+          "damage": 1191
+        },
+        "16": {
+          "hitpoints": 6039,
+          "damage": 1310
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:P.E.K.K.A",
+      "data_as_of": "2026-11-16"
+    },
+    "baby_dragon": {
+      "name": "Baby Dragon",
+      "internal_name": "BabyDragon",
+      "game_id": 26000015,
+      "aliases": {
+        "display": "Baby Dragon",
+        "hf": "baby_dragon",
+        "royaleapi": "baby-dragon",
+        "detector": [
+          "baby-dragon"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 4,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.6,
+      "mass": 3,
+      "movement": {
+        "layer": "air",
+        "speed_tiles_s": 1.2
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 3.5,
+        "hit_speed_s": 1.5,
+        "first_hit_s": 0.7,
+        "splash_radius_tiles": 1.2,
+        "sight_tiles": 5.5,
+        "projectile_speed_tiles_s": 12.0
+      },
+      "mechanics": [
+        {
+          "kind": "air_unit",
+          "params": {}
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 750,
+        "damage": 100
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1200,
+          "damage": 160
+        },
+        "12": {
+          "hitpoints": 1320,
+          "damage": 176
+        },
+        "13": {
+          "hitpoints": 1452,
+          "damage": 193
+        },
+        "14": {
+          "hitpoints": 1596,
+          "damage": 212
+        },
+        "15": {
+          "hitpoints": 1752,
+          "damage": 233
+        },
+        "16": {
+          "hitpoints": 1927,
+          "damage": 256
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Baby Dragon",
+      "data_as_of": "2026-11-16"
+    },
+    "witch": {
+      "name": "Witch",
+      "internal_name": "Witch",
+      "game_id": 26000007,
+      "aliases": {
+        "display": "Witch",
+        "hf": "witch",
+        "royaleapi": "witch",
+        "detector": [
+          "witch"
+        ]
+      },
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": true,
+      "deploy_time_s": 1.0,
+      "collision_radius_tiles": 0.55,
+      "mass": 2,
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "attack": {
+        "targets": [
+          "ground",
+          "air"
+        ],
+        "range_tiles": 5.0,
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.6,
+        "splash_radius_tiles": 1.0,
+        "sight_tiles": 5.5,
+        "projectile_speed_tiles_s": 15.0
+      },
+      "mechanics": [
+        {
+          "kind": "periodic_spawn",
+          "params": {
+            "token": "skeletons",
+            "count": 4,
+            "interval_ms": 7000,
+            "initial_delay_ms": 1000
+          }
+        }
+      ],
+      "base_stats": {
+        "hitpoints": 520,
+        "damage": 84
+      },
+      "level_overrides": {
+        "11": {
+          "hitpoints": 832,
+          "damage": 134
+        },
+        "12": {
+          "hitpoints": 915,
+          "damage": 147
+        },
+        "13": {
+          "hitpoints": 1006,
+          "damage": 162
+        },
+        "14": {
+          "hitpoints": 1106,
+          "damage": 178
+        },
+        "15": {
+          "hitpoints": 1214,
+          "damage": 195
+        },
+        "16": {
+          "hitpoints": 1336,
+          "damage": 214
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "data_source": "wiki-fandom-html:Witch",
+      "data_as_of": "2026-11-16"
     }
   },
   "tokens": {

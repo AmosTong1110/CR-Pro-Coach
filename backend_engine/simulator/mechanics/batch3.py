@@ -85,3 +85,27 @@ class RampHitSpeed(Mechanic):
         u.hit_speed_ms = int(speeds[stage])                 # the engine arms the next cooldown with this value
         u.mstate["ramp_hits"] += 1
         return False
+
+
+# ---------------------------------------------------------------- Witch
+@register("periodic_spawn")
+class PeriodicSpawn(Mechanic):
+    """Spawns tokens around the unit at periodic intervals (e.g. Witch summoning Skeletons every 7s)."""
+
+    def on_tick(self, m, u, dt: int) -> bool:
+        p = u.params.get("periodic_spawn", {})
+        if "spawn_timer" not in u.mstate:
+            u.mstate["spawn_timer"] = int(p.get("initial_delay_ms", 1000))
+        else:
+            u.mstate["spawn_timer"] -= dt
+            if u.mstate["spawn_timer"] <= 0:
+                token = p.get("token", "skeletons")
+                count = int(p.get("count", 4))
+                u.mstate["spawn_timer"] = int(p.get("interval_ms", 7000))
+                eid = u.source_event_id or 0
+                try:
+                    m._spawn_card_units(u.side, token, u.x, u.y, eid, False, count=count, deploy_ms=500)
+                except (KeyError, ValueError):
+                    pass
+        return False
+

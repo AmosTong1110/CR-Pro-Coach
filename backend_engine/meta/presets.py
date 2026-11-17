@@ -13,7 +13,7 @@ from typing import Collection, Iterable, List, Optional, Sequence, Tuple
 
 PRESETS_PATH = Path(__file__).resolve().parents[2] / "configs" / "preset_decks.json"
 # The scripted AI attacks with building-targeting win conditions and siege weapons.
-AI_PUSH_CARDS = ("hog_rider", "rune_giant", "minion_giant", "x_bow", "mortar")
+AI_PUSH_CARDS = ("hog_rider", "rune_giant", "minion_giant", "x_bow", "mortar", "giant", "pekka")
 
 
 @dataclass(frozen=True)

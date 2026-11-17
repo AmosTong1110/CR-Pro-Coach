@@ -110,9 +110,10 @@ class ScriptedBot:
                 # 军队防守：放置在敌军身前安全拉扯距离
                 return [self._intent(pick, tx, max(min(ty - 3.0, G.RIVER_Y0 - 0.5), 0.5))]
 
-        # 寻找进攻核心卡牌 (只攻击建筑的攻城核心，如野猪骑士、攻城槌；以及远程自闭攻城武器如连弩、迫击炮)
+        # 寻找进攻核心卡牌 (只攻击建筑的攻城核心，如野猪骑士、攻城槌、巨人；远程自闭攻城武器如连弩、迫击炮；以及大皮卡)
         wincons = [c for c in affordable if self._card(c).get("attack", {}).get("targets") == ["buildings"]
-                   or (self._card(c)["type"] == "building" and self._card(c).get("attack", {}).get("range_tiles", 0) >= 11.0)]
+                   or (self._card(c)["type"] == "building" and self._card(c).get("attack", {}).get("range_tiles", 0) >= 11.0)
+                   or c in ("pekka",)]
 
         def _wincon_pos(cid: str, lx: float) -> Tuple[float, float]:
             return (lx, G.RIVER_Y0 - 1.5) if self._card(cid)["type"] == "building" else (lx, G.RIVER_Y0 - 0.5)

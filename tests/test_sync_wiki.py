@@ -53,13 +53,13 @@ def test_parse_page(tmp_path):
 def test_verify_flags_difference_and_unknown_card(tmp_path, db):
     write(tmp_path, "Knight", hp11="1,800")
     write(tmp_path, "Evolved Knight")                # variants are not compared
-    write(tmp_path, "Pekka", hp11="3,000")           # not in the DB
+    write(tmp_path, "Golem", hp11="5,000")           # not in the DB
     rows = verify_wiki(db, load_wiki_dir(tmp_path))
     by = {(r["card"], r["stat"]): r for r in rows}
     assert by["knight", "hitpoints"]["status"] == "DIFF"     # L11: page says 1800, the DB has 1766
     assert by["knight", "hitpoints"]["wiki"] == {11: 1800, 16: 2844} and by["knight", "hitpoints"]["ours"] == {11: 1766, 16: 2844}
     assert by["knight", "damage"]["status"] == "ok"
-    assert by["pekka", "-"]["status"] == "not simulated yet"
+    assert by["golem", "-"]["status"] == "not simulated yet"
     assert not any(r["card"] == "knight" and r["status"] == "not simulated yet" for r in rows)
 
 

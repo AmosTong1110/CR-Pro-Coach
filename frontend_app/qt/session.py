@@ -115,11 +115,13 @@ class GameSession:
         self.cfg = cfg
         self.log: List[LogEntry] = []
         self.quiz: List[QuizResult] = []   # 跨局保留的玩家算水历史测试记录
+        self.drill_runner = None
         self.new_match()
 
     # -- 对局生命周期管理 ----------------------------------------------------
     def new_match(self, cfg: Optional[SessionConfig] = None) -> None:
         """重置并开启一局全新的比赛"""
+        self.drill_runner = None
         if cfg is not None:
             self.cfg = cfg
         c = self.cfg
@@ -353,15 +355,46 @@ class GameSession:
         self.new_match(replace(self.cfg, **changes))
 
     # -- 时间推进 ----------------------------------------------------------
+    def is_drill(self) -> bool:
+        """是否处于定向微操残局训练沙盒中"""
+        return self.drill_runner is not None
+
+    def start_drill(self, drill: Any) -> Any:
+        """加载并开启一个战术防守训练沙盒"""
+        from backend_engine.drills.runner import DrillRunner
+        self.drill_runner = DrillRunner(drill, db=self.db)
+        self.match = self.drill_runner.match
+        self.cfg = SessionConfig(
+            player_deck=drill.player_deck,
+            ai_deck=("knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "musketeer", "zap"),
+            level=drill.level,
+        )
+        self.runner = MatchRunner(self.match, {HUMAN: None, AI: None}, {})
+        self.log = []
+        self._logged = 0
+        self.opp_tracker = OppElixirTracker(self.db.rules, observer_side=HUMAN, evo_cards=())
+        self.timeline = []
+        self.redo = []
+        self.pre_play = {}
+        self.review = None
+        self.match_id = None
+        self.loaded_from = None
+        self.started_at = datetime.now()
+        self._checkpoint()
+        return self.drill_runner
+
     def tick(self, n: int = 1) -> List[LogEntry]:
         """向前步进 n 帧并收集新产生的出牌日志"""
         for _ in range(n):
-            if self.match.result is not None:
+            if self.result is not None:
                 break
             if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:
                 self._checkpoint()
-            self.runner.tick()
-        if self.match.result is not None:
+            if self.drill_runner is not None:
+                self.drill_runner.step()
+            else:
+                self.runner.tick()
+        if self.result is not None:
             self._checkpoint()
         return self._collect_log()
 
@@ -370,7 +403,7 @@ class GameSession:
         new = []
         for ev in self.match.events[self._logged:]:
             self.opp_tracker.observe(ev)
-            lat = self.ai_buffer.latency_of(ev.event_id) if ev.side == HUMAN else None
+            lat = self.ai_buffer.latency_of(ev.event_id) if ev.side == HUMAN and hasattr(self, "ai_buffer") else None
             new.append(LogEntry(ev.t_ms, ev.side, ev.card_id, ev.tile.x, ev.tile.y, ev.is_evolved, lat, ev.event_id,
                                 ev.is_ability))
         self._logged = len(self.match.events)
@@ -383,15 +416,19 @@ class GameSession:
         if self.match.t_ms % CHECKPOINT_EVERY_MS == 0:
             self._checkpoint()
         before = self._capture()
-        res = self.runner.human_play(card_id, x, y, side=HUMAN)
-        if res.ok:
+        if self.drill_runner is not None:
+            res = self.drill_runner.play(card_id, x, y)
+        else:
+            res = self.runner.human_play(card_id, x, y, side=HUMAN)
+        if res.ok and res.event is not None:
             if self.loaded_from is not None:  # playing on a reopened match: a new branch, saved separately
                 self.match_id, self.loaded_from, self.started_at = None, None, datetime.now()
             self.redo.clear()  # 改变了历史走向，旧的未来废弃
             self.pre_play[res.event.event_id] = before
             if not self.timeline or self.timeline[-1].t_ms < before.t_ms:
                 self.timeline.append(before)
-        self.runner.deliver_events()
+        if self.drill_runner is None:
+            self.runner.deliver_events()
         self._collect_log()
         return res
 
@@ -437,6 +474,21 @@ class GameSession:
     # -- 视图查询属性 ------------------------------------------------------
     @property
     def result(self) -> Optional[MatchResult]:
+        if self.drill_runner is not None:
+            if self.match.result is not None:
+                return self.match.result
+            if self.drill_runner.is_finished():
+                res = self.drill_runner.evaluate()
+                winner = HUMAN if res.solved else AI
+                crowns = (1, 0) if res.solved else (0, 1)
+                self.match.result = MatchResult(
+                    winner=winner,
+                    crowns=crowns,
+                    reason="drill_cleared" if res.solved else "drill_failed",
+                    t_ms=self.match.t_ms,
+                )
+                return self.match.result
+            return None
         return self.match.result
 
     def ai_has_seen(self, u: Unit) -> bool:
@@ -445,6 +497,12 @@ class GameSession:
 
     def clock(self) -> Tuple[str, str]:
         """获取比赛倒计时与阶段文本 ('2:41', 'x2 Elixir' / 'Overtime x3' / '')"""
+        if self.drill_runner is not None:
+            left = max(0, self.drill_runner.drill.target_duration_ms - self.match.t_ms)
+            s = (left + 999) // 1000
+            alive = self.drill_runner.threats_alive()
+            threat_str = f"{alive} threat{'s' if alive != 1 else ''}"
+            return f"{s // 60}:{s % 60:02d}", f"🎯 {threat_str}"
         m = self.match
         left = (m.regulation_ms if m.t_ms < m.regulation_ms else m.end_ms) - m.t_ms
         s = max(0, (left + 999) // 1000)
@@ -487,11 +545,14 @@ class GameSession:
 
     def to_record(self, mode: str = "practice") -> Tuple[MatchMeta, MatchRecord]:
         """Summary + rebuildable record of this match (furthest point of the current branch)."""
+        if self.is_drill() and mode == "practice":
+            mode = "drill"
         if self.match_id is None:
             self.match_id = new_match_id(mode, self.seed, self.started_at)
         m = self._furthest_match()
         c = self.cfg
         res = m.result
+        opp_arch = f"Drill: {self.drill_runner.drill.title}" if self.is_drill() else archetype_name(c.ai_deck, c.ai_evo)
         record = MatchRecord(self.config_dict(), actions_from_events(m.events), m.t_ms, m.state_hash())
         meta = MatchMeta(
             match_id=self.match_id, mode=mode, created=self.started_at.isoformat(timespec="seconds"),
@@ -500,7 +561,7 @@ class GameSession:
             player_deck=tuple(c.player_deck), opp_deck=tuple(c.ai_deck),
             player_evo=tuple(c.player_evo), opp_evo=tuple(c.ai_evo), level=c.level, persona=c.persona,
             player_archetype=archetype_name(c.player_deck, c.player_evo),
-            opp_archetype=archetype_name(c.ai_deck, c.ai_evo),
+            opp_archetype=opp_arch,
             n_plays=sum(e.side == HUMAN and not e.is_ability for e in m.events),
             data_version=str(self.db.raw.get("data_version", "")), engine_version=ENGINE_VERSION,
         )

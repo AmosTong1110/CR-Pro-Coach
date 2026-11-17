@@ -196,6 +196,10 @@ class AnalysisPage(QWidget):
 
         head = QHBoxLayout()
         head.addWidget(_label("Analysis", "h1"))
+        self.drills_btn = _cls(QPushButton("🎯 Tactical Drills…"), "ghost")
+        self.drills_btn.setToolTip("Open the curated tactical defense drills & micro-challenges dialog")
+        self.drills_btn.clicked.connect(self.shell.open_drills_dialog)
+        head.addWidget(self.drills_btn)
         head.addStretch(1)
         self.filter = QComboBox()
         self.filter.setToolTip("Filter by game mode")
@@ -337,6 +341,15 @@ class AnalysisPage(QWidget):
         self.moments_list.currentRowChanged.connect(self._moment_selected)
         self.moments_list.itemDoubleClicked.connect(lambda _: self.open_selected())
         ml.addWidget(self.moments_list)
+
+        mrow = QHBoxLayout()
+        self.practice_moment_btn = _cls(QPushButton("🎯 Practice this moment"), "ghost")
+        self.practice_moment_btn.setToolTip("Create an isolated sandbox drill from this exact moment and practice defending it cleanly")
+        self.practice_moment_btn.setEnabled(False)
+        self.practice_moment_btn.clicked.connect(self.practice_selected_moment)
+        mrow.addWidget(self.practice_moment_btn)
+        mrow.addStretch(1)
+        ml.addLayout(mrow)
 
         self.leak_banner = _label("", wrap=True)
         self.leak_banner.setVisible(False)
@@ -591,12 +604,16 @@ class AnalysisPage(QWidget):
             self.moments_list.setVisible(False)
             self.mistakes_only.setVisible(False)
             self.leak_banner.setVisible(False)
+            self.practice_moment_btn.setVisible(False)
+            self.practice_moment_btn.setEnabled(False)
             self.moments_list.blockSignals(False)
             return
 
         self.moments_empty.setVisible(False)
         self.moments_list.setVisible(True)
         self.mistakes_only.setVisible(True)
+        self.practice_moment_btn.setVisible(True)
+        self.practice_moment_btn.setEnabled(False)
         moves = self.review.moves
         if self.mistakes_only.isChecked():
             targets = [mv for mv in moves if mv.label in ("blunder", "mistake", "inaccuracy", "brilliant")]
@@ -652,13 +669,49 @@ class AnalysisPage(QWidget):
 
     def _moment_selected(self, row: int) -> None:
         if row < 0 or not self.review or not self.review.moves:
+            self.practice_moment_btn.setEnabled(False)
+            return
+        it = self.moments_list.item(row)
+        if not it:
+            self.practice_moment_btn.setEnabled(False)
+            return
+        t_ms = it.data(Qt.UserRole)
+        self.practice_moment_btn.setEnabled(t_ms is not None)
+        if t_ms is not None:
+            self.slider.setValue(t_ms)
+
+    def practice_selected_moment(self) -> None:
+        from backend_engine.drills.moment_extractor import drill_from_move_review
+        from backend_engine.simulator.engine import Match
+        m = self.selected()
+        if m is None or not self.review or not self.review.moves:
+            return
+        row = self.moments_list.currentRow()
+        if row < 0:
             return
         it = self.moments_list.item(row)
         if not it:
             return
         t_ms = it.data(Qt.UserRole)
-        if t_ms is not None:
-            self.slider.setValue(t_ms)
+        if t_ms is None:
+            return
+        mv = next((mv for mv in self.review.moves if mv.t_ms == t_ms), None)
+        if mv is None:
+            return
+        try:
+            record = self.shell.store.load_record(m.match_id)
+            session = GameSession.rebuild(record, db=self.shell.fight.session.db)
+            cp = session.pre_play.get(mv.event_id)
+            if cp is not None:
+                match_before = Match(session.match.cfg, session.db)
+                match_before.restore(cp.match)
+            else:
+                session.seek(max(0, mv.t_ms - 1))
+                match_before = session.match
+            spec = drill_from_move_review(mv, match_before)
+            self.shell.start_drill(spec)
+        except Exception as e:
+            QMessageBox.warning(self, "Practice Drill", f"Could not create drill from this moment:\n{e}")
 
     def _move_clicked(self, i: int) -> None:
         if self.review and 0 <= i < len(self.review.moves):
@@ -1299,6 +1352,15 @@ class CRbotWindow(QMainWindow):
     def open_deck_builder(self) -> None:
         self.show_page("fight")
         self.fight.edit_decks()
+
+    def open_drills_dialog(self) -> None:
+        from frontend_app.qt.drills_dialog import DrillsDialog
+        dlg = DrillsDialog(self, on_start=self.start_drill)
+        dlg.exec()
+
+    def start_drill(self, drill) -> None:
+        self.show_page("fight")
+        self.fight.start_drill(drill)
 
     def closeEvent(self, e) -> None:
         if getattr(self.fight, "showing_me", False):
