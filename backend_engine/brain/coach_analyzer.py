@@ -71,6 +71,141 @@ class Candidate:
         return self.card_id is None
 
 
+# ---------------------------------------------------------------------------
+# 战术失误根因分类字典 (Diagnostic Tags Metadata)
+# ---------------------------------------------------------------------------
+DIAGNOSTIC_META = {
+    "overcommitted": {
+        "name": "Overcommitted",
+        "tag": "⚡ Overcommitted",
+        "color": "#e74c3c",     # Red
+        "badge_bg": "#481b1b",
+        "icon": "⚡",
+        "description": "Spent elixir when waiting or preserving defense was critical.",
+    },
+    "bad_placement": {
+        "name": "Bad Placement",
+        "tag": "🎯 Bad Placement",
+        "color": "#e67e22",     # Orange
+        "badge_bg": "#462912",
+        "icon": "🎯",
+        "description": "Right card deployed at suboptimal tile or wrong lane.",
+    },
+    "ignored_threat": {
+        "name": "Ignored Threat",
+        "tag": "⚠️ Ignored Threat",
+        "color": "#d35400",     # Dark amber
+        "badge_bg": "#422110",
+        "icon": "⚠️",
+        "description": "Attacked while high-priority enemy troop required immediate defense.",
+    },
+    "negative_trade": {
+        "name": "Negative Trade",
+        "tag": "📉 Negative Trade",
+        "color": "#9b59b6",     # Purple
+        "badge_bg": "#371842",
+        "icon": "📉",
+        "description": "Overspent elixir compared to optimal cheaper answer.",
+    },
+    "missed_cycle": {
+        "name": "Missed Cycle",
+        "tag": "🔄 Missed Cycle",
+        "color": "#1abc9c",     # Teal
+        "badge_bg": "#123b34",
+        "icon": "🔄",
+        "description": "Failed to cycle cheap cards to reach necessary response.",
+    },
+    "wrong_response": {
+        "name": "Wrong Answer",
+        "tag": "❌ Wrong Answer",
+        "color": "#3498db",     # Blue
+        "badge_bg": "#162e45",
+        "icon": "❌",
+        "description": "Suboptimal counter card for the current enemy board.",
+    },
+}
+
+
+def diagnose_move(
+    mv: Any,
+    db: Optional[Any] = None,
+    match_before: Optional[Any] = None,
+    side: int = 0,
+) -> Optional[str]:
+    """
+    根据局面与出牌落差，精准诊断失误产生的战术根因。
+    返回: 'overcommitted' | 'bad_placement' | 'ignored_threat' | 'negative_trade' | 'missed_cycle' | 'wrong_response' | None
+    """
+    stored = getattr(mv, "diagnostic", None)
+    if stored:
+        return stored
+
+    loss = getattr(mv, "loss", 0.0)
+    label = getattr(mv, "label", "good")
+    if loss <= 0.01 or label in ("best", "brilliant", "good"):
+        return None
+
+    actual = getattr(mv, "actual", None)
+    best = getattr(mv, "best", None)
+    if actual is None or best is None:
+        return None
+
+    if actual.is_wait:
+        return "overcommitted"
+
+    # 1. 牌选对但位置明显放偏 (Bad Placement)
+    if not best.is_wait and best.card_id == actual.card_id:
+        return "bad_placement"
+
+    costs: dict = {}
+    if db is not None:
+        if hasattr(db, "elixir_costs"):
+            costs = db.elixir_costs()
+        elif hasattr(db, "cards"):
+            costs = {cid: c.get("elixir", 3) for cid, c in db.cards.items()}
+        elif isinstance(db, dict):
+            costs = {cid: (c.get("elixir", 3) if isinstance(c, dict) else 3) for cid, c in db.items()}
+
+    actual_cost = costs.get(actual.card_id, 3) if actual.card_id else 0
+    best_cost = costs.get(best.card_id, 0) if best.card_id else 0
+
+    # 2. 漏防严重威胁：敌方单位已兵临城下 (y <= 16.5)，玩家却在异路或敌方半场强攻 (y >= 16.0)
+    if match_before is not None and hasattr(match_before, "units"):
+        enemy_threats = [
+            u for u in match_before.units.values()
+            if getattr(u, "side", 0) != side and getattr(u, "hp", 0) > 0
+            and getattr(u, "kind", "") == "troop" and getattr(u, "y", 32) <= 16.5
+        ]
+        if enemy_threats and actual.y >= 16.0:
+            return "ignored_threat"
+
+    v_wait = getattr(mv, "v_wait", 0.0)
+    v_actual = getattr(mv, "v_actual", 0.0)
+
+    # 3. 圣水透支：最优打法是等待存费 (best.is_wait)
+    if best.is_wait:
+        return "overcommitted"
+
+    # 4. 严重亏费 (Negative Elixir Trade)：下出 >=5 费高费大牌解场 (如火箭/大电) 造成严重圣水赤字
+    if best.card_id and (actual_cost >= 5 and actual_cost - best_cost >= 2):
+        return "negative_trade"
+
+    # 5. 错失低费过牌 (Missed Cycle)：最佳打法是过 1-2 费杂毛/过牌卡，玩家却下了 3-4 费中费牌
+    if best.card_id and best_cost <= 2 and actual_cost <= 4:
+        return "missed_cycle"
+
+    # 6. 其他亏费解场 (差额 >= 2)
+    if best.card_id and (actual_cost - best_cost >= 2):
+        return "negative_trade"
+
+    # 7. 等待明显强于出重费牌
+    if v_wait > v_actual + 0.04 and actual_cost >= 4:
+        return "overcommitted"
+
+    # 8. 其余卡牌属性不对位导致的解卡失误 (Wrong Answer)
+    return "wrong_response"
+
+
 @dataclass(frozen=True)
 class MoveReview:
     """单步出牌的深度赛后复盘评级报告"""
@@ -86,6 +221,7 @@ class MoveReview:
     label: str                       # 评级等级："brilliant" | "best" | "good" | "inaccuracy" | "mistake" | "blunder"
     n_candidates: int                # 本次横向比对推演的候选打法总数量
     alternatives: Tuple[Tuple[Candidate, float], ...] = ()   # 评分最高的前几种备选方案及其胜率
+    diagnostic: Optional[str] = None # 战术根因诊断："overcommitted" | "bad_placement" | "ignored_threat" | "negative_trade" | "missed_cycle" | "wrong_response"
 
     @property
     def symbol(self) -> str:
@@ -122,6 +258,28 @@ class MatchReview:
         for m in self.moves:
             out[m.label] += 1
         return out
+
+    def diagnostics_breakdown(self, db: Optional[Any] = None) -> Dict[str, int]:
+        """统计整局各类失误成因的出现次数"""
+        out: Dict[str, int] = {}
+        for m in self.moves:
+            d = m.diagnostic or diagnose_move(m, db=db)
+            if d:
+                out[d] = out.get(d, 0) + 1
+        return out
+
+    def primary_leak_summary(self, db: Optional[Any] = None) -> Optional[str]:
+        """生成本局最主要失误漏点与建议的精简摘要文本"""
+        breakdown = self.diagnostics_breakdown(db)
+        if not breakdown:
+            return None
+        total = sum(breakdown.values())
+        top_key, count = max(breakdown.items(), key=lambda kv: kv[1])
+        pct = count / total
+        meta = DIAGNOSTIC_META.get(top_key, {})
+        name = meta.get("name", top_key)
+        desc = meta.get("description", "")
+        return f"Primary leak: {pct:.0%} of mistakes were '{name}' ({count}/{total}) — {desc}"
 
 
 def classify(loss: float, v_actual: float, others: Sequence[float], v_wait: float) -> str:
@@ -234,8 +392,15 @@ class CoachAnalyzer:
         v_wait = next((v for c, v in scored if c.is_wait), v_before)
         loss = max(0.0, v_best - v_actual)
         others = [v for c, v in scored if c != actual]
+        lbl = classify(loss, v_actual, others, v_wait)
+        diag = diagnose_move(
+            MoveReview(event_id, m0.t_ms, actual, v_before, v_actual, v_best, v_wait, best, loss, lbl, len(scored)),
+            db=getattr(m0, "db", None),
+            match_before=m0,
+            side=self.side,
+        )
         return MoveReview(event_id, m0.t_ms, actual, v_before, v_actual, v_best, v_wait, best, loss,
-                          classify(loss, v_actual, others, v_wait), len(scored), tuple(scored[:5]))
+                          lbl, len(scored), tuple(scored[:5]), diagnostic=diag)
 
     def value_at(self, checkpoint: Any) -> float:
         """评估特定历史检查点时刻的局势静态胜率"""

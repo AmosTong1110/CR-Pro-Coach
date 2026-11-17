@@ -138,6 +138,7 @@ def review_to_dict(r: MatchReview) -> dict:
             "v_before": m.v_before, "v_actual": m.v_actual, "v_best": m.v_best, "v_wait": m.v_wait,
             "loss": m.loss, "label": m.label, "n_candidates": m.n_candidates,
             "alternatives": [[_cand(c), v] for c, v in m.alternatives],
+            "diagnostic": getattr(m, "diagnostic", None),
         })
     return {"format": FORMAT_VERSION, "curve": [[t, v] for t, v in r.curve], "moves": moves,
             "final": r.final, "model_meta": r.model_meta}
@@ -149,6 +150,7 @@ def review_from_dict(d: dict) -> MatchReview:
         v_before=m["v_before"], v_actual=m["v_actual"], v_best=m["v_best"], v_wait=m["v_wait"],
         best=_uncand(m["best"]), loss=m["loss"], label=m["label"], n_candidates=int(m["n_candidates"]),
         alternatives=tuple((_uncand(c), v) for c, v in m.get("alternatives", ())),
+        diagnostic=m.get("diagnostic"),
     ) for m in d["moves"]]
     return MatchReview([(int(t), float(v)) for t, v in d["curve"]], moves, d.get("final"),
                        dict(d.get("model_meta", {})))

@@ -6,8 +6,10 @@ import os
 import sys
 
 
-def pytest_sessionfinish(session, exitstatus):
-    """Exit cleanly via os._exit to prevent PySide6/Shiboken crash on macOS atexit."""
+def pytest_unconfigure(config):
+    """Exit cleanly via os._exit after all test summaries and reports are printed,
+    bypassing buggy Shiboken C++ atexit destruction on macOS.
+    """
     sys.stdout.flush()
     sys.stderr.flush()
-    os._exit(exitstatus)
+    os._exit(config.option.exitstatus if hasattr(config.option, "exitstatus") else 0)

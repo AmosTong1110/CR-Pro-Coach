@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
-from backend_engine.brain.coach_analyzer import MatchReview
+from backend_engine.brain.coach_analyzer import DIAGNOSTIC_META, MatchReview, diagnose_move
 from backend_engine.meta.archetypes import avg_elixir, fmt_avg, pretty
 from backend_engine.meta.deck_link import format_copy_deck_link, parse_deck_link
 from backend_engine.meta.recommend import coverage, meta_info, recommend
@@ -338,6 +338,10 @@ class AnalysisPage(QWidget):
         self.moments_list.itemDoubleClicked.connect(lambda _: self.open_selected())
         ml.addWidget(self.moments_list)
 
+        self.leak_banner = _label("", wrap=True)
+        self.leak_banner.setVisible(False)
+        ml.addWidget(self.leak_banner)
+
         self.moments_empty = _label("Not analyzed yet. Press Analyze to find key moments.", "sub")
         ml.addWidget(self.moments_empty)
         dv.addWidget(self.moments_card)
@@ -586,6 +590,7 @@ class AnalysisPage(QWidget):
             self.moments_empty.setVisible(True)
             self.moments_list.setVisible(False)
             self.mistakes_only.setVisible(False)
+            self.leak_banner.setVisible(False)
             self.moments_list.blockSignals(False)
             return
 
@@ -602,17 +607,47 @@ class AnalysisPage(QWidget):
             it = QListWidgetItem("★ Clean match — no mistakes found!")
             it.setForeground(QColor("#5ad15a"))
             self.moments_list.addItem(it)
+            self.leak_banner.setVisible(False)
         else:
+            db_cards = self.shell.db_cards()
             for mv in targets:
                 col = LABEL_COLOR.get(mv.label, QColor(C["text"]))
                 name = self._card_name(mv.actual.card_id)
                 swing = f"−{mv.loss * 100:.0f}%" if mv.loss > 0.005 else "±0%"
                 sym = mv.symbol or "·"
-                it = QListWidgetItem(f"{mmss(mv.t_ms)}   {name:<16} {sym} {mv.label_text:<12} {swing}")
+                d_key = getattr(mv, "diagnostic", None) or diagnose_move(mv, db_cards)
+                diag_str = f"[{DIAGNOSTIC_META[d_key]['name']}]" if d_key in DIAGNOSTIC_META else ""
+                it = QListWidgetItem(f"{mmss(mv.t_ms)}   {name:<14} {sym} {mv.label_text:<10} {diag_str:<16} {swing}")
                 it.setData(Qt.UserRole, mv.t_ms)
                 it.setForeground(col)
                 it.setToolTip(tooltip_html(mv, self._card_name))
                 self.moments_list.addItem(it)
+
+            breakdown = self.review.diagnostics_breakdown(db_cards)
+            leak = self.review.primary_leak_summary(db_cards)
+            if breakdown:
+                chips = []
+                for k, count in sorted(breakdown.items(), key=lambda kv: -kv[1]):
+                    meta = DIAGNOSTIC_META.get(k, {})
+                    chips.append(
+                        f"<span style='background:{meta.get('badge_bg', '#333')}; color:{meta.get('color', '#fff')}; "
+                        f"padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px;'>"
+                        f"{meta.get('icon', '')} {meta.get('name', k)}: {count}</span>"
+                    )
+                chips_html = " &nbsp;".join(chips)
+                banner_html = (
+                    f"<div style='margin-top:6px; padding:6px 10px; background:{C['panel2']}; border:1px solid {C['line']}; "
+                    f"border-radius:6px; font-size:11px;'>"
+                    f"<b>Mistake breakdown:</b>&nbsp;&nbsp;{chips_html}"
+                )
+                if leak:
+                    banner_html += f"<br><span style='color:#e67e22;'><b>💡 {leak}</b></span>"
+                banner_html += "</div>"
+                self.leak_banner.setText(banner_html)
+                self.leak_banner.setVisible(True)
+            else:
+                self.leak_banner.setText("")
+                self.leak_banner.setVisible(False)
         self.moments_list.blockSignals(False)
 
     def _moment_selected(self, row: int) -> None:

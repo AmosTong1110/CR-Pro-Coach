@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from backend_engine.brain.coach_analyzer import MatchReview, MoveReview
+from backend_engine.brain.coach_analyzer import DIAGNOSTIC_META, MatchReview, MoveReview, diagnose_move
 from frontend_app.qt.theme import C, cls
 
 # Grade colours (same convention as chess review tools)
@@ -371,11 +371,17 @@ class ReviewPanel(QWidget):
             self.list.blockSignals(False)
             return
         self.accuracy.setText(f"{review.accuracy:.0f}%")
-        self.summary.setText(grade_chips_html(review))
+        summary_text = grade_chips_html(review)
+        leak = review.primary_leak_summary()
+        if leak:
+            summary_text += f"<br><span style='color:#e67e22; font-size:11px;'><b>💡 {leak}</b></span>"
+        self.summary.setText(summary_text)
         self.analyze_btn.setText("Re-analyze (R)")
         for mv in review.moves:
+            d_key = getattr(mv, "diagnostic", None) or diagnose_move(mv)
+            diag_str = f" [{DIAGNOSTIC_META[d_key]['name']}]" if d_key in DIAGNOSTIC_META else ""
             it = QListWidgetItem(f"{mmss(mv.t_ms)}   {self.names(mv.actual.card_id)}   {mv.symbol or '·'} "
-                                 f"{mv.label_text}   −{mv.loss * 100:.0f}%")
+                                 f"{mv.label_text}{diag_str}   −{mv.loss * 100:.0f}%")
             it.setForeground(LABEL_COLOR[mv.label])
             it.setToolTip(tooltip_html(mv, self.names))
             self.list.addItem(it)
@@ -494,11 +500,24 @@ def explain(mv: MoveReview, names: Callable[[str], str]) -> tuple:
 
 
 def tooltip_html(mv: MoveReview, names: Callable[[str], str]) -> str:
-    """Hover text for a graded play (graph dot / list row): Mistake + Alternative."""
+    """Hover text for a graded play (graph dot / list row): Mistake + Alternative + Diagnostic."""
     mistake, alt = explain(mv, names)
     col = LABEL_COLOR[mv.label].name()
+    diag_str = ""
+    d_key = getattr(mv, "diagnostic", None) or diagnose_move(mv)
+    if d_key and d_key in DIAGNOSTIC_META:
+        meta = DIAGNOSTIC_META[d_key]
+        diag_str = (
+            f"<div style='margin-bottom:4px;'>"
+            f"<span style='background:{meta['badge_bg']}; color:{meta['color']}; "
+            f"padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px;'>"
+            f"{meta['icon']} {meta['name']}</span> "
+            f"<span style='color:{C['muted']}; font-size:10px;'>({meta['description']})</span>"
+            f"</div>"
+        )
     return (f"<div style='max-width:340px'><b>{mmss(mv.t_ms)} · {names(mv.actual.card_id)}</b> "
             f"<span style='color:{col}'>{mv.symbol} {mv.label_text}</span> (−{mv.loss:.0%})<br>"
+            f"{diag_str}"
             f"<b>Mistake:</b> {mistake}<br><b style='color:#5ad15a'>Alternative:</b> {alt}<br>"
             f"<span style='color:#8b93a1'>{mv.n_candidates} options simulated 8 s ahead</span></div>")
 
@@ -507,10 +526,24 @@ def describe(mv: MoveReview, names: Callable[[str], str]) -> str:
     """Rich-text explanation of one graded play: win chance before/after, the recommendation, and why."""
     a = mv.actual
     mistake, alt = explain(mv, names)
+    diag_badge = ""
+    d_key = getattr(mv, "diagnostic", None) or diagnose_move(mv)
+    if d_key and d_key in DIAGNOSTIC_META:
+        meta = DIAGNOSTIC_META[d_key]
+        diag_badge = (
+            f"<span style='background:{meta['badge_bg']}; color:{meta['color']}; "
+            f"padding:3px 8px; border-radius:4px; font-weight:bold; font-size:11px;'>"
+            f"{meta['icon']} {meta['name']}</span> "
+            f"<span style='color:{C['muted']}; font-size:11px;'>— {meta['description']}</span>"
+        )
     lines = [f"<b>{mmss(mv.t_ms)} · {names(a.card_id)} at ({a.x:.1f}, {a.y:.1f})</b> — "
-             f"<span style='color:{LABEL_COLOR[mv.label].name()}'>{mv.label_text} {mv.symbol}</span>",
-             f"<b>Mistake:</b> {mistake}",
-             f"<b style='color:#5ad15a'>Alternative:</b> {alt}"]
+             f"<span style='color:{LABEL_COLOR[mv.label].name()}'>{mv.label_text} {mv.symbol}</span>"]
+    if diag_badge:
+        lines.append(diag_badge)
+    lines.extend([
+        f"<b>Mistake:</b> {mistake}",
+        f"<b style='color:#5ad15a'>Alternative:</b> {alt}",
+    ])
     if not mv.best.is_wait and mv.loss > 0.01:
         lines.append(f"<span style='color:{C['muted']}'>On the board: yours in red, recommended in green</span>")
     lines.append(f"<span style='color:{C['muted']}'>{mv.n_candidates} options simulated 8 s ahead</span>")
