@@ -1,7 +1,7 @@
 # CRbot — Session Handoff (2026-11-17)
 
 Read this first in every new session. Roadmap: `docs/CRBOT_UPGRADE_PLAN.md`.
-State at handoff: **544 passing, 1 skipped (all green)**, engine **v7**, observation **il_obs_v2 (OBS_DIM 1752, card-pool independent)** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), all work committed on `main` (not pushed).
+State at handoff: **544 passing, 1 skipped (all green)**, engine **v7**, observation **il_obs_v2 (OBS_DIM 1752, card-pool independent)** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), all work committed on `main` and pushed (2026-11-17, `a325061`).
 Environment: project venv `.venv` (Python 3.14; numpy, pyyaml, PySide6-Essentials, onnxruntime, onnx, Pillow, pytest).
 Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the app: `.venv/bin/python -m frontend_app.qt.app` (or `start_coach.command`).
 **Single mode (2026-11-17):** Mode B (live screen capture / CV overlay) was removed for good; CRbot = local simulator + post-match AI coach.
@@ -141,5 +141,5 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 0b. **Phase 1 / Phase 2 card plan** is in `docs/CRBOT_UPGRADE_PLAN.md` §10 (8 meta decks need 51 base cards: 28 beyond Phase 1). The value model was retrained on engine v6 (2026-11-16, `2cb1cad`: 31 preset decks, 500 games, 77.09% test accuracy); next is Phase 2.
 1. **Next cards**: the 76 catalog-only cards (`CardDB.quarantined()`) need stats + mechanics: feed them through `tools/sync_card_catalog.py` (snapshot with L11 numbers; the wiki adapter `sync_meta --html-dir` gives the numbers) or the older `tools/add_wiki_cards.py` specs; write a mechanic for each `needs_hook`; one unit test per mechanic + a golden scenario. Tower Troops need stats too.
 2. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>` using `game_id` and `CardDB.by_alias`.
-3. **Push**: `main` is ahead of origin by the Mode B removal, the test fixes and the card architecture; check that `#VLYCGJGQR` (default tag in `tools/analyze_my_battlelog.py`, its test and `my_battlelog.json`) is meant to be public before pushing.
+3. *(Done 2026-11-17)* Pushed to origin; the user confirmed `#VLYCGJGQR` in `tools/analyze_my_battlelog.py` / `my_battlelog.json` may be public.
 4. **Shell polish**: coach review in a background worker (Stop already works); get the user's feedback on the 2026-11-15 UI redesign (screens checked offscreen at 1200×860 and 1000×700).
