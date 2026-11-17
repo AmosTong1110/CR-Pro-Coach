@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from backend_engine.brain.coach_analyzer import Candidate, MatchReview, MoveReview
 from backend_engine.storage import default_data_dir
 
-MODES = ("practice", "recording", "drill")
+MODES = ("practice", "drill")
 FORMAT_VERSION = 1
 
 

@@ -676,34 +676,35 @@ def test_task9_match_clock_elixir_ramp_and_tiebreaker(db):
     assert m.result.reason == "tiebreaker"
 
 
-def test_task10_companion_app_import_and_debug_overlay():
-    """Companion app imports cleanly, start_coach.command exists and BoardWidget overlay toggles."""
+def test_task10_launcher_and_clean_arena():
+    """start_coach.command launches the simulator app; Mode B is gone; the arena has no debug overlays."""
+    import importlib.util
+    import os
     import sys
     from pathlib import Path
     from PySide6.QtWidgets import QApplication
 
-    # Verify launcher script exists and is executable
-    launcher = Path(__file__).resolve().parents[1] / "start_coach.command"
-    assert launcher.exists(), "start_coach.command must exist in repo root"
-    import os
-    assert os.access(launcher, os.X_OK), "start_coach.command must be executable"
+    root = Path(__file__).resolve().parents[1]
+    launcher = root / "start_coach.command"
+    assert launcher.exists() and os.access(launcher, os.X_OK)
+    assert "-m frontend_app.qt.app" in launcher.read_text()
 
-    # Verify companion app imports without ModuleNotFoundError
-    from frontend_app.companion import app as companion_app
-    assert companion_app is not None
+    # Mode B (screen capture / CV overlay) was removed for good
+    assert importlib.util.find_spec("frontend_app.companion") is None
+    assert importlib.util.find_spec("backend_engine.perception.live") is None
+    # ...but the fog-of-war trackers NeuralBot and the IL dataset rely on stay
+    from backend_engine.perception.bayesian_deck_guesser import BayesianDeckGuesser  # noqa: F401
+    from backend_engine.perception.opp_elixir_count import OppElixirTracker  # noqa: F401
 
-    # Verify BoardWidget Coach/Physics debug overlay toggle
     app = QApplication.instance() or QApplication(sys.argv)
     from frontend_app.qt.session import GameSession, SessionConfig
     from frontend_app.qt.board import BoardWidget
 
-    sess = GameSession(cfg=SessionConfig(seed=3))
-    board = BoardWidget(sess)
-    assert board.debug_overlay is True
-    assert board.toggle_debug_overlay() is False
-    assert board.debug_overlay is False
-    assert board.toggle_debug_overlay() is True
-    assert board.debug_overlay is True
+    board = BoardWidget(GameSession(cfg=SessionConfig(seed=3)))
+    for name in ("debug_overlay", "toggle_debug_overlay", "_paint_debug_grid", "_paint_debug_vectors"):
+        assert not hasattr(board, name), name
+    board.resize(360, 640)
+    board.grab()                                   # paints a full frame without the removed overlays
 
 
 def test_task11_battlelog_analyzer(tmp_path, db):

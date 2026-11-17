@@ -1,5 +1,5 @@
 #!/bin/bash
-# Clash Royale Pro Coach Companion Launcher
+# CRbot launcher: local simulator + post-match AI coach
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "$DIR"
 
@@ -10,4 +10,4 @@ else
 fi
 
 export PYTHONPATH="$DIR:$PYTHONPATH"
-"$PYTHON" frontend_app/companion/app.py "$@"
+exec "$PYTHON" -m frontend_app.qt.app "$@"

@@ -26,7 +26,6 @@ from backend_engine.simulator.sync_meta import WikiPage, attribute_fields, load_
 
 CFG = ROOT / "configs" / "cards_stats_v2026.json"
 OFFICIAL = ROOT / "data" / "raw_sources" / "official_cards.json"
-CLASS_MAP = ROOT / "configs" / "detector_class_map.json"
 LEVELS = (11, 12, 13, 14, 15, 16)
 
 
@@ -116,10 +115,7 @@ def main() -> int:
     token_specs = spec.pop("tokens", {})
     pages = {p.title.lower(): p for p in load_wiki_dir(a.html_dir) if p.variant == "base"}
     official = {i["name"].lower(): i for i in json.loads(OFFICIAL.read_text(encoding="utf-8"))["items"]}
-    detector: Dict[str, list] = {}
-    for cl in json.loads(CLASS_MAP.read_text(encoding="utf-8"))["classes"]:
-        if cl.get("card"):
-            detector.setdefault(cl["card"], []).append(cl["name"])
+    detector: Dict[str, list] = {}   # aliases.detector stays in the schema; Mode B (screen detector) was removed
 
     cfg = json.loads(a.config.read_text(encoding="utf-8"))
     new = copy.deepcopy(cfg)

@@ -21,7 +21,6 @@ CR-Pro-Coach/
 │   ├── policy_bc_v4.pt               # Downloaded from Cochon123/clash-royale-policy-bc-v4 (~2.3MB)
 │   ├── action_clock_v1.pt            # Downloaded from Cochon123/clash-royale-action-clock-v1 (human delay timing)
 │   ├── winner_predictor.pt           # Downloaded from Cochon123/clash-royale-winner-predictor (win-rate curve engine)
-│   ├── katacr_yolov8_detector.onnx   # Read-only game screen detector (for live screen capture review)
 │   └── pro_selfplay_ppo_latest.onnx  # Self-play PPO sparring policy model
 │
 ├── 📂 backend_engine/                # [3. Core Python Engine & Simulator (<500MB RAM footprint)]
@@ -34,8 +33,7 @@ CR-Pro-Coach/
 │   │
 │   ├── 📂 perception/                # Human-perspective perception layer (fair play, no cheats)
 │   │   ├── opp_elixir_count.py       # Real-time opponent elixir counter and cycle tracker based on play events
-│   │   ├── bayesian_deck_guesser.py  # Bayesian posterior probability inference for unknown enemy cards
-│   │   └── screen_reader_cv.py       # Read-only screen capture + ONNX detector (strictly non-intrusive)
+│   │   └── bayesian_deck_guesser.py  # Bayesian posterior probability inference for unknown enemy cards
 │   │
 │   ├── 📂 brain/                     # Decision-making & Post-Match Coaching Core
 │   │   ├── human_delay_buffer.py     # 0.5s human reaction latency buffer queue integrated with action_clock_v1
@@ -74,7 +72,7 @@ python pretrained_weights/download_weights.py
 
 ### 3. Launch the Desktop Coach App
 ```bash
-python -m frontend_app.qt.app
+.venv/bin/python -m frontend_app.qt.app   # or double-click start_coach.command
 ```
 
 ### 4. Run the Full Test Suite

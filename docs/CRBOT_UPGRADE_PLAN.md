@@ -1,5 +1,7 @@
 # CRbot — 4-week upgrade plan
 
+> **2026-11-17: Mode B (live screen capture / CV overlay) is sunset.** CRbot is a single mode: the local simulator + post-match AI coach. Mode B items below are historical and will not be built.
+
 Status at start (2026-11-15): ~40% overall, 187 tests green. Infrastructure is mostly done;
 the remaining work is **card/mechanic coverage**, the **trained AI brain**, and **validation on real games**.
 
@@ -57,7 +59,7 @@ Consequences:
 ```
 
 * **Fight**: today's practice arena (persona, level 11/16, speed, undo/forward, elixir counter).
-* **Analysis**: list of saved matches (CRbot practice and Mode B recordings), each with archetype names,
+* **Analysis**: list of saved matches (CRbot practice and drills), each with archetype names,
   result, accuracy; opens the review page (graph, grades, ghosts, *Show me* playback, *Take over*).
 * **Recommended deck**: top decks from the meta prior (ranked by play rate in the data), filtered to cards
   CRbot can simulate, plus "decks that beat X" once the value net exists; one click → Fight with that deck.

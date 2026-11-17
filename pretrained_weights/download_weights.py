@@ -4,8 +4,6 @@ Downloads ready-to-use models from Hugging Face & GitHub:
 - Cochon123/clash-royale-policy-bc-v4
 - Cochon123/clash-royale-action-clock-v1
 - Cochon123/clash-royale-winner-predictor
-- wty-yy/KataCR (YOLOv8 ONNX)
-- Pbatch/ClashRoyaleBuildABot (ONNX Vision Engine)
 """
 import os
 import sys
@@ -32,12 +30,6 @@ MODELS = {
         "file": "winner_predictor.pt",
         "fallback_url": "https://huggingface.co/Cochon123/clash-royale-winner-predictor/resolve/main/winner_predictor.pt",
         "size_hint": "~3.8 MB"
-    },
-    "katacr_yolov8_detector.onnx": {
-        "repo": "wty-yy/KataCR",
-        "file": "weights/yolov8_clash_royale.onnx",
-        "fallback_url": "https://github.com/wty-yy/KataCR/raw/main/weights/yolov8_clash_royale.onnx",
-        "size_hint": "~12 MB"
     }
 }
 

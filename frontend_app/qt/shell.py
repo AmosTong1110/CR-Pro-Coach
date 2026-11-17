@@ -26,7 +26,7 @@ from typing import List, Optional
 from PySide6.QtCore import QSize, QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
-    QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QFileDialog, QFormLayout, QFrame,
+    QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QFormLayout, QFrame,
     QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QMessageBox, QProgressBar, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
@@ -203,8 +203,7 @@ class AnalysisPage(QWidget):
         head.addStretch(1)
         self.filter = QComboBox()
         self.filter.setToolTip("Filter by game mode")
-        for text, mode in (("All matches", None), ("Practice", "practice"), ("Recordings", "recording"),
-                           ("Drills", "drill")):
+        for text, mode in (("All matches", None), ("Practice", "practice"), ("Drills", "drill")):
             self.filter.addItem(text, mode)
         self.filter.currentIndexChanged.connect(lambda _: self.reload())
         head.addWidget(self.filter)
@@ -504,10 +503,6 @@ class AnalysisPage(QWidget):
             if outcome is not None:
                 self.empty_title.setText(f"No {outcome} matches found")
                 self.empty_sub.setText(f"You don't have any recorded {outcome} matches under the current filter.")
-                self.empty_go.setVisible(False)
-            elif mode == "recording":
-                self.empty_title.setText("No recorded matches yet")
-                self.empty_sub.setText("Mode B recordings will appear here once saved from the companion overlay.")
                 self.empty_go.setVisible(False)
             elif mode == "drill":
                 self.empty_title.setText("No drill matches yet")
@@ -1019,7 +1014,7 @@ class DecksPage(QWidget):
 
 # ---------------------------------------------------------------------------
 class AccountPage(QWidget):
-    """Local profile, defaults, Mode B paths and data freshness."""
+    """Local profile, defaults and data freshness."""
 
     def __init__(self, shell: "CRbotWindow"):
         super().__init__()
@@ -1057,15 +1052,6 @@ class AccountPage(QWidget):
         cols.addWidget(prof, 1)
 
         right = QVBoxLayout()
-        live = QGroupBox("Mode B (screen companion)")
-        g = QFormLayout(live)
-        self.detector = QLineEdit()
-        self.detector.setPlaceholderText("auto: first .onnx in pretrained_weights/")
-        self.calib = QLineEdit()
-        self.calib.setPlaceholderText("none yet")
-        g.addRow("Detector model", self._with_browse(self.detector, "ONNX (*.onnx)"))
-        g.addRow("Calibration", self._with_browse(self.calib, "JSON (*.json)"))
-        right.addWidget(live)
         fresh = QGroupBox("Data freshness")
         v = QVBoxLayout(fresh)
         self.fresh = QLabel()
@@ -1091,21 +1077,6 @@ class AccountPage(QWidget):
         root.addStretch(1)
         self.load()
 
-    def _with_browse(self, edit: QLineEdit, filt: str) -> QWidget:
-        w = QWidget()
-        h = QHBoxLayout(w)
-        h.setContentsMargins(0, 0, 0, 0)
-        h.addWidget(edit, 1)
-        b = _cls(QPushButton("Browse…"), "ghost")
-        b.clicked.connect(lambda: self._browse(edit, filt))
-        h.addWidget(b)
-        return w
-
-    def _browse(self, edit: QLineEdit, filt: str) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Choose file", edit.text() or str(Path.home()), filt)
-        if path:
-            edit.setText(path)
-
     def load(self) -> None:
         p = self.shell.profile
         self.name.setText(p.display_name)
@@ -1115,8 +1086,6 @@ class AccountPage(QWidget):
         self.speed.setCurrentIndex(max(0, self.speed.findData(p.default_speed)))
         self.autosave.setChecked(p.autosave_matches)
         self.autoreview.setChecked(p.auto_review)
-        self.detector.setText(p.detector_model)
-        self.calib.setText(p.calibration_file)
         self.refresh_freshness()
 
     def refresh_freshness(self) -> None:
@@ -1142,8 +1111,7 @@ class AccountPage(QWidget):
         p = Profile(display_name=self.name.text().strip(), player_tag=tag,
                     default_level=self.level.currentData(), default_persona=self.persona.currentData(),
                     default_speed=self.speed.currentData(), autosave_matches=self.autosave.isChecked(),
-                    auto_review=self.autoreview.isChecked(), detector_model=self.detector.text().strip(),
-                    calibration_file=self.calib.text().strip())
+                    auto_review=self.autoreview.isChecked())
         self.shell.apply_profile(p, persist=True)
         self.load()
         self.saved.setText(f"Saved {datetime.now():%H:%M:%S}")

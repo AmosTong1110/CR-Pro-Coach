@@ -42,7 +42,6 @@ class BoardWidget(QWidget):
         self.legal: Set[Tuple[float, float]] = set()
         self.hover: Optional[Tuple[float, float]] = None
         self.show_ai_vision = True
-        self.debug_overlay = True   # Coach / Physics Debug Overlay (Grid, Bounds, Vectors, Countdown)
         self.overlay_text: Optional[str] = None   # 倒计时遮罩大字 (如快退接管后的 3-2-1)
         # 复盘虚影：(card_id, x, y, "actual"实际打法 | "best"推荐最优解)
         self.ghosts: List[Tuple[str, float, float, str]] = []
@@ -113,15 +112,9 @@ class BoardWidget(QWidget):
         ts, _, _ = self._geom()
         # 1. 绘制草地、河道与桥梁
         self._paint_arena(p)
-        # 1b. 绘制物理调试网格与边界 (Coach / Physics Debug Overlay)
-        if self.debug_overlay:
-            self._paint_debug_grid(p, ts)
         # 2. 绘制下牌准星与合法区域高亮
         self._paint_placement(p, ts)
         m = self.session.match
-        # 2b. 绘制索敌连线与寻路向量 (Coach / Physics Debug Overlay)
-        if self.debug_overlay:
-            self._paint_debug_vectors(p, m, ts)
         # 3. 绘制场上存活实体 (地面优先，空中居上)
         for u in sorted(m.units.values(), key=lambda u: (u.layer == "air", u.uid)):
             if u.kind == "tower":
@@ -234,44 +227,6 @@ class BoardWidget(QWidget):
             p.drawRect(self.tile_rect(bx - G.BRIDGE_HALF_W, G.RIVER_Y0 - 0.2, 2 * G.BRIDGE_HALF_W,
                                       G.RIVER_Y1 - G.RIVER_Y0 + 0.4))
 
-    def toggle_debug_overlay(self) -> bool:
-        """切换物理/战术调试覆盖层 (网格、河道边界、路别中线、索敌向量与倒计时)"""
-        self.debug_overlay = not self.debug_overlay
-        self.update()
-        return self.debug_overlay
-
-    def _paint_debug_grid(self, p: QPainter, ts: float) -> None:
-        """绘制物理网格线与河道/桥梁分界线 (Coach / Physics Debug Overlay)"""
-        # 1. 浅色全图网格虚线
-        p.setPen(QPen(QColor(255, 255, 255, 20), 1, Qt.DotLine))
-        for x in range(1, int(G.W)):
-            p.drawLine(self.to_px(x, 0), self.to_px(x, G.H))
-        for y in range(1, int(G.H)):
-            p.drawLine(self.to_px(0, y), self.to_px(G.W, y))
-        # 2. 中路黄金分路中线 (x = 9.0)
-        p.setPen(QPen(QColor(255, 215, 0, 80), 1.5, Qt.DashLine))
-        p.drawLine(self.to_px(G.W / 2, 0), self.to_px(G.W / 2, G.H))
-        # 3. 河道几何边界 (y = 15.0 & y = 17.0)
-        p.setPen(QPen(QColor(0, 220, 255, 90), 1.2, Qt.DashLine))
-        p.drawLine(self.to_px(0, G.RIVER_Y0), self.to_px(G.W, G.RIVER_Y0))
-        p.drawLine(self.to_px(0, G.RIVER_Y1), self.to_px(G.W, G.RIVER_Y1))
-        # 4. 左右桥梁外框线
-        p.setPen(QPen(QColor(255, 255, 255, 120), 1.2))
-        for bx in G.BRIDGE_X:
-            r = self.tile_rect(bx - G.BRIDGE_HALF_W, G.RIVER_Y0, 2 * G.BRIDGE_HALF_W, G.RIVER_Y1 - G.RIVER_Y0)
-            p.drawRect(r)
-
-    def _paint_debug_vectors(self, p: QPainter, m, ts: float) -> None:
-        """绘制当前场上单位的目标锁定寻路向量 (Coach / Physics Debug Overlay)"""
-        for u in m.units.values():
-            if u.hp <= 0 or u.kind != "troop" or u.target_uid is None:
-                continue
-            tgt = m.units.get(u.target_uid)
-            if tgt is not None and tgt.hp > 0:
-                col = QColor(80, 170, 255, 110) if u.side == 0 else QColor(255, 90, 90, 110)
-                p.setPen(QPen(col, 1.2, Qt.DashLine))
-                p.drawLine(self.to_px(u.x, u.y), self.to_px(tgt.x, tgt.y))
-
     def _paint_placement(self, p: QPainter, ts: float) -> None:
         """绘制选中卡牌时的下牌准星、合法下牌区域高亮与射程指示圈"""
         if not self.selected_card:
@@ -374,37 +329,12 @@ class BoardWidget(QWidget):
         if u.hp < u.max_hp:
             self._hp_bar(p, c.x(), c.y() - r - 5, 2 * r, u.hp / u.max_hp, u.side)
 
-        # Coach / Physics Debug Overlay: 部署倒计时与路别标签
-        if self.debug_overlay:
-            if u.deploy_ms > 0:
-                df = QFont()
-                df.setPixelSize(max(8, int(ts * 0.45)))
-                df.setBold(True)
-                p.setFont(df)
-                p.setPen(Qt.NoPen)
-                p.setBrush(QColor(0, 0, 0, 190))
-                pill = QRectF(c.x() - r * 1.2, c.y() - r - 16, r * 2.4, 12)
-                p.drawRoundedRect(pill, 3, 3)
-                p.setPen(QColor("#ffd400"))
-                p.drawText(pill, Qt.AlignCenter, f"{u.deploy_ms / 1000.0:.1f}s")
-            if getattr(u, "lane", None):
-                lf = QFont()
-                lf.setPixelSize(max(7, int(ts * 0.35)))
-                lf.setBold(True)
-                p.setFont(lf)
-                p.setPen(Qt.NoPen)
-                p.setBrush(QColor(0, 0, 0, 160))
-                lpill = QRectF(c.x() + r * 0.5, c.y() - r * 0.8, 10, 10)
-                p.drawEllipse(lpill)
-                p.setPen(QColor("#80d8ff") if u.lane == "left" else QColor("#ff8a80"))
-                p.drawText(lpill, Qt.AlignCenter, "L" if u.lane == "left" else "R")
-
     def _paint_spells(self, p: QPainter, ts: float) -> None:
         """绘制飞行中的法术弹道光圈与滚动推进中的滚木 (The Log)"""
         m = self.session.match
         for sp in m.spells:
             c = self.to_px(sp.x, sp.y)
-            p.setPen(QPen(QColor("#ff9b2f"), 2, Qt.DashLine))
+            p.setPen(QPen(QColor("#ff9b2f"), 2))
             p.setBrush(QColor(255, 140, 40, 60))
             p.drawEllipse(c, sp.radius * ts, sp.radius * ts)
         for rs in m.rolling:

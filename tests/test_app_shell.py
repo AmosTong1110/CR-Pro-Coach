@@ -282,8 +282,6 @@ def test_analysis_page_bugfixes(shell):
     assert a.graph.names("knight") == "Knight"
 
     # 2. Filter empty states explained clearly
-    a.filter.setCurrentIndex(a.filter.findData("recording"))
-    assert "No recorded matches yet" in a.empty_title.text() and not a.empty_go.isVisible()
     a.filter.setCurrentIndex(a.filter.findData("drill"))
     assert "No drill matches yet" in a.empty_title.text() and not a.empty_go.isVisible()
     a.filter.setCurrentIndex(a.filter.findData(None))

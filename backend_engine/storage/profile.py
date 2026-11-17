@@ -24,8 +24,6 @@ class Profile:
     default_speed: int = 1
     autosave_matches: bool = True
     auto_review: bool = True        # analyze automatically when a match ends
-    detector_model: str = ""        # Mode B YOLO ONNX path ("" = auto-detect in pretrained_weights/)
-    calibration_file: str = ""      # Mode B screen calibration ("" = none yet)
 
     @staticmethod
     def clean_tag(tag: str) -> str:

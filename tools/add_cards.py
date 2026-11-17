@@ -24,7 +24,6 @@ from backend_engine.simulator.card_db import CardDB  # noqa: E402
 from backend_engine.simulator.sync_meta import SourceIndex, build_card  # noqa: E402
 
 CFG = ROOT / "configs" / "cards_stats_v2026.json"
-CLASS_MAP = ROOT / "configs" / "detector_class_map.json"
 HF_COSTS = ROOT / "configs" / "card_costs_hf.json"
 MS = 1000.0
 
@@ -153,10 +152,7 @@ def main() -> int:
     token_specs = spec.pop("tokens", {})
     src = SourceIndex(json.loads(a.source.read_text(encoding="utf-8")))
     api = {r["key"]: r for r in json.loads(a.cards.read_text(encoding="utf-8"))}
-    detector: Dict[str, list] = {}
-    for cl in json.loads(CLASS_MAP.read_text(encoding="utf-8"))["classes"]:
-        if cl.get("card"):
-            detector.setdefault(cl["card"], []).append(cl["name"])
+    detector: Dict[str, list] = {}   # aliases.detector stays in the schema; Mode B (screen detector) was removed
     hf_costs = json.loads(HF_COSTS.read_text(encoding="utf-8"))["costs"]
 
     cfg = json.loads(a.config.read_text(encoding="utf-8"))

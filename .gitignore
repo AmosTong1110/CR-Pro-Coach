@@ -46,11 +46,11 @@ pretrained_weights/*.pth
 !pretrained_weights/download_weights.py
 
 
-# Detector weights (licence: personal use only, do not redistribute)
+# Model weights (never commit binaries)
 pretrained_weights/**/*.onnx
 pretrained_weights/**/*.bak
 
-# Detector training weights (same licence)
+# Training checkpoints
 pretrained_weights/**/*.pt
 pretrained_weights/**/*.pth
 recordings/
@@ -65,7 +65,7 @@ data/il_shards/
 # Lint cache
 .ruff_cache/
 
-# Mode B / fine-tune artifacts (private gameplay, large)
+# Private gameplay videos / old fine-tune artifacts (large)
 *.mov
 *.mp4
 data/**/*.zip
