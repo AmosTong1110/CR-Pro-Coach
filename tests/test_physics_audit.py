@@ -704,3 +704,44 @@ def test_task10_companion_app_import_and_debug_overlay():
     assert board.debug_overlay is False
     assert board.toggle_debug_overlay() is True
     assert board.debug_overlay is True
+
+
+def test_task11_battlelog_analyzer(tmp_path, db):
+    """Personal battlelog analyzer correctly parses matches, summarizes matchups, and registers tough decks."""
+    from tools.analyze_my_battlelog import (
+        generate_sample_battlelog,
+        parse_battlelog,
+        summarize_matchups,
+        register_tough_matchups,
+    )
+
+    sample_log = tmp_path / "test_battlelog.json"
+    generate_sample_battlelog(sample_log, player_tag="#VLYCGJGQR")
+    assert sample_log.exists()
+
+    matches = parse_battlelog(sample_log, player_tag="#VLYCGJGQR", db=db)
+    assert len(matches) == 3
+
+    # Check match records
+    results = [m["result"] for m in matches]
+    assert results == ["LOSS", "WIN", "LOSS"]
+
+    stats = summarize_matchups(matches)
+    assert "PEKKA Cannon" in stats
+    assert stats["PEKKA Cannon"]["matches"] == 1
+    assert stats["PEKKA Cannon"]["wins"] == 0
+    assert stats["PEKKA Cannon"]["win_rate"] == 0.0
+
+    assert "Giant" in stats
+    assert stats["Giant"]["win_rate"] == 100.0
+
+    # Test tough matchup deck registration into a temp preset_decks.json
+    temp_presets = tmp_path / "temp_presets.json"
+    new_reg = register_tough_matchups(stats, temp_presets, db, win_rate_threshold=50.0)
+    assert len(new_reg) >= 1
+    assert any("PEKKA Cannon" in r["name"] for r in new_reg)
+
+    # Re-running registration does not duplicate deck
+    new_reg2 = register_tough_matchups(stats, temp_presets, db, win_rate_threshold=50.0)
+    assert len(new_reg2) == 0
+

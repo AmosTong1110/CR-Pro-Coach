@@ -1,0 +1,218 @@
+[
+  {
+    "battleTime": "20261117T080000.000Z",
+    "gameMode": {
+      "name": "Ladder 1v1"
+    },
+    "team": [
+      {
+        "tag": "#VLYCGJGQR",
+        "name": "ProPlayer",
+        "crowns": 1,
+        "cards": [
+          {
+            "name": "Hog Rider"
+          },
+          {
+            "name": "Musketeer"
+          },
+          {
+            "name": "Knight"
+          },
+          {
+            "name": "Cannon"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "The Log"
+          },
+          {
+            "name": "Skeletons"
+          },
+          {
+            "name": "Ice Spirit"
+          }
+        ]
+      }
+    ],
+    "opponent": [
+      {
+        "tag": "#OPP111",
+        "name": "PekkaMaster",
+        "crowns": 2,
+        "cards": [
+          {
+            "name": "P.E.K.K.A"
+          },
+          {
+            "name": "Dark Prince"
+          },
+          {
+            "name": "Zap"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "Minions"
+          },
+          {
+            "name": "Archers"
+          },
+          {
+            "name": "Knight"
+          },
+          {
+            "name": "Cannon"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "battleTime": "20261117T081500.000Z",
+    "gameMode": {
+      "name": "Ladder 1v1"
+    },
+    "team": [
+      {
+        "tag": "#VLYCGJGQR",
+        "name": "ProPlayer",
+        "crowns": 2,
+        "cards": [
+          {
+            "name": "Hog Rider"
+          },
+          {
+            "name": "Musketeer"
+          },
+          {
+            "name": "Knight"
+          },
+          {
+            "name": "Cannon"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "The Log"
+          },
+          {
+            "name": "Skeletons"
+          },
+          {
+            "name": "Ice Spirit"
+          }
+        ]
+      }
+    ],
+    "opponent": [
+      {
+        "tag": "#OPP222",
+        "name": "GiantBeatdown",
+        "crowns": 0,
+        "cards": [
+          {
+            "name": "Giant"
+          },
+          {
+            "name": "Musketeer"
+          },
+          {
+            "name": "Mini P.E.K.K.A"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "Zap"
+          },
+          {
+            "name": "Minions"
+          },
+          {
+            "name": "Archers"
+          },
+          {
+            "name": "Knight"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "battleTime": "20261117T083000.000Z",
+    "gameMode": {
+      "name": "Ladder 1v1"
+    },
+    "team": [
+      {
+        "tag": "#VLYCGJGQR",
+        "name": "ProPlayer",
+        "crowns": 0,
+        "cards": [
+          {
+            "name": "Hog Rider"
+          },
+          {
+            "name": "Musketeer"
+          },
+          {
+            "name": "Knight"
+          },
+          {
+            "name": "Cannon"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "The Log"
+          },
+          {
+            "name": "Skeletons"
+          },
+          {
+            "name": "Ice Spirit"
+          }
+        ]
+      }
+    ],
+    "opponent": [
+      {
+        "tag": "#OPP333",
+        "name": "SiegeGod",
+        "crowns": 1,
+        "cards": [
+          {
+            "name": "X-Bow"
+          },
+          {
+            "name": "Tesla"
+          },
+          {
+            "name": "Archers"
+          },
+          {
+            "name": "Knight"
+          },
+          {
+            "name": "Fireball"
+          },
+          {
+            "name": "The Log"
+          },
+          {
+            "name": "Skeletons"
+          },
+          {
+            "name": "Ice Spirit"
+          }
+        ]
+      }
+    ]
+  }
+]

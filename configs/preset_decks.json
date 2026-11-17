@@ -618,6 +618,22 @@
         "ice_spirit"
       ],
       "tip": "Overwhelm single-target defense with Witch skeleton summons and Baby Dragon air splash."
+    },
+    {
+      "name": "Sparring: PEKKA Cannon",
+      "style": "Tough Matchup",
+      "evo": [],
+      "cards": [
+        "archers",
+        "cannon",
+        "dark_prince",
+        "fireball",
+        "knight",
+        "minions",
+        "pekka",
+        "zap"
+      ],
+      "tip": "Targeted sparring deck from battlelog (PEKKA Cannon, 0% win rate)."
     }
   ]
 }
