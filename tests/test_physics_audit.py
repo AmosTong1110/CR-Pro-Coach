@@ -127,3 +127,87 @@ def test_task2_tower_fallback_to_king_not_cross_lane(db):
     tgt = m.units.get(knight.target_uid)
     assert tgt is not None
     assert tgt.tower_role == "king", f"Expected target to be King tower, but got {tgt.tower_role}"
+
+
+def test_task3_building_only_ignores_troops(db):
+    """Building-only units (Hog Rider) strictly ignore nearby enemy troops and target towers/buildings."""
+    deck0 = ("hog_rider", "knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "cannon")
+    deck1 = ("skeletons", "knight", "archers", "fireball", "the_log", "ice_spirit", "cannon", "musketeer")
+    cfg = MatchConfig((deck0, deck1), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn Hog Rider for side 0 in right lane at (14.5, 9.0)
+    res0 = m.play(0, "hog_rider", 14.5, 9.0)
+    assert res0.ok
+    hog = [u for u in m.units.values() if u.card_id == "hog_rider" and u.side == 0][0]
+    assert hog.building_only
+
+    # Spawn enemy Skeletons for side 1 in south territory (e.g. at 14.5, 11.0, right in front of Hog)
+    # Give side 1 enough elixir and drop skeletons
+    m.sides[1].elixir = 10.0
+    # Skeletons can be deployed legally in side 1 territory or pocket; or we can inject them directly
+    res1 = m.play(1, "skeletons", 14.5, 20.0)
+    assert res1.ok
+    enemy_skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 1]
+    assert len(enemy_skels) > 0
+    # Manually place one skeleton right next to hog (e.g. at 14.5, 11.0, distance 2.0 tiles)
+    enemy_skels[0].x = 14.5
+    enemy_skels[0].y = 11.0
+
+    # Step past deploy delay
+    for _ in range(25):
+        m.step()
+
+    # Hog must target right princess tower, NEVER the skeleton right next to him
+    tgt = m.units.get(hog.target_uid)
+    assert tgt is not None
+    assert tgt.uid != enemy_skels[0].uid
+    assert tgt.tower_role == "princess_right"
+
+
+def test_task3_sight_range_pull_and_reacquisition(db):
+    """Troops only aggro within sight_range and return to lane bridge waypoint when enemy target dies."""
+    deck = ("knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "musketeer", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn Knight for side 0 at (14.5, 9.0)
+    res = m.play(0, "knight", 14.5, 9.0)
+    assert res.ok
+    knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 0][0]
+
+    # Spawn enemy skeletons at side 1 backfield
+    res_skel = m.play(1, "skeletons", 14.5, 23.0)
+    assert res_skel.ok
+    enemy_skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 1]
+    skel = enemy_skels[0]
+
+    # Position skeleton far away (distance 8.0 tiles > sight 5.5) at (14.5, 17.5)
+    skel.x = 14.5
+    skel.y = 17.5
+
+    # Step past deploy delay
+    for _ in range(25):
+        m.step()
+
+    # Knight should NOT aggro onto far skeleton; target should be princess_right
+    tgt = m.units.get(knight.target_uid)
+    assert tgt is not None
+    assert tgt.tower_role == "princess_right"
+
+    # Now move skeleton into sight (e.g. at 11.0, distance ~2.0 tiles from knight)
+    skel.x = 14.5
+    skel.y = knight.y + 2.0
+    m.step()
+
+    # Knight should now aggro onto skeleton
+    assert knight.target_uid == skel.uid
+
+    # Kill skeleton
+    skel.hp = 0
+    m.step()
+
+    # Knight should reacquire right princess tower and resume pathing to bridge
+    tgt_after = m.units.get(knight.target_uid)
+    assert tgt_after is not None
+    assert tgt_after.tower_role == "princess_right"
