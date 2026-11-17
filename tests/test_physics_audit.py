@@ -276,3 +276,102 @@ def test_task4_crowding_near_river(db):
     for s in skels:
         if 15.0 <= s.y < 17.0:
             assert abs(s.x - 3.5) <= 1.0 or abs(s.x - 14.5) <= 1.0, f"Unit pushed into river at {s.x}, {s.y}"
+
+
+def test_task5_deploy_delay_behavior(db):
+    """Units stand still and do not attack during 1.0s deploy delay, but take damage and tick status."""
+    deck = ("musketeer", "knight", "skeletons", "fireball", "the_log", "ice_spirit", "archers", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    res = m.play(0, "musketeer", 14.5, 9.5)
+    assert res.ok
+    musk = [u for u in m.units.values() if u.card_id == "musketeer" and u.side == 0][0]
+
+    assert musk.deploy_ms == 1000
+
+    # Step for 10 ticks (500ms)
+    for _ in range(10):
+        m.step()
+
+    assert musk.deploy_ms == 500
+    assert musk.x == 14.5 and musk.y == 9.5  # perfectly still
+
+    # Musketeer takes damage while deploying
+    initial_hp = musk.hp
+    m._deal(musk, 100)
+    assert musk.hp == initial_hp - 100
+
+    # Step remaining 10 ticks to finish deploy delay
+    for _ in range(10):
+        m.step()
+
+    assert musk.deploy_ms == 0
+
+    # Next steps: unit begins moving
+    for _ in range(10):
+        m.step()
+
+    assert musk.y > 9.5
+
+
+def test_task5_mid_swing_instant_retargeting(db):
+    """When a target dies mid-swing, attacker immediately retargets without freezing."""
+    deck = ("knight", "skeletons", "musketeer", "fireball", "the_log", "ice_spirit", "archers", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    res0 = m.play(0, "knight", 14.5, 9.5)
+    knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 0][0]
+    knight.deploy_ms = 0
+
+    res1 = m.play(1, "skeletons", 14.5, 20.5)
+    skels = [u for u in m.units.values() if u.card_id == "skeletons" and u.side == 1]
+    skel = skels[0]
+    skel.deploy_ms = 0
+    skel.x = 14.5
+    skel.y = knight.y + 0.8  # within knight melee range 1.2
+
+    # Step 1 tick: Knight locks onto skeleton and starts attack windup
+    m.step()
+    assert knight.target_uid == skel.uid
+    assert knight.cooldown_ms > 0
+
+    # Kill skeleton mid-swing
+    skel.hp = 0
+
+    # Step 1 tick
+    m.step()
+
+    # Knight must have immediately retargeted without freezing
+    assert knight.target_uid != skel.uid
+    new_tgt = m.units.get(knight.target_uid)
+    assert new_tgt is not None
+    assert new_tgt.hp > 0
+    assert new_tgt.tower_role == "princess_right"
+
+
+def test_task5_melee_and_ranged_attack_loops(db):
+    """Melee deals direct damage; ranged fires projectile that damages target upon impact."""
+    deck = ("musketeer", "knight", "skeletons", "fireball", "the_log", "ice_spirit", "archers", "cannon")
+    cfg = MatchConfig((deck, deck), (11, 11), seed=42, shuffle=False)
+    m = Match(cfg, db)
+
+    # Spawn Musketeer (ranged)
+    res = m.play(0, "musketeer", 14.5, 9.5)
+    musk = [u for u in m.units.values() if u.card_id == "musketeer" and u.side == 0][0]
+    musk.deploy_ms = 0
+
+    # Spawn enemy Knight at distance 5.0 (within range 6.0)
+    res_e = m.play(1, "knight", 14.5, 20.5)
+    enemy_knight = [u for u in m.units.values() if u.card_id == "knight" and u.side == 1][0]
+    enemy_knight.deploy_ms = 0
+    enemy_knight.x = 14.5
+    enemy_knight.y = musk.y + 5.0
+    initial_hp = enemy_knight.hp
+
+    # Step for 20 ticks (1.0s) to allow first hit projectile to land
+    for _ in range(20):
+        m.step()
+
+    assert enemy_knight.hp < initial_hp
