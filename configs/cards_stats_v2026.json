@@ -746,6 +746,7 @@
           "kind": "knockback",
           "params": {
             "distance_tiles": 0.7,
+            "ignores_heavy": true,
             "_source": "royaleapi-cr-api-data projectile.pushback (game units / 1000), 2023-10-18"
           }
         },
@@ -2737,6 +2738,10 @@
       "collision_radius_tiles": 0.6,
       "mechanics": [
         {
+          "kind": "heavy_knockback_immune",
+          "params": {}
+        },
+        {
           "kind": "ramp_damage",
           "params": {
             "stage_ms": 2000,
@@ -3705,7 +3710,12 @@
       "count": 1,
       "mass": 7,
       "collision_radius_tiles": 0.8,
-      "mechanics": [],
+      "mechanics": [
+        {
+          "kind": "heavy_knockback_immune",
+          "params": {}
+        }
+      ],
       "variants": {
         "evo": null,
         "hero": null
@@ -3793,6 +3803,10 @@
       "mass": 8,
       "collision_radius_tiles": 0.8,
       "mechanics": [
+        {
+          "kind": "heavy_knockback_immune",
+          "params": {}
+        },
         {
           "kind": "enchant",
           "params": {
@@ -4429,6 +4443,10 @@
       },
       "mechanics": [
         {
+          "kind": "heavy_knockback_immune",
+          "params": {}
+        },
+        {
           "kind": "building_targeting",
           "params": {}
         }
@@ -4504,7 +4522,12 @@
         "splash_radius_tiles": 0.0,
         "sight_tiles": 5.5
       },
-      "mechanics": [],
+      "mechanics": [
+        {
+          "kind": "heavy_knockback_immune",
+          "params": {}
+        }
+      ],
       "base_stats": {
         "hitpoints": 2350,
         "damage": 510

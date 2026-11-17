@@ -62,7 +62,8 @@ class Unit:
 
     @property
     def is_heavy(self) -> bool:
-        return self.card_id in ("pekka", "giant", "rune_giant", "minion_giant", "mighty_miner", "golem", "mega_knight", "electro_giant", "sparky", "bowler")
+        """Immune to knockback (trait `heavy_knockback_immune` in the card data, e.g. PEKKA, Giant)."""
+        return "heavy_knockback_immune" in self.mechanics
 
 
 @dataclass

@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from backend_engine.simulator.mechanics import SPELLS, known_kinds
+from backend_engine.simulator.traits import card_traits, is_playable, quarantine_reason
 
 # 默认读取的卡牌配置 JSON 路径
 DEFAULT_PATH = Path(__file__).resolve().parents[2] / "configs" / "cards_stats_v2026.json"
@@ -125,7 +126,10 @@ class CardDB:
         self.multiplier: List[int] = list(sc["multiplier_pct"])
         self.rarity_offset: Dict[str, Optional[int]] = dict(sc["rarity_offset"])
         self.scaled_fields = set(sc["scaled_fields"])
-        self.cards: Dict[str, Dict[str, Any]] = raw["cards"]
+        # catalog: every card in the file (also disabled / needs_hook ones, see simulator/traits.py);
+        # cards: the playable pool. Everything that plays, encodes or recommends uses `cards`.
+        self.catalog: Dict[str, Dict[str, Any]] = raw["cards"]
+        self.cards: Dict[str, Dict[str, Any]] = {cid: c for cid, c in self.catalog.items() if is_playable(c)}
         # tokens: units a card spawns (Barbarian from the Barbarian Barrel). They are never in a deck, so they live
         # apart from `cards`; `entry()` finds either. A token's `rarity` is its parent card's (for level scaling).
         self.tokens: Dict[str, Dict[str, Any]] = raw.get("tokens", {})
@@ -152,10 +156,16 @@ class CardDB:
         clash = set(r["cards"]) & set(r.get("tokens", {}))
         if clash:
             raise CardDataError(f"token ids clash with card ids: {sorted(clash)}")
-        for cid, c in [*r["cards"].items(), *r.get("tokens", {}).items()]:
+        tokens = r.get("tokens", {})
+        for cid, c in [*r["cards"].items(), *tokens.items()]:
             for key in ("name", "type", "rarity", "elixir"):
                 if key not in c:
                     raise CardDataError(f"card '{cid}' missing '{key}'")
+            if cid not in tokens and (not c.get("enabled", True) or c.get("needs_hook", False)):
+                # catalog-only card (disabled / waiting for a hook): identity is enough, it never plays
+                if c["type"] not in CARD_TYPES:
+                    raise CardDataError(f"card '{cid}' has unknown type '{c['type']}'")
+                continue
             if "base_stats" not in c and "stats_l11" not in c:
                 raise CardDataError(f"card '{cid}' needs base_stats or stats_l11")
             if c["type"] not in CARD_TYPES:
@@ -356,6 +366,17 @@ class CardDB:
             if miss:
                 out[cid] = miss
         return out
+
+    def quarantined(self) -> Dict[str, str]:
+        """Catalog cards that are not playable -> reason (disabled / needs_hook / unsupported mechanics)."""
+        return {cid: quarantine_reason(c) for cid, c in self.catalog.items() if cid not in self.cards}
+
+    def traits(self, card_id: str) -> frozenset:
+        """Trait names of a catalog card or token (simulator/traits.py)."""
+        c = self.catalog.get(card_id) or self.tokens.get(card_id)
+        if c is None:
+            raise KeyError(f"unknown card '{card_id}'")
+        return card_traits(c)
 
     def unverified(self) -> List[str]:
         """返回尚未进行官方完全核验的卡牌列表"""
