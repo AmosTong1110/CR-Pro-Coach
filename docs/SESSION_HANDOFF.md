@@ -20,8 +20,7 @@ English-only UI · snake_case card ids · scan downloaded model files · user da
 No automation of the real game or play against real players on the live ladder (Supercell ToS).
 
 ## Done 2026-11-21
-* **IL v2 shards**: v1 shards moved to `data/il_shards_v1/` (all `data/il_shards*/` are git-ignored).
-  `data/il_shards/`: 400,044 samples, 4,926 battles (parts 0–13, all modes; fallback set).
+* **IL v2 shards** (`data/il_shards*/` git-ignored; v1 shards, the 400k set and the old PPO bundle deleted).
   **`data/il_shards_full/` = the training set (done 14:59, checked)**: 1,551,234 samples (1:1 play/wait) from
   18,570 battles, all 52 parts, modes Ranked/Ladder/Grand Challenge/Classic Challenge, 311 shards, 243 MB, 63 min.
   Rejected: coverage 208,772, mode 24,896. **Hog 2.6 = deck id 2: 671,836 samples / 7,741 battles (43% of all).**
