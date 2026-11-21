@@ -49,6 +49,8 @@ pretrained_weights/*.pth
 # Model weights (never commit binaries)
 pretrained_weights/**/*.onnx
 pretrained_weights/**/*.bak
+# Installed model folders (pretrained_weights/<name>/: .onnx + .npz + .json)
+pretrained_weights/*/
 
 # Training checkpoints
 pretrained_weights/**/*.pt

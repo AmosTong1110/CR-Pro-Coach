@@ -9,7 +9,7 @@ sections: 1 completed work per file, 2 progress, 3 open issues 1–27, 4 next st
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v7** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
   independent). Cards: 123 in the catalog, **47 playable**, 76 quarantined. 7 of 14 evolutions, 5 heroes simulated.
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (571 pass, 1 skip expected; torch tests skip).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (572 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall vs the 4-week plan: ~70%. Weakest: PPO 45%, Coach v2 65%, current card stats 78%.
 
@@ -24,7 +24,7 @@ No automation of the real game or play against real players on the live ladder (
   **`data/il_shards_full/` = the training set (done 14:59, checked)**: 1,551,234 samples (1:1 play/wait) from
   18,570 battles, all 52 parts, modes Ranked/Ladder/Grand Challenge/Classic Challenge, 311 shards, 243 MB, 63 min.
   Rejected: coverage 208,772, mode 24,896. **Hog 2.6 = deck id 2: 671,836 samples / 7,741 battles (43% of all).**
-  Not uploaded yet. Colab RAM need ≈ 5.6 GB (float16 loader).
+  Colab RAM need ≈ 5.6 GB (float16 loader).
 * Notebooks are name-aware (defaults unchanged). IL: `IL_NAME`, `IL_INIT` (.npz to start from), `IL_DECK` (8 card
   ids: keep only learners with that deck), `IL_LR`. PPO: `PPO_NAME` (own checkpoint folder unless crbot_ppo_v2),
   `PPO_INIT`, `PPO_DECKS`, `PPO_HOURS`. `pack_ppo_bundle.py --il-model <name>`.
@@ -35,11 +35,12 @@ No automation of the real game or play against real players on the live ladder (
   `pretrained_weights/<name>/`). Helper `meta.presets.select_presets` (tested in `tests/test_presets.py`).
 
 ## Next steps
-1. (User, in progress) Empty Drive `datasets/il_shards/` (old v1 files break the run), upload the contents of
-   `data/il_shards_full/` there and `dist/crbot_code_bundle.zip` (commit a2826a3) →
-   `MyDrive/CRbot_Training/`; run `cloud_training/train_imitation_colab.ipynb` (T4, `IL_EPOCHS=10`); scan the downloaded .onnx (opset, no custom
-   domains / external data, SHA-256 = meta) and install `crbot_il_v2.onnx/.npz/.json`
-   in `pretrained_weights/crbot_il_v2/`; calibrate: `.venv/bin/python cloud_training/gauntlet_eval.py --out gauntlet.json --write-meta`.
+1. **Done 2026-11-21: crbot_il_v2 installed** in `pretrained_weights/crbot_il_v2/` (git-ignored; scanned: SHA-256 =
+   meta, opset 17, standard ops only, no external data, npz plain arrays). Val (epoch 16/20, plateau from ~12):
+   slot top1 61.7% (baseline 35.4%), tile top3 49.3% (14.8%), gate acc 73.4% (F1 0.758), value Brier 0.237 (weak).
+   Gauntlet (432 matches, 2 workers; 3 workers got SIGKILLed on 8 GB) wrote `gate_threshold 0.5`,
+   `decide_every_ms 250` (24/24 vs ScriptedBot; most configs ≥ 95%: ScriptedBot is too weak to separate them).
+   `.json.bak` = original meta. Neural persona now uses NeuralBot (~4-5 ms/decision).
 2. Hog 2.6 specialist: (a) IL fine-tune: rerun the IL notebook with `IL_NAME=crbot_il_v2_hog26`,
    `IL_INIT=<Drive>/models/crbot_il_v2/crbot_il_v2.npz`, `IL_DECK=cannon,fireball,hog_rider,ice_golem,ice_spirit,
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
@@ -60,6 +61,5 @@ No automation of the real game or play against real players on the live ladder (
 ## Open issues (top)
 * Fight page: the elixir counter's "Ahead +x" label is clipped at 1200 px (pre-existing, not the board).
 * No machine-readable current (Nov 2026) card stats; many mass / radius / timing values are `assumed` per card.
-* IL v1 value head ≈ coin flip; coach still grades with the logistic value model (trained on engine v6).
-* Neural persona falls back to ScriptedBot until crbot_il_v2 exists.
+* IL v2 value head ≈ coin flip (Brier 0.237); coach still grades with the logistic value model (trained on engine v6).
 * Replay data (HF IL_Replay) has no licence: personal research only.
