@@ -64,6 +64,8 @@ class BoardWidget(QWidget):
         self._zone_key = None
         self._zone_path = QPainterPath()
         self._roles: Dict[str, str] = {}
+        # 可放置区域的半透明底色 + 虚线轮廓：用户不要 (2026-11-21)，默认关闭；悬停准星仍显示绿 / 红
+        self.show_zone = False
         self._anim = QTimer(self)
         self._anim.setInterval(ANIM_MS)
         self._anim.timeout.connect(self._on_anim)
@@ -269,7 +271,7 @@ class BoardWidget(QWidget):
 
     def _paint_zone(self, p: QPainter) -> None:
         """选中卡牌时才显示可放置区域：合法格子合并成一块淡色区域 + 虚线轮廓 (无格子线)"""
-        if not self.selected_card or not self.legal:
+        if not self.show_zone or not self.selected_card or not self.legal:
             return
         key = (hash(frozenset(self.legal)), self.width(), self.height())
         if self._zone_key != key:

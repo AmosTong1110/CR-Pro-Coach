@@ -203,3 +203,16 @@ def test_hand_shows_card_faces(app):
     assert w.hand.next_card.face[0] == st.queue[0]
     assert not w.hand.grab().isNull()
     w.close()
+
+
+def test_no_placement_zone_overlay_by_default(app):
+    """No tinted area or dashed outline while placing a troop; the hover marker alone shows legal / illegal."""
+    from frontend_app.qt.board import BoardWidget
+    s = GameSession(cfg=SessionConfig(seed=3))
+    b = BoardWidget(s)
+    b.resize(450, 800)
+    card = next(c for c in s.match.sides[HUMAN].hand if s.db.cards[c]["type"] != "spell")
+    plain = b.grab().toImage()
+    b.set_selected(card)
+    assert b.legal and not b.show_zone
+    assert b.grab().toImage() == plain                      # selecting a card (no hover) changes nothing
