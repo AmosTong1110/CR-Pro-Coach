@@ -22,9 +22,10 @@ No automation of the real game or play against real players on the live ladder (
 ## Done 2026-11-21
 * **IL v2 shards**: v1 shards moved to `data/il_shards_v1/` (all `data/il_shards*/` are git-ignored).
   `data/il_shards/`: 400,044 samples, 4,926 battles (parts 0–13, all modes; fallback set).
-  **Full build** (restarted 13:56 with deck ids, ~70 min): `--output-dir data/il_shards_full --max-samples 100000000
-  --modes "Ranked,Ladder,Grand Challenge,Classic Challenge"` → expect ~1.4M samples. Use it if its manifest is sane
-  (il_obs_v2, obs_dim 1752, `filters.modes`, `learner_decks`); upload it to Drive as `datasets/il_shards/`.
+  **`data/il_shards_full/` = the training set (done 14:59, checked)**: 1,551,234 samples (1:1 play/wait) from
+  18,570 battles, all 52 parts, modes Ranked/Ladder/Grand Challenge/Classic Challenge, 311 shards, 243 MB, 63 min.
+  Rejected: coverage 208,772, mode 24,896. **Hog 2.6 = deck id 2: 671,836 samples / 7,741 battles (43% of all).**
+  Not uploaded yet. Colab RAM need ≈ 5.6 GB (float16 loader).
 * Shards now store `deck` (index into manifest `learner_decks`, sorted 8 card ids) per sample.
 * Notebooks are name-aware (defaults unchanged). IL: `IL_NAME`, `IL_INIT` (.npz to start from), `IL_DECK` (8 card
   ids: keep only learners with that deck), `IL_LR`. PPO: `PPO_NAME` (own checkpoint folder unless crbot_ppo_v2),
@@ -42,15 +43,16 @@ No automation of the real game or play against real players on the live ladder (
   `pretrained_weights/<name>/`). Helper `meta.presets.select_presets` (tested in `tests/test_presets.py`).
 
 ## Next steps
-1. Commit, repack `tools/pack_ppo_bundle.py --code-only` (the notebook change is in the notebook, the bundle holds
-   the model code). Upload `data/il_shards_full/` → `MyDrive/CRbot_Training/datasets/il_shards/` and `dist/crbot_code_bundle.zip` →
-   `MyDrive/CRbot_Training/`; run `cloud_training/train_imitation_colab.ipynb` (T4); install `crbot_il_v2.onnx/.npz/.json`
+1. (User, in progress) Empty Drive `datasets/il_shards/` (old v1 files break the run), upload the contents of
+   `data/il_shards_full/` there and `dist/crbot_code_bundle.zip` (commit a2826a3) →
+   `MyDrive/CRbot_Training/`; run `cloud_training/train_imitation_colab.ipynb` (T4, `IL_EPOCHS=10`); scan the downloaded .onnx (opset, no custom
+   domains / external data, SHA-256 = meta) and install `crbot_il_v2.onnx/.npz/.json`
    in `pretrained_weights/crbot_il_v2/`; calibrate: `.venv/bin/python cloud_training/gauntlet_eval.py --out gauntlet.json --write-meta`.
 2. Hog 2.6 specialist: (a) IL fine-tune: rerun the IL notebook with `IL_NAME=crbot_il_v2_hog26`,
    `IL_INIT=<Drive>/models/crbot_il_v2/crbot_il_v2.npz`, `IL_DECK=cannon,fireball,hog_rider,ice_golem,ice_spirit,
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
    (b) `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`; PPO notebook with `PPO_NAME=crbot_ppo_hog26`,
-   `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`; rerun daily (resumes). No app persona yet.
+   `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`, `PPO_UPDATES=100000` (so the time budget decides); rerun daily (resumes). No app persona yet.
 3. Retrain the value model on engine v7 (`tools/train_value_model.py`, Colab or a quiet machine).
 4. Then: replay-agreement benchmark (re-simulate real battles, compare outcomes), Phase 2 cards (plan §10), Elo ladder.
 
