@@ -55,7 +55,7 @@ import time
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Collection, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -351,9 +351,13 @@ def _repair_hand(st, card: str, upcoming: Sequence[str]) -> None:
 def replay_battle(rep: Replay, db: CardDB, writer: ShardWriter, battle_idx: int,
                   stats: Stats, proxies: ProxyMap, guesser=None, min_coverage: int = 8,
                   min_opp_coverage: int = 4, wait_ratio: float = 1.0, max_elixir_deficit: float = 1.0,
-                  quarantine: Optional[CardQuarantine] = None) -> bool:
-    """Replay one battle and write its samples. Returns False if the replay was filtered out."""
+                  quarantine: Optional[CardQuarantine] = None, modes: Optional[Collection[str]] = None) -> bool:
+    """Replay one battle and write its samples. Returns False if the replay was filtered out.
+    `modes`: keep only these game modes (e.g. Ranked, Ladder); None / empty keeps every mode."""
     stats.replays_seen += 1
+    if modes and rep.mode not in modes:
+        stats.rejected["mode"] += 1
+        return False
     if quarantine is not None:
         reason = quarantine.check([*rep.decks[0], *rep.decks[1]])
         if reason:
@@ -592,7 +596,10 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     ap.add_argument("--overwrite", action="store_true", help="replace existing shards in --output-dir")
     ap.add_argument("--strict-quarantine", action="store_true",
                     help="also skip replays with catalog cards that are not playable yet (default: proxy them)")
+    ap.add_argument("--modes", default="",
+                    help="comma-separated game modes to keep, e.g. 'Ranked,Ladder,Grand Challenge' (default: all)")
     args = ap.parse_args(argv)
+    modes = tuple(m.strip() for m in args.modes.split(",") if m.strip())
 
     db = CardDB.load()
     cache = Path(args.cache_dir)
@@ -621,7 +628,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         path = part_path(cache, part)
         for rep in iter_replays(path):
             replay_battle(rep, db, writer, battle_idx, stats, proxies, guesser, args.min_coverage,
-                          args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit, quarantine)
+                          args.min_opp_coverage, args.wait_ratio, args.max_elixir_deficit, quarantine, modes)
             battle_idx += 1
             if stats.replays_seen % 500 == 0:
                 logger.info("part %d: %d replays read, %d used, %d samples (%.0f s)", part, stats.replays_seen,
@@ -637,7 +644,8 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     extra = {
         "source": {"dataset": HF_REPO, "parts": done_parts, "last_part_complete": not stop},
         "filters": {"min_coverage": args.min_coverage, "min_opp_coverage": args.min_opp_coverage,
-                    "wait_ratio": args.wait_ratio, "max_elixir_deficit": args.max_elixir_deficit},
+                    "wait_ratio": args.wait_ratio, "max_elixir_deficit": args.max_elixir_deficit,
+                    "modes": list(modes)},
         "stats": stats.as_dict(),
         "quarantine": quarantine.as_dict(),
         "build_seconds": round(time.time() - t0, 1),

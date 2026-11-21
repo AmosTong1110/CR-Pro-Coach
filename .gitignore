@@ -60,8 +60,7 @@ data/finetune/
 
 # Imitation-learning data: downloaded replay parts and generated training shards (large, rebuildable)
 data/il_raw/
-data/il_shards/
-data/il_shards_v1/
+data/il_shards*/
 
 # Lint cache
 .ruff_cache/

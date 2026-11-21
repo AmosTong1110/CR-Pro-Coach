@@ -128,3 +128,15 @@ def test_shard_writer_lifecycle(tmp_path):
     assert (m["total_samples"], m["total_plays"], m["num_shards"]) == (12, 6, 3)
     z = np.load(tmp_path / "shard_0000.npz")
     assert z["obs"].shape == (5, F.OBS_DIM) and z["tile_mask"].shape == (5, 72) and z["slot_mask"].shape == (5, 4)
+
+
+def test_game_mode_filter(db, proxies, tmp_path):
+    events = [_ev("team", 60, "hog-rider", 3.5, 14.5)]
+    friendly = _payload(events=events)
+    friendly["battle"]["game_mode"] = "1v1 Battle"
+    ok, _, st, _ = _run(db, proxies, friendly, tmp_path / "a", modes=("Ranked", "Ladder"))
+    assert not ok and st.rejected.get("mode") == 1 and st.replays_seen == 1
+    ok, *_ = _run(db, proxies, _payload(events=events), tmp_path / "b", modes=("Ranked", "Ladder"))
+    assert ok                                                   # a Ranked battle passes
+    ok, *_ = _run(db, proxies, friendly, tmp_path / "c")        # no filter: every mode is kept
+    assert ok

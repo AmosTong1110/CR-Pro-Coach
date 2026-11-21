@@ -9,7 +9,7 @@ sections: 1 completed work per file, 2 progress, 3 open issues 1–27, 4 next st
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v7** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
   independent). Cards: 123 in the catalog, **47 playable**, 76 quarantined. 7 of 14 evolutions, 5 heroes simulated.
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (545 pass, 1 skip expected; torch tests skip).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (546 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall vs the 4-week plan: ~70%. Weakest: PPO 45%, Coach v2 65%, current card stats 78%.
 
@@ -20,9 +20,18 @@ English-only UI · snake_case card ids · scan downloaded model files · user da
 No automation of the real game or play against real players on the live ladder (Supercell ToS).
 
 ## Done 2026-11-21
-* **IL v2 shards**: v1 shards moved to `data/il_shards_v1/` (git-ignored); `tools/build_il_dataset.py --max-samples
-  400000` writes v2 shards to `data/il_shards/` (47-card pool gives ~46k samples per replay part vs ~20k before).
-  Check `data/il_shards/manifest.json` says `il_obs_v2` / obs_dim 1752.
+* **IL v2 shards**: v1 shards moved to `data/il_shards_v1/` (all `data/il_shards*/` are git-ignored).
+  `data/il_shards/`: 400,044 samples from 4,926 battles (parts 0–13, all modes, 18 min, 63 MB).
+  **Full build** (started 13:45, ~70 min): `--output-dir data/il_shards_full --max-samples 100000000 --modes
+  "Ranked,Ladder,Grand Challenge,Classic Challenge"` → expect ~1.3M samples from ~17k battles. Use it if its manifest
+  is sane (il_obs_v2, obs_dim 1752, `filters.modes` set); upload it to Drive as `datasets/il_shards/`.
+* Dataset facts (VanguardX101/IL_Replay, "Firstlight anonymized"): 252,238 battles, 17.8M actions; trophies and dates
+  removed; part 0 modes: 89% Ranked, 7% friendly-type ("1v1 Battle", "Normal Battle"), rest Ladder / challenges.
+  Only ~7% of battles are usable with 47 cards; full 123-card coverage would allow ~30M samples.
+* `build_il_dataset.py --modes` (game-mode filter, rejected count `mode`; test in `tests/test_il_dataset.py`).
+* IL notebook cell 3 loads obs as preallocated **float16** (~3.5 KB/sample; ~1.3M samples ≈ 4.6 GB; RAM check
+  before loading); `get_batch` casts obs back to float32. Verified locally on 12k real samples (labels identical,
+  max obs error 8e-4). For ~1.3M samples consider `IL_EPOCHS=10` (T4 time not measured yet).
 * `dist/crbot_code_bundle.zip` packed (commit b254b4e; repack after committing today's changes).
 * **Deck specialist + daily budget** in `brain/ppo_trainer.py`: `PPOConfig.learner_decks` (preset names, e.g.
   `("Hog 2.6 Cycle",)`; only the learner's deck, opponents keep all presets), `time_budget_h` (clean stop with
@@ -31,7 +40,8 @@ No automation of the real game or play against real players on the live ladder (
 * Session start trimmed: this file replaces the 54 KB handoff (now the archive).
 
 ## Next steps
-1. Upload `data/il_shards/` → `MyDrive/CRbot_Training/datasets/il_shards/` and `dist/crbot_code_bundle.zip` →
+1. Commit, repack `tools/pack_ppo_bundle.py --code-only` (the notebook change is in the notebook, the bundle holds
+   the model code). Upload `data/il_shards_full/` → `MyDrive/CRbot_Training/datasets/il_shards/` and `dist/crbot_code_bundle.zip` →
    `MyDrive/CRbot_Training/`; run `cloud_training/train_imitation_colab.ipynb` (T4); install `crbot_il_v2.onnx/.npz/.json`
    in `pretrained_weights/crbot_il_v2/`; calibrate: `.venv/bin/python cloud_training/gauntlet_eval.py --out gauntlet.json --write-meta`.
 2. Hog 2.6 specialist PPO: `tools/pack_ppo_bundle.py`, then `train_ppo_colab.ipynb` with
