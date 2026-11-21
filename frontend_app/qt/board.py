@@ -45,6 +45,7 @@ class BoardWidget(QWidget):
         # 复盘虚影：(card_id, x, y, "actual"实际打法 | "best"推荐最优解)
         self.ghosts: List[Tuple[str, float, float, str]] = []
         self.banner: Optional[str] = None         # 棋盘顶部的战术横幅提示文本
+        self.show_zone = False                    # 部署区域半透明高亮：用户不要 (2026-11-21)，默认关闭
         self.setMouseTracking(True)
         self.setMinimumSize(int(G.W * 12), int(G.H * 12))
 
@@ -230,11 +231,12 @@ class BoardWidget(QWidget):
         """绘制选中卡牌时的下牌准星、合法下牌区域高亮与射程指示圈"""
         if not self.selected_card:
             return
-        # 高亮当前卡牌的所有合法部署格子
-        p.setPen(Qt.NoPen)
-        p.setBrush(LEGAL)
-        for (x, y) in self.legal:
-            p.drawRect(self.tile_rect(x - 0.5, y - 0.5, 1, 1))
+        # 高亮当前卡牌的所有合法部署格子 (用户不要部署时的半透明底色，默认关闭；悬停准星仍显示绿 / 红)
+        if self.show_zone:
+            p.setPen(Qt.NoPen)
+            p.setBrush(LEGAL)
+            for (x, y) in self.legal:
+                p.drawRect(self.tile_rect(x - 0.5, y - 0.5, 1, 1))
         if self.hover is None:
             return
         # 鼠标悬停位置：若在合法区域则显示绿色准星，否则显示红色违规指示

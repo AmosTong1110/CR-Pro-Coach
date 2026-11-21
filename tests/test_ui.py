@@ -128,3 +128,20 @@ def test_main_window_offscreen():
     assert w.session.match.t_ms == 20 * 8 * 50
     assert not w.grab().isNull()
     w.close()
+
+
+def test_no_placement_zone_tint_by_default():
+    """Selecting a card tints nothing; only the hover marker shows legal (green) / illegal (red)."""
+    pytest.importorskip("PySide6")
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QApplication
+    from frontend_app.qt.board import BoardWidget
+
+    app = QApplication.instance() or QApplication([])
+    s = GameSession(cfg=SessionConfig(seed=3))
+    b = BoardWidget(s)
+    b.resize(450, 800)
+    plain = b.grab().toImage()
+    b.set_selected(next(c for c in s.match.sides[HUMAN].hand if s.db.cards[c]["type"] != "spell"))
+    assert b.legal and not b.show_zone
+    assert b.grab().toImage() == plain
