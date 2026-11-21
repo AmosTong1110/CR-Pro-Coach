@@ -21,10 +21,14 @@ No automation of the real game or play against real players on the live ladder (
 
 ## Done 2026-11-21
 * **IL v2 shards**: v1 shards moved to `data/il_shards_v1/` (all `data/il_shards*/` are git-ignored).
-  `data/il_shards/`: 400,044 samples from 4,926 battles (parts 0–13, all modes, 18 min, 63 MB).
-  **Full build** (started 13:45, ~70 min): `--output-dir data/il_shards_full --max-samples 100000000 --modes
-  "Ranked,Ladder,Grand Challenge,Classic Challenge"` → expect ~1.3M samples from ~17k battles. Use it if its manifest
-  is sane (il_obs_v2, obs_dim 1752, `filters.modes` set); upload it to Drive as `datasets/il_shards/`.
+  `data/il_shards/`: 400,044 samples, 4,926 battles (parts 0–13, all modes; fallback set).
+  **Full build** (restarted 13:56 with deck ids, ~70 min): `--output-dir data/il_shards_full --max-samples 100000000
+  --modes "Ranked,Ladder,Grand Challenge,Classic Challenge"` → expect ~1.4M samples. Use it if its manifest is sane
+  (il_obs_v2, obs_dim 1752, `filters.modes`, `learner_decks`); upload it to Drive as `datasets/il_shards/`.
+* Shards now store `deck` (index into manifest `learner_decks`, sorted 8 card ids) per sample.
+* Notebooks are name-aware (defaults unchanged). IL: `IL_NAME`, `IL_INIT` (.npz to start from), `IL_DECK` (8 card
+  ids: keep only learners with that deck), `IL_LR`. PPO: `PPO_NAME` (own checkpoint folder unless crbot_ppo_v2),
+  `PPO_INIT`, `PPO_DECKS`, `PPO_HOURS`. `pack_ppo_bundle.py --il-model <name>`.
 * Dataset facts (VanguardX101/IL_Replay, "Firstlight anonymized"): 252,238 battles, 17.8M actions; trophies and dates
   removed; part 0 modes: 89% Ranked, 7% friendly-type ("1v1 Battle", "Normal Battle"), rest Ladder / challenges.
   Only ~7% of battles are usable with 47 cards; full 123-card coverage would allow ~30M samples.
@@ -32,21 +36,21 @@ No automation of the real game or play against real players on the live ladder (
 * IL notebook cell 3 loads obs as preallocated **float16** (~3.5 KB/sample; ~1.3M samples ≈ 4.6 GB; RAM check
   before loading); `get_batch` casts obs back to float32. Verified locally on 12k real samples (labels identical,
   max obs error 8e-4). For ~1.3M samples consider `IL_EPOCHS=10` (T4 time not measured yet).
-* `dist/crbot_code_bundle.zip` packed (commit b254b4e; repack after committing today's changes).
 * **Deck specialist + daily budget** in `brain/ppo_trainer.py`: `PPOConfig.learner_decks` (preset names, e.g.
   `("Hog 2.6 Cycle",)`; only the learner's deck, opponents keep all presets), `time_budget_h` (clean stop with
   checkpoint + export, next run resumes), `export_name` (e.g. `crbot_ppo_hog26` → NeuralBot loads it from
   `pretrained_weights/<name>/`). Helper `meta.presets.select_presets` (tested in `tests/test_presets.py`).
-* Session start trimmed: this file replaces the 54 KB handoff (now the archive).
 
 ## Next steps
 1. Commit, repack `tools/pack_ppo_bundle.py --code-only` (the notebook change is in the notebook, the bundle holds
    the model code). Upload `data/il_shards_full/` → `MyDrive/CRbot_Training/datasets/il_shards/` and `dist/crbot_code_bundle.zip` →
    `MyDrive/CRbot_Training/`; run `cloud_training/train_imitation_colab.ipynb` (T4); install `crbot_il_v2.onnx/.npz/.json`
    in `pretrained_weights/crbot_il_v2/`; calibrate: `.venv/bin/python cloud_training/gauntlet_eval.py --out gauntlet.json --write-meta`.
-2. Hog 2.6 specialist PPO: `tools/pack_ppo_bundle.py`, then `train_ppo_colab.ipynb` with
-   `PPOConfig(learner_decks=("Hog 2.6 Cycle",), time_budget_h=12, export_name="crbot_ppo_hog26")` (the notebook
-   cell still needs these fields set); one run per day resumes from Drive checkpoints.
+2. Hog 2.6 specialist: (a) IL fine-tune: rerun the IL notebook with `IL_NAME=crbot_il_v2_hog26`,
+   `IL_INIT=<Drive>/models/crbot_il_v2/crbot_il_v2.npz`, `IL_DECK=cannon,fireball,hog_rider,ice_golem,ice_spirit,
+   musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
+   (b) `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`; PPO notebook with `PPO_NAME=crbot_ppo_hog26`,
+   `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`; rerun daily (resumes). No app persona yet.
 3. Retrain the value model on engine v7 (`tools/train_value_model.py`, Colab or a quiet machine).
 4. Then: replay-agreement benchmark (re-simulate real battles, compare outcomes), Phase 2 cards (plan §10), Elo ladder.
 

@@ -247,10 +247,21 @@ class ShardWriter:
         self.current_shard_idx = 0
         self.buf: Dict[str, list] = collections.defaultdict(list)
         self.total_samples = self.total_plays = self.total_waits = self.total_battles = 0
+        self.decks: List[Tuple[str, ...]] = []          # manifest "learner_decks"; samples store the index
+        self._deck_index: Dict[Tuple[str, ...], int] = {}
+
+    def deck_id(self, cards: Sequence[str]) -> int:
+        """Index of this 8-card deck (order-free) in the manifest's `learner_decks`, so a deck specialist can
+        select its samples later (e.g. the Hog 2.6 human games) without rebuilding the shards."""
+        key = tuple(sorted(cards))
+        if key not in self._deck_index:
+            self._deck_index[key] = len(self.decks)
+            self.decks.append(key)
+        return self._deck_index[key]
 
     def add_sample(self, obs: np.ndarray, gate: int, slot: int, tile: int, value: float,
                    slot_mask: Optional[np.ndarray] = None, tile_mask: Optional[np.ndarray] = None,
-                   battle: int = 0, side: int = 0) -> None:
+                   battle: int = 0, side: int = 0, deck: int = -1) -> None:
         self.buf["obs"].append(obs)
         self.buf["gate"].append(gate)
         self.buf["card_slot"].append(slot)
@@ -260,6 +271,7 @@ class ShardWriter:
         self.buf["tile_mask"].append(F.pack_mask(np.zeros(F.NUM_TILES, bool) if tile_mask is None else tile_mask))
         self.buf["battle"].append(battle)
         self.buf["side"].append(side)
+        self.buf["deck"].append(deck)
         self.total_samples += 1
         if gate == 1:
             self.total_plays += 1
@@ -284,6 +296,7 @@ class ShardWriter:
             tile_mask=np.asarray(b["tile_mask"], dtype=np.uint8),
             battle=np.asarray(b["battle"], dtype=np.uint32),
             side=np.asarray(b["side"], dtype=np.int8),
+            deck=np.asarray(b["deck"], dtype=np.int32),     # index into manifest "learner_decks" (-1 = unknown)
         )
         logger.info("saved %s (%d samples)", path.name, len(b["obs"]))
         self.current_shard_idx += 1
@@ -305,6 +318,7 @@ class ShardWriter:
             "num_tiles": F.NUM_TILES,
             "num_card_slots": F.HAND_SLOTS,
             **(extra or {}),
+            "learner_decks": [list(d) for d in self.decks],
         }
         path = self.output_dir / "manifest.json"
         path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -488,10 +502,11 @@ def replay_battle(rep: Replay, db: CardDB, writer: ShardWriter, battle_idx: int,
         chosen = waits[s]
         if len(chosen) > n_wait:
             chosen = [chosen[i] for i in np.linspace(0, len(chosen) - 1, n_wait).round().astype(int)]
+        deck = writer.deck_id(rep.decks[s])          # a learner's 8 cards are all simulated (no proxies)
         for vec, slot, tile, smask, tmask in plays[s]:
-            writer.add_sample(vec, 1, slot, tile, value[s], smask, tmask, battle_idx, s)
+            writer.add_sample(vec, 1, slot, tile, value[s], smask, tmask, battle_idx, s, deck)
         for vec, smask in chosen:
-            writer.add_sample(vec, 0, -1, -1, value[s], smask, None, battle_idx, s)
+            writer.add_sample(vec, 0, -1, -1, value[s], smask, None, battle_idx, s, deck)
     writer.total_battles += 1
     return True
 

@@ -140,3 +140,13 @@ def test_game_mode_filter(db, proxies, tmp_path):
     assert ok                                                   # a Ranked battle passes
     ok, *_ = _run(db, proxies, friendly, tmp_path / "c")        # no filter: every mode is kept
     assert ok
+
+
+def test_samples_record_the_learner_deck(db, proxies, tmp_path):
+    events = [_ev("team", 60, "hog-rider", 3.5, 14.5), _ev("opponent", 70, "musketeer", 14.5, 21.5)]
+    ok, w, st, d = _run(db, proxies, _payload(events=events), tmp_path)
+    assert ok and (d["deck"] == 0).all()                       # both sides play the same Hog deck: one entry
+    manifest = json.loads((tmp_path / "manifest.json").read_text())
+    hog = sorted(split_card_key(c)[0] for c in HOG)
+    assert manifest["learner_decks"] == [hog]
+    assert w.deck_id(list(reversed(hog))) == 0 and w.deck_id(["knight"] * 8) == 1   # order-free, new deck -> new id

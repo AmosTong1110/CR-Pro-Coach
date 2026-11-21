@@ -2,10 +2,11 @@
 
     .venv/bin/python tools/pack_ppo_bundle.py            # -> dist/crbot_ppo_bundle.zip (~11 MB, mostly the IL weights)
     .venv/bin/python tools/pack_ppo_bundle.py --code-only   # -> dist/crbot_code_bundle.zip (for the IL notebook)
+    .venv/bin/python tools/pack_ppo_bundle.py --il-model crbot_il_v2_hog26   # PPO starting from a deck fine-tune
 
 Contents: the git-tracked files of backend_engine/ and configs/ (the engine, perception, NeuralBot features,
-il_model / ppo_trainer, card data, preset decks, reaction profiles), pretrained_weights/crbot_il_v2/ (.onnx +
-.npz + .json, the PPO starting point) and BUNDLE_MANIFEST.json (git commit, file list with SHA-256, Python packages the
+il_model / ppo_trainer, card data, preset decks, reaction profiles), pretrained_weights/<il-model>/ (.onnx +
+.npz + .json, the PPO starting point; crbot_il_v2 by default) and BUNDLE_MANIFEST.json (git commit, file list with SHA-256, Python packages the
 notebook installs). Untracked files, user data, datasets, recordings and other weights are never included.
 Upload the zip to Google Drive as MyDrive/CRbot_Training/crbot_ppo_bundle.zip, then run
 cloud_training/train_ppo_colab.ipynb.
@@ -23,7 +24,15 @@ from pathlib import Path
 from typing import List
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL_FILES = tuple(f"pretrained_weights/crbot_il_v2/crbot_il_v2.{ext}" for ext in ("onnx", "npz", "json"))
+DEFAULT_IL_MODEL = "crbot_il_v2"
+
+
+def model_files(name: str = DEFAULT_IL_MODEL) -> tuple:
+    """pretrained_weights/<name>/<name>.onnx + .npz + .json (the PPO notebook's PPO_INIT)."""
+    return tuple(f"pretrained_weights/{name}/{name}.{ext}" for ext in ("onnx", "npz", "json"))
+
+
+MODEL_FILES = model_files()
 TRACKED_DIRS = ("backend_engine", "configs")
 PACKAGES = ["torch", "numpy", "pyyaml", "onnx", "onnxruntime", "onnxscript"]
 
@@ -61,14 +70,17 @@ def main(argv=None) -> int:
                     "with --code-only)")
     ap.add_argument("--code-only", action="store_true",
                     help="no weights: the code the IL notebook imports (model, encoder, augmentation)")
+    ap.add_argument("--il-model", default=DEFAULT_IL_MODEL,
+                    help="IL model to start PPO from (pretrained_weights/<name>/), e.g. crbot_il_v2_hog26")
     args = ap.parse_args(argv)
     files = tracked_files()
     if not args.code_only:
-        for f in MODEL_FILES:
+        name = args.il_model
+        for f in model_files(name):
             if not (ROOT / f).exists():
-                raise SystemExit(f"missing {f}: put crbot_il_v2.onnx + .npz + .json (from the IL notebook) in "
-                                 "pretrained_weights/crbot_il_v2/ first")
-        files += list(MODEL_FILES)
+                raise SystemExit(f"missing {f}: put {name}.onnx + .npz + .json (from the IL notebook) in "
+                                 f"pretrained_weights/{name}/ first")
+        files += list(model_files(name))
     out = Path(args.out or ROOT / "dist" / ("crbot_code_bundle.zip" if args.code_only else "crbot_ppo_bundle.zip"))
     m = build(out, files)
     total = sum(e["bytes"] for e in m["files"])

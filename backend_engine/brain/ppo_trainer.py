@@ -538,7 +538,7 @@ class PPOTrainer:
         save_weights(model, self.out_dir / f"{name}.npz")
         meta = model_meta(name)
         meta.update({"gate_threshold": self.cfg.gate_threshold,
-                     "decide_every_ms": self.cfg.decide_every_ms, "init": "crbot_il_v2",
+                     "decide_every_ms": self.cfg.decide_every_ms, "init": self.il_onnx.stem,
                      "ppo": {"update": self.update, "best_rolling_score": round(self.best_score, 4),
                              "cfg": asdict(self.cfg), "history": self.history[-50:]},
                      "onnx_check_max_abs_diff": diff,
