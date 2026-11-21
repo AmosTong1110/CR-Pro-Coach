@@ -3,8 +3,11 @@ from __future__ import annotations
 
 from typing import Callable, Dict, Optional, Sequence
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
+
+from frontend_app.qt import art
 
 from frontend_app.qt.theme import C, cls
 
@@ -103,3 +106,35 @@ def deck_names(db_cards: Dict[str, dict]) -> Callable[[str], str]:
 
 def deck_costs(db_cards: Dict[str, dict]) -> Callable[[str], Optional[int]]:
     return lambda c: db_cards.get(c, {}).get("elixir")
+
+
+class CardButton(QPushButton):
+    """A hand slot painted as an original card face (art.draw_card_face): card colour, type glyph, elixir drop,
+    name strip. It stays a checkable QPushButton (keys, clicks, text for accessibility); only the look is custom."""
+
+    _QSS = "QPushButton{min-height:%dpx; max-height:%dpx; padding:0; border:none; background:transparent;}"
+
+    def __init__(self, height: int = 76, compact: bool = False, parent=None):
+        super().__init__(parent)
+        self.compact = compact
+        self.face: Optional[tuple] = None
+        self.setStyleSheet(self._QSS % (height, height))
+        self.setCursor(Qt.PointingHandCursor)
+
+    def set_face(self, card_id: str, name: str, cost: int, kind: str, *, afford: bool = True,
+                 selected: bool = False, evo: bool = False, enabled: bool = True) -> None:
+        face = (card_id, name, cost, kind, afford, selected, evo, enabled)
+        if face != self.face:                     # repaint only when something on the face changed
+            self.face = face
+            self.setText(name)
+            self.update()
+
+    def paintEvent(self, e) -> None:
+        if self.face is None:
+            return
+        card_id, name, cost, kind, afford, selected, evo, enabled = self.face
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        art.draw_card_face(p, QRectF(self.rect()), card_id, name, cost, kind, afford=afford, selected=selected,
+                           evo=evo, enabled=enabled, compact=self.compact)
+        p.end()

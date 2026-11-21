@@ -1,31 +1,39 @@
 """
 竞技场棋盘渲染画布控件 (Arena Board Canvas Widget)
-使用 PySide6 QPainter 高性能绘制 18x32 皇室战争战斗棋盘，
+使用 PySide6 QPainter 绘制 18x32 战斗棋盘 (原创矢量美术，见 art.py)，
 并负责处理鼠标悬停预览、下牌落点点击以及复盘最优解虚影 (Ghost Tiles) 渲染。
+
+渲染只读引擎状态：动画 (投射物、命中闪光、法术爆开、死亡淡出、落地尘环) 由 fx.FxTracker 对比
+相邻两帧状态得出，单位位置在两个 50 ms 模拟步之间平滑插值；16 ms 重绘定时器只在有动画时触发。
 """
 from __future__ import annotations
 
-from typing import List, Optional, Set, Tuple
+import math
+import time
+from typing import Dict, List, Optional, Set, Tuple
 
-from PySide6.QtCore import QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QFontMetrics, QPainter, QPen
+from PySide6.QtCore import QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtGui import (QBrush, QColor, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen,
+                           QRadialGradient)
 from PySide6.QtWidgets import QWidget
 
 from backend_engine.simulator import geometry as G
+from frontend_app.qt import art
+from frontend_app.qt.fx import FxTracker
 from frontend_app.qt.session import AI, HUMAN, GameSession
 
-# 阵营色彩：人类玩家为皇家蓝，AI 为赤红
-SIDE_COLOR = {HUMAN: QColor("#2f7de1"), AI: QColor("#e0453a")}
-# 棋盘草地交错双色格
-GRASS_A, GRASS_B = QColor("#73b04f"), QColor("#6aa748")
-# 河道与桥梁色彩
-RIVER, BRIDGE = QColor("#3b8fd9"), QColor("#a7814f")
-# 下牌合法与非法高亮色彩
-LEGAL, ILLEGAL = QColor(80, 255, 120, 70), QColor(255, 60, 60, 110)
+# 阵营色彩：人类玩家为蓝，AI 为红 (与 art.BLUE / art.RED 一致)
+SIDE_COLOR = {HUMAN: QColor(art.BLUE), AI: QColor(art.RED)}
+BG = QColor("#15171c")
+ANIM_MS = 16                                   # ~60 fps repaint while something animates
+
+# 区域持续法术 (AreaEffect.kind) 的配色
+EFFECT_COLOR = {"pull_spell": QColor(190, 215, 235), "dot_spell": QColor(170, 220, 60),
+                "root_spell": QColor(90, 200, 90)}
 
 
 def short_name(name: str) -> str:
-    """提取卡牌名称缩写 (如 Hog Rider -> HR) 用于棋盘小圆形单位内的文字标识"""
+    """提取卡牌名称缩写 (如 Hog Rider -> HR)，供无法显示图标的地方使用"""
     words = name.replace("The ", "").split()
     return "".join(w[0] for w in words[:2]) if len(words) > 1 else name[:2]
 
@@ -47,6 +55,19 @@ class BoardWidget(QWidget):
         self.banner: Optional[str] = None         # 棋盘顶部的战术横幅提示文本
         self.setMouseTracking(True)
         self.setMinimumSize(int(G.W * 12), int(G.H * 12))
+        # -- 渲染缓存与动画 (只读引擎状态) --
+        self.clock = time.monotonic                # 可替换为假时钟 (测试)
+        self.tracker = FxTracker()
+        self.tokens = art.TokenCache()
+        self._arena_key = None
+        self._arena_pm = None
+        self._zone_key = None
+        self._zone_path = QPainterPath()
+        self._roles: Dict[str, str] = {}
+        self._anim = QTimer(self)
+        self._anim.setInterval(ANIM_MS)
+        self._anim.timeout.connect(self._on_anim)
+        self._anim.start()
 
     # -- 几何空间换算 (Geometry & Coordinates) -------------------------------
     def _geom(self) -> Tuple[float, float, float]:
@@ -104,27 +125,56 @@ class BoardWidget(QWidget):
             self.tileClicked.emit(x, y)
 
     # -- 渲染管线 (Painting Pipeline) ----------------------------------------
+    def _on_anim(self) -> None:
+        """16 ms 定时器：只在可见且有动画 (插值、特效、受击闪白) 时重绘，静止时不耗 CPU"""
+        if self.isVisible() and self.tracker.animating(self.clock()):
+            self.update()
+
+    def role_of(self, card_id: str) -> str:
+        r = self._roles.get(card_id)
+        if r is None:
+            r = self._roles[card_id] = art.role(self.session.db.entry(card_id))
+        return r
+
     def paintEvent(self, e) -> None:
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        p.fillRect(self.rect(), QColor("#15171c"))
-        ts, _, _ = self._geom()
-        # 1. 绘制草地、河道与桥梁
-        self._paint_arena(p)
-        # 2. 绘制下牌准星与合法区域高亮
-        self._paint_placement(p, ts)
+        now = self.clock()
         m = self.session.match
-        # 3. 绘制场上存活实体 (地面优先，空中居上)
-        for u in sorted(m.units.values(), key=lambda u: (u.layer == "air", u.uid)):
+        self.tracker.observe(m, now)
+        self.tracker.prune(now)
+        ts, _, _ = self._geom()
+        # 1. 草地、河道与桥梁 (按尺寸缓存的背景图)
+        self._paint_arena(p)
+        # 2. 选牌时的可放置区域
+        self._paint_zone(p)
+        # 3. 被摧毁塔的废墟、持续区域法术、落地尘环
+        self._paint_rubble(p, ts)
+        self._paint_effects(p, ts)
+        self._paint_fx(p, ts, now, ("land",))
+        # 4. 场上实体：阴影 -> 地面 (按屏幕纵向排序) -> 死亡淡出 -> 空中
+        units = list(m.units.values())
+        pos = {u.uid: self.tracker.pos(u.uid, u.x, u.y, now) for u in units}
+        self._paint_shadows(p, units, pos, ts)
+        ground = sorted((u for u in units if u.layer != "air"), key=lambda u: (-pos[u.uid][1], u.uid))
+        air = sorted((u for u in units if u.layer == "air"), key=lambda u: (-pos[u.uid][1], u.uid))
+        for u in ground:
             if u.kind == "tower":
                 self._paint_tower(p, u, ts)
             else:
-                self._paint_unit(p, u, ts)
-        # 4. 绘制法术弹道与滚木
-        self._paint_spells(p, ts)
-        # 5. 绘制复盘红绿虚影
+                self._paint_unit(p, u, ts, pos[u.uid], now)
+        self._paint_fx(p, ts, now, ("death",))
+        for u in air:
+            self._paint_unit(p, u, ts, pos[u.uid], now)
+        # 5. 投射物、来袭法术、滚木；命中 / 爆开特效
+        self._paint_spells(p, ts, now)
+        self._paint_fx(p, ts, now, ("hit", "impact", "burst", "collapse"))
+        # 6. 单位血条 (置顶，避免被遮挡)
+        self._paint_unit_bars(p, units, pos, ts)
+        # 7. 放置准星
+        self._paint_placement(p, ts)
+        # 8. 复盘虚影、结算、倒计时、横幅
         self._paint_ghosts(p, ts)
-        # 6. 局终结算蒙层或倒计时大字
         if not self.ghosts:
             self._paint_result(p)
         self._paint_overlay(p)
@@ -210,132 +260,285 @@ class BoardWidget(QWidget):
         p.drawText(self.rect(), Qt.AlignCenter, self.overlay_text)
 
     def _paint_arena(self, p: QPainter) -> None:
-        """绘制竞技场地表网格：双色交替草地、中间河道 (River) 以及左右两座桥梁 (Bridges)"""
-        p.setPen(Qt.NoPen)
-        # 棋盘格交替草地背景
-        for y in range(int(G.H)):
-            for x in range(int(G.W)):
-                p.setBrush(GRASS_A if (x + y) % 2 == 0 else GRASS_B)
-                p.drawRect(self.tile_rect(x, y, 1, 1))
-        # 中部横向河道
-        p.setBrush(RIVER)
-        p.drawRect(self.tile_rect(0, G.RIVER_Y0, G.W, G.RIVER_Y1 - G.RIVER_Y0))
-        # 左右两座石桥
-        p.setBrush(BRIDGE)
-        for bx in G.BRIDGE_X:
-            p.drawRect(self.tile_rect(bx - G.BRIDGE_HALF_W, G.RIVER_Y0 - 0.2, 2 * G.BRIDGE_HALF_W,
-                                      G.RIVER_Y1 - G.RIVER_Y0 + 0.4))
+        """草地、河道、两座木桥：按窗口尺寸绘制一次后缓存为位图，每帧只贴图"""
+        key = (self.width(), self.height(), round(self.devicePixelRatioF(), 2))
+        if self._arena_key != key:
+            self._arena_pm = art.arena_pixmap(self, BG)
+            self._arena_key = key
+        p.drawPixmap(0, 0, self._arena_pm)
+
+    def _paint_zone(self, p: QPainter) -> None:
+        """选中卡牌时才显示可放置区域：合法格子合并成一块淡色区域 + 虚线轮廓 (无格子线)"""
+        if not self.selected_card or not self.legal:
+            return
+        key = (hash(frozenset(self.legal)), self.width(), self.height())
+        if self._zone_key != key:
+            path = QPainterPath()
+            for (x, y) in self.legal:
+                path.addRect(self.tile_rect(x - 0.5, y - 0.5, 1, 1))
+            self._zone_path = path.simplified()
+            self._zone_key = key
+        p.setBrush(QColor(255, 255, 255, 38))
+        p.setPen(QPen(QColor(255, 255, 255, 150), 1.5, Qt.DashLine))
+        p.drawPath(self._zone_path)
 
     def _paint_placement(self, p: QPainter, ts: float) -> None:
-        """绘制选中卡牌时的下牌准星、合法下牌区域高亮与射程指示圈"""
-        if not self.selected_card:
+        """鼠标悬停准星：绿色 = 可放置，红色 = 不可放置；法术显示范围，远程单位显示射程虚线圈"""
+        if not self.selected_card or self.hover is None:
             return
-        # 高亮当前卡牌的所有合法部署格子
-        p.setPen(Qt.NoPen)
-        p.setBrush(LEGAL)
-        for (x, y) in self.legal:
-            p.drawRect(self.tile_rect(x - 0.5, y - 0.5, 1, 1))
-        if self.hover is None:
-            return
-        # 鼠标悬停位置：若在合法区域则显示绿色准星，否则显示红色违规指示
         ok = self.hover in self.legal
         card = self.session.db.cards[self.selected_card]
-        color = QColor(60, 220, 100, 150) if ok else ILLEGAL
-        p.setBrush(color)
-        p.setPen(QPen(QColor(255, 255, 255, 200), 1.5))
         c = self.to_px(*self.hover)
+        col = QColor(120, 255, 160) if ok else QColor(255, 90, 90)
+        fill = QColor(col.red(), col.green(), col.blue(), 70)
         spell = card.get("spell", {})
+        p.setPen(QPen(col, 2))
+        p.setBrush(fill)
         if "radius_tiles" in spell:
-            # 圆形法术影响半径
             r = spell["radius_tiles"] * ts
             p.drawEllipse(c, r, r)
+            art.draw_glyph(p, "spell", c, min(r * 0.4, ts * 0.8), QColor(255, 255, 255, 200))
         elif "rolling_range_tiles" in spell:
-            # 矩形滚木滚动轨迹预览
             w = spell["width_tiles"]
-            p.drawRect(self.tile_rect(self.hover[0] - w / 2, self.hover[1], w, spell["rolling_range_tiles"]))
+            p.drawRoundedRect(self.tile_rect(self.hover[0] - w / 2, self.hover[1], w, spell["rolling_range_tiles"]),
+                              ts * 0.4, ts * 0.4)
         else:
-            # 单位部署体积
-            r = max(card.get("collision_radius_tiles", 0.5), 0.45) * ts
-            p.drawEllipse(c, r, r)
-            # 远程单位显示攻击距离虚线圆圈
             rng = card.get("attack", {}).get("range_tiles", 0)
             if rng > 1.5:
                 p.setBrush(Qt.NoBrush)
-                p.setPen(QPen(QColor(255, 255, 255, 110), 1, Qt.DashLine))
+                p.setPen(QPen(QColor(255, 255, 255, 120), 1, Qt.DashLine))
                 p.drawEllipse(c, rng * ts, rng * ts)
+            r = max(card.get("collision_radius_tiles", 0.5), 0.5) * ts * 1.3
+            p.setBrush(fill)
+            p.setPen(QPen(col, 2))
+            p.drawEllipse(c, r, r)
+            art.draw_glyph(p, self.role_of(self.selected_card), c, r * 0.55, QColor(255, 255, 255, 210))
+
+    def _paint_rubble(self, p: QPainter, ts: float) -> None:
+        """已被摧毁的塔留下废墟"""
+        m = self.session.match
+        for (side, role), uid in getattr(m, "tower_uid", {}).items():
+            if uid in m.units:
+                continue
+            x, y, r = G.TOWER_LAYOUT[role]
+            x, y = G.to_side(side, x, y)
+            art.draw_rubble(p, self.to_px(x, y), r * ts, side)
+
+    def _paint_effects(self, p: QPainter, ts: float) -> None:
+        """持续区域法术 (旋风、毒雾、藤蔓等)：半透明圆 + 随已持续时间旋转的虚线环"""
+        for ef in getattr(self.session.match, "effects", []):
+            c = self.to_px(ef.x, ef.y)
+            r = ef.radius * ts
+            col = EFFECT_COLOR.get(ef.kind, QColor(180, 140, 255))
+            left = 1.0 - ef.elapsed_ms / ef.duration_ms if ef.duration_ms else 1.0
+            g = QRadialGradient(c, r)
+            g.setColorAt(0, QColor(col.red(), col.green(), col.blue(), int(30 + 60 * left)))
+            g.setColorAt(1, QColor(col.red(), col.green(), col.blue(), int(10 + 30 * left)))
+            p.setBrush(g)
+            pen = QPen(QColor(col.red(), col.green(), col.blue(), 200), max(1.5, ts * 0.1), Qt.DashLine)
+            pen.setDashOffset(-ef.elapsed_ms / 60.0)
+            p.setPen(pen)
+            p.drawEllipse(c, r, r)
+
+    def _paint_shadows(self, p: QPainter, units, pos, ts: float) -> None:
+        """所有单位的地面阴影；空中单位阴影更淡更小 (本体画在阴影上方，显得浮起)"""
+        p.setPen(Qt.NoPen)
+        for u in units:
+            if u.kind == "tower":
+                continue
+            r = self._unit_r(u, ts)
+            c = self.to_px(*pos[u.uid])
+            air = u.layer == "air"
+            p.setBrush(QColor(0, 0, 0, 50 if air else 75))
+            sr = r * (0.72 if air else 0.95)
+            p.drawEllipse(QPointF(c.x(), c.y() + r * 0.55), sr, sr * 0.45)
+
+    @staticmethod
+    def _unit_r(u, ts: float) -> float:
+        return max(u.radius, 0.42) * ts * 1.05
+
+    def _unit_center(self, u, ts: float, xy) -> QPointF:
+        c = self.to_px(*xy)
+        if u.layer == "air":
+            c = QPointF(c.x(), c.y() - self._unit_r(u, ts) * 0.9)
+        return c
 
     def _hp_bar(self, p: QPainter, cx: float, top: float, width: float, frac: float, side: int) -> None:
-        """绘制通用血条：底色深灰，前景色按阵营偏亮色显示当前血量比例"""
-        p.setPen(Qt.NoPen)
-        p.setBrush(QColor(0, 0, 0, 160))
-        p.drawRect(QRectF(cx - width / 2, top, width, 4))
-        p.setBrush(SIDE_COLOR[side].lighter(130))
-        p.drawRect(QRectF(cx - width / 2, top, width * max(0.0, min(1.0, frac)), 4))
+        """通用血条 (阵营色、圆角、深色底槽)"""
+        art.hp_bar(p, cx, top, width, frac, side)
 
     def _paint_tower(self, p: QPainter, u, ts: float) -> None:
-        """绘制皇家皇家塔 (公主塔 / 国王塔)，包括当前血量与国王未激活沉睡状态 (zzz)"""
-        r = u.radius * ts
+        """立体石塔 (公主塔 / 国王塔)：正面暗面、垛口、阵营色塔顶、血条内嵌血量数字，国王未激活显示 z z"""
         c = self.to_px(u.x, u.y)
-        base = SIDE_COLOR[u.side]
-        p.setPen(QPen(base.darker(160), 2))
-        p.setBrush(base if u.active else base.darker(140))
-        p.drawRoundedRect(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r), 4, 4)
-        p.setPen(QColor("white"))
-        f = QFont()
-        f.setPixelSize(max(9, int(ts * 0.55)))
-        f.setBold(True)
-        p.setFont(f)
-        p.drawText(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r), Qt.AlignCenter, f"{int(u.hp)}")
-        if u.tower_role == "king" and not u.active:
-            # 国王塔未受攻击且两座公主塔均在时处于沉睡未激活状态
-            f.setPixelSize(max(8, int(ts * 0.4)))
-            p.setFont(f)
-            p.drawText(QRectF(c.x() - r, c.y() + r * 0.25, 2 * r, r * 0.7), Qt.AlignCenter, "zzz")
-        self._hp_bar(p, c.x(), c.y() - r - 6, 2 * r, u.hp / u.max_hp, u.side)
+        art.draw_tower(p, c, u.radius * ts, ts, u.side, u.tower_role == "king", u.active, u.hp, u.max_hp,
+                       self.tracker.hurt_level(u.uid, self.clock()))
 
-    def _paint_unit(self, p: QPainter, u, ts: float) -> None:
-        """绘制活体单位与建筑，支持部署半透明与空中飞行单位阴影"""
-        r = max(u.radius, 0.4) * ts
-        c = self.to_px(u.x, u.y)
-        col = QColor(SIDE_COLOR[u.side])
-        if u.deploy_ms > 0:
-            # 部署生效延迟期 (半透明提示未完全登场)
-            col.setAlpha(110)
-        if u.layer == "air":
-            # 飞行空中单位 (在地面下方绘制椭圆暗影，增强空间立体感)
+    def _paint_unit(self, p: QPainter, u, ts: float, xy=None, now: Optional[float] = None) -> None:
+        """单位与建筑：阵营色圆片 (建筑为圆角方块) + 类型图标 + 卡牌色小圆点；部署中半透明并显示倒计时环"""
+        now = self.clock() if now is None else now
+        xy = (u.x, u.y) if xy is None else xy
+        kind = self.role_of(u.card_id)
+        r = self._unit_r(u, ts)
+        c = self._unit_center(u, ts, xy)
+        ring = "champion" if kind == "champion" else ("evo" if u.evolved or u.variant == "evo" else "")
+        pm = self.tokens.get(u.card_id, u.side, kind, r, self.devicePixelRatioF(), ring)
+        half = art.token_extent(int(r * 4) / 4)
+        hidden = bool(u.mstate.get("hidden"))
+        opacity = 0.45 if u.deploy_ms > 0 else (0.4 if hidden else 1.0)
+        p.setOpacity(opacity)
+        p.drawPixmap(QPointF(c.x() - half, c.y() - half), pm)
+        p.setOpacity(1.0)
+        hurt = self.tracker.hurt_level(u.uid, now)
+        if hurt > 0:
             p.setPen(Qt.NoPen)
-            p.setBrush(QColor(0, 0, 0, 60))
-            p.drawEllipse(QPointF(c.x() + r * 0.3, c.y() + r * 0.5), r * 0.8, r * 0.5)
-        p.setBrush(col)
-        p.setPen(QPen(col.darker(170), 1.5))
-        if u.kind == "building":
-            # 建筑绘制为方形
-            p.drawRect(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r))
-        else:
-            # 兵种单位绘制为圆盘
+            p.setBrush(QColor(255, 255, 255, int(150 * hurt)))
             p.drawEllipse(c, r, r)
-        p.setPen(QColor("white"))
-        f = QFont()
-        f.setPixelSize(max(8, int(r * 0.85)))
-        f.setBold(True)
-        p.setFont(f)
-        name = self.session.db.entry(u.card_id)["name"]
-        p.drawText(QRectF(c.x() - r, c.y() - r, 2 * r, 2 * r), Qt.AlignCenter, short_name(name))
-        if u.hp < u.max_hp:
-            self._hp_bar(p, c.x(), c.y() - r - 5, 2 * r, u.hp / u.max_hp, u.side)
+        if "freeze" in u.status:
+            p.setPen(QPen(QColor(220, 245, 255, 220), max(1.5, ts * 0.08)))
+            p.setBrush(QColor(170, 225, 255, 110))
+            p.drawEllipse(c, r * 1.05, r * 1.05)
+        elif u.status:
+            p.setBrush(Qt.NoBrush)
+            p.setPen(QPen(QColor(255, 220, 80, 220), max(1.5, ts * 0.08), Qt.DotLine))
+            p.drawEllipse(c, r * 1.15, r * 1.15)
+        if u.mstate.get("shield"):
+            p.setBrush(Qt.NoBrush)
+            p.setPen(QPen(QColor(200, 230, 255, 200), max(1.5, ts * 0.1)))
+            p.drawEllipse(c, r * 1.25, r * 1.25)
+        if u.deploy_ms > 0:
+            total = float(self.session.db.entry(u.card_id).get("deploy_time_s", 1.0)) * 1000.0 or 1000.0
+            done = max(0.0, min(1.0, 1.0 - u.deploy_ms / total))
+            p.setBrush(Qt.NoBrush)
+            p.setPen(QPen(QColor(255, 255, 255, 220), max(1.5, ts * 0.08), Qt.SolidLine, Qt.RoundCap))
+            p.drawArc(QRectF(c.x() - r * 1.3, c.y() - r * 1.3, r * 2.6, r * 2.6), 90 * 16, -int(360 * 16 * done))
 
-    def _paint_spells(self, p: QPainter, ts: float) -> None:
-        """绘制飞行中的法术弹道光圈与滚动推进中的滚木 (The Log)"""
+    def _paint_unit_bars(self, p: QPainter, units, pos, ts: float) -> None:
+        """头顶血条 (受伤后才显示)，不显示数字"""
+        h = max(3.0, ts * 0.18)
+        for u in units:
+            if u.kind == "tower" or u.hp >= u.max_hp or u.deploy_ms > 0:
+                continue
+            r = self._unit_r(u, ts)
+            c = self._unit_center(u, ts, pos[u.uid])
+            art.hp_bar(p, c.x(), c.y() - r - h - 2, max(2 * r, ts * 0.9), u.hp / u.max_hp, u.side, h)
+
+    def _paint_spells(self, p: QPainter, ts: float, now: Optional[float] = None) -> None:
+        """投射物 (带拖尾的光点)、来袭范围法术 (目标圈 + 下落火球)、滚动中的滚木"""
+        now = self.clock() if now is None else now
         m = self.session.match
+        for pr in m.projectiles:
+            x, y = self.tracker.pos(pr.uid, pr.x, pr.y, now, projectile=True)
+            c = self.to_px(x, y)
+            tgt = m.units.get(pr.target_uid)
+            if tgt is not None:
+                t = self.to_px(tgt.x, tgt.y)
+                d = math.hypot(t.x() - c.x(), t.y() - c.y()) or 1.0
+                ux, uy = (t.x() - c.x()) / d, (t.y() - c.y()) / d
+            else:
+                ux, uy = 0.0, -1.0
+            tail = QPointF(c.x() - ux * ts * 1.3, c.y() - uy * ts * 1.3)
+            warm = QColor(255, 236, 170) if pr.side == HUMAN else QColor(255, 205, 170)
+            g = QLinearGradient(tail, c)
+            g.setColorAt(0, QColor(warm.red(), warm.green(), warm.blue(), 0))
+            g.setColorAt(1, QColor(warm.red(), warm.green(), warm.blue(), 230))
+            p.setPen(QPen(QBrush(g), max(2.0, ts * 0.16), Qt.SolidLine, Qt.RoundCap))
+            p.drawLine(tail, c)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor("#fff6d0"))
+            rr = ts * (0.2 if pr.splash > 0 else 0.13)
+            p.drawEllipse(c, rr, rr)
         for sp in m.spells:
             c = self.to_px(sp.x, sp.y)
-            p.setPen(QPen(QColor("#ff9b2f"), 2))
-            p.setBrush(QColor(255, 140, 40, 60))
-            p.drawEllipse(c, sp.radius * ts, sp.radius * ts)
+            r = sp.radius * ts
+            side = SIDE_COLOR[sp.side]
+            p.setBrush(QColor(255, 150, 60, 35))
+            p.setPen(QPen(QColor(side.red(), side.green(), side.blue(), 200), 2, Qt.DashLine))
+            p.drawEllipse(c, r, r)
+            h = min(1.0, sp.impact_in_ms / 1000.0) * ts * 4
+            o = QPointF(c.x(), c.y() - h)
+            g = QRadialGradient(o, ts * 0.7)
+            g.setColorAt(0, QColor("#fff3b0"))
+            g.setColorAt(0.5, QColor("#ff9a2e"))
+            g.setColorAt(1, QColor(255, 80, 20, 0))
+            p.setPen(Qt.NoPen)
+            p.setBrush(g)
+            p.drawEllipse(o, ts * 0.7, ts * 0.7)
         for rs in m.rolling:
-            p.setPen(QPen(QColor("#5a3b1c"), 2))
-            p.setBrush(QColor("#8b5a2b"))
-            p.drawRect(self.tile_rect(rs.x - rs.width / 2, rs.y - 0.4, rs.width, 0.8))
+            rect = self.tile_rect(rs.x - rs.width / 2, rs.y - 0.45, rs.width, 0.9)
+            g = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+            g.setColorAt(0, QColor("#b07a43"))
+            g.setColorAt(1, QColor("#6e4522"))
+            p.setPen(QPen(QColor("#4a2e15"), 1.5))
+            p.setBrush(g)
+            p.drawRoundedRect(rect, rect.height() / 2, rect.height() / 2)
+            p.setPen(QPen(QColor(74, 46, 21, 160), 1))
+            for i in range(1, 4):                      # bark rings
+                x = rect.left() + rect.width() * i / 4
+                p.drawLine(QPointF(x, rect.top() + 2), QPointF(x, rect.bottom() - 2))
+
+    def _paint_fx(self, p: QPainter, ts: float, now: float, kinds) -> None:
+        """短时特效：落地尘环、死亡淡出、近战命中闪光、投射物命中、法术爆开、塔倒塌"""
+        for f in self.tracker.fx:
+            if f.kind not in kinds:
+                continue
+            a = f.age(now)
+            c = self.to_px(f.x, f.y)
+            if f.kind == "land":
+                p.setBrush(Qt.NoBrush)
+                k = 0.8 + 0.9 * a
+                w = max(1.5, ts * 0.12) * (1 - a) + 0.5
+                p.setPen(QPen(QColor(245, 235, 205, int(200 * (1 - a))), w))
+                rr = max(f.size, 0.5) * ts * 1.4 * k
+                p.drawEllipse(QPointF(c.x(), c.y() + ts * 0.2), rr, rr * 0.45)
+            elif f.kind == "death":
+                r = max(f.size, 0.42) * ts * 1.05
+                if f.air:
+                    c = QPointF(c.x(), c.y() - r * 0.9)
+                kind = self.role_of(f.card_id) if f.card_id else "melee"
+                pm = self.tokens.get(f.card_id, f.side, kind, r, self.devicePixelRatioF())
+                half = art.token_extent(int(r * 4) / 4)
+                p.save()
+                p.setOpacity(max(0.0, 1.0 - a) * 0.85)
+                p.translate(c)
+                s = 1.0 - 0.35 * a
+                p.scale(s, s)
+                p.drawPixmap(QPointF(-half, -half), pm)
+                p.restore()
+                p.setPen(Qt.NoPen)
+                for i in range(3):
+                    p.setBrush(QColor(255, 255, 255, int((110 - i * 30) * (1 - a))))
+                    p.drawEllipse(QPointF(c.x() + (i - 1) * ts * 0.25, c.y() - ts * (0.3 + i * 0.25 + a * 0.9)),
+                                  ts * 0.16, ts * 0.16)
+            elif f.kind == "hit":
+                p.setPen(QPen(QColor(255, 255, 255, int(240 * (1 - a))), max(2.0, ts * 0.12), Qt.SolidLine,
+                              Qt.RoundCap))
+                grow = 0.6 + 0.6 * a
+                for ang in range(0, 360, 45):
+                    rr = ts * (0.55 if ang % 90 == 0 else 0.35) * grow
+                    ar = math.radians(ang + 20)
+                    p.drawLine(QPointF(c.x() + math.cos(ar) * ts * 0.12, c.y() + math.sin(ar) * ts * 0.12),
+                               QPointF(c.x() + math.cos(ar) * rr, c.y() + math.sin(ar) * rr))
+            elif f.kind == "impact":
+                rr = ts * f.size * (0.6 + 0.8 * a)
+                p.setPen(Qt.NoPen)
+                p.setBrush(QColor(255, 245, 200, int(200 * (1 - a))))
+                p.drawEllipse(c, rr, rr)
+            elif f.kind in ("burst", "collapse"):
+                big = f.kind == "collapse"
+                rr = max(f.size, 0.6) * ts * (0.45 + 0.6 * a) * (1.4 if big else 1.0)
+                fade = 1 - a
+                inner = QColor(255, 230, 150) if not big else QColor(230, 225, 215)
+                outer = QColor(255, 120, 40) if not big else QColor(140, 135, 130)
+                g = QRadialGradient(c, rr)
+                g.setColorAt(0, QColor(inner.red(), inner.green(), inner.blue(), int(170 * fade)))
+                g.setColorAt(0.7, QColor(outer.red(), outer.green(), outer.blue(), int(100 * fade)))
+                g.setColorAt(1, QColor(outer.red(), outer.green(), outer.blue(), 0))
+                p.setPen(Qt.NoPen)
+                p.setBrush(g)
+                p.drawEllipse(c, rr, rr)
+                p.setBrush(Qt.NoBrush)
+                p.setPen(QPen(QColor(255, 250, 225, int(220 * fade)), max(1.5, ts * 0.14 * fade)))
+                p.drawEllipse(c, rr * 0.95, rr * 0.95)
 
     def _paint_result(self, p: QPainter) -> None:
         """绘制对局结算大屏：比分 (Crowns)、胜负判定文案与结算原因 (3皇冠、皇冠领先、破血比拼、训练通关)"""

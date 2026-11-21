@@ -9,7 +9,7 @@ sections: 1 completed work per file, 2 progress, 3 open issues 1–27, 4 next st
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v7** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
   independent). Cards: 123 in the catalog, **47 playable**, 76 quarantined. 7 of 14 evolutions, 5 heroes simulated.
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (546 pass, 1 skip expected; torch tests skip).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (571 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall vs the 4-week plan: ~70%. Weakest: PPO 45%, Coach v2 65%, current card stats 78%.
 
@@ -19,23 +19,16 @@ HumanDelayBuffer · determinism (re-record goldens + bump `ENGINE_VERSION` only 
 English-only UI · snake_case card ids · scan downloaded model files · user data stays local (`user_data/`).
 No automation of the real game or play against real players on the live ladder (Supercell ToS).
 
-## Done 2026-11-21
+## Done 2026-11-21 (IL dataset details: HANDOFF_ARCHIVE §5)
 * **IL v2 shards** (`data/il_shards*/` git-ignored; v1 shards, the 400k set and the old PPO bundle deleted).
   **`data/il_shards_full/` = the training set (done 14:59, checked)**: 1,551,234 samples (1:1 play/wait) from
   18,570 battles, all 52 parts, modes Ranked/Ladder/Grand Challenge/Classic Challenge, 311 shards, 243 MB, 63 min.
   Rejected: coverage 208,772, mode 24,896. **Hog 2.6 = deck id 2: 671,836 samples / 7,741 battles (43% of all).**
   Not uploaded yet. Colab RAM need ≈ 5.6 GB (float16 loader).
-* Shards now store `deck` (index into manifest `learner_decks`, sorted 8 card ids) per sample.
 * Notebooks are name-aware (defaults unchanged). IL: `IL_NAME`, `IL_INIT` (.npz to start from), `IL_DECK` (8 card
   ids: keep only learners with that deck), `IL_LR`. PPO: `PPO_NAME` (own checkpoint folder unless crbot_ppo_v2),
   `PPO_INIT`, `PPO_DECKS`, `PPO_HOURS`. `pack_ppo_bundle.py --il-model <name>`.
-* Dataset facts (VanguardX101/IL_Replay, "Firstlight anonymized"): 252,238 battles, 17.8M actions; trophies and dates
-  removed; part 0 modes: 89% Ranked, 7% friendly-type ("1v1 Battle", "Normal Battle"), rest Ladder / challenges.
-  Only ~7% of battles are usable with 47 cards; full 123-card coverage would allow ~30M samples.
 * `build_il_dataset.py --modes` (game-mode filter, rejected count `mode`; test in `tests/test_il_dataset.py`).
-* IL notebook cell 3 loads obs as preallocated **float16** (~3.5 KB/sample; ~1.3M samples ≈ 4.6 GB; RAM check
-  before loading); `get_batch` casts obs back to float32. Verified locally on 12k real samples (labels identical,
-  max obs error 8e-4). For ~1.3M samples consider `IL_EPOCHS=10` (T4 time not measured yet).
 * **Deck specialist + daily budget** in `brain/ppo_trainer.py`: `PPOConfig.learner_decks` (preset names, e.g.
   `("Hog 2.6 Cycle",)`; only the learner's deck, opponents keep all presets), `time_budget_h` (clean stop with
   checkpoint + export, next run resumes), `export_name` (e.g. `crbot_ppo_hog26` → NeuralBot loads it from
@@ -52,10 +45,20 @@ No automation of the real game or play against real players on the live ladder (
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
    (b) `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`; PPO notebook with `PPO_NAME=crbot_ppo_hog26`,
    `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`, `PPO_UPDATES=100000` (so the time budget decides); rerun daily (resumes). No app persona yet.
+2b. **Visual upgrade (user priority)**. Phase 1 done 2026-11-21 (route A, original QPainter art, rendering only):
+   `frontend_app/qt/art.py` (role glyph per card from CardDB: melee/ranged/air/building/kamikaze/champion/spell,
+   hashed card colour, cached grass/river/bridge background, stone towers + rubble, cached unit tokens = side-tinted
+   disc + glyph + card-colour dot, card faces), `fx.py` (FxTracker: diffs match states -> land/death/collapse/hit/
+   impact/burst + hurt flash, smooth motion between 50 ms steps, resets on seek), `board.py` (16 ms repaint only
+   while animating; zone shown only when a card is selected), `widgets.CardButton` (hand + NEXT faces). Paint
+   ~1.5 ms median offscreen. Tests `tests/test_board_art.py`. **Phase 2 (user picked all four)**: CC0 low-poly
+   models -> Blender sprite sheets (check each licence), tilted 3/4 camera (invert clicks), particles + game feel
+   (white flash, scorch, shake, tower rubble anim), CC0 sound effects (QSoundEffect). No Supercell assets/look-alikes.
 3. Retrain the value model on engine v7 (`tools/train_value_model.py`, Colab or a quiet machine).
 4. Then: replay-agreement benchmark (re-simulate real battles, compare outcomes), Phase 2 cards (plan §10), Elo ladder.
 
 ## Open issues (top)
+* Fight page: the elixir counter's "Ahead +x" label is clipped at 1200 px (pre-existing, not the board).
 * No machine-readable current (Nov 2026) card stats; many mass / radius / timing values are `assumed` per card.
 * IL v1 value head ≈ coin flip; coach still grades with the logistic value model (trained on engine v6).
 * Neural persona falls back to ScriptedBot until crbot_il_v2 exists.

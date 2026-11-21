@@ -146,3 +146,12 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
 2. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>` using `game_id` and `CardDB.by_alias`.
 3. *(Done 2026-11-17)* Pushed to origin; the user confirmed `#VLYCGJGQR` in `tools/analyze_my_battlelog.py` / `my_battlelog.json` may be public.
 4. **Shell polish**: coach review in a background worker (Stop already works); get the user's feedback on the 2026-11-15 UI redesign (screens checked offscreen at 1200×860 and 1000×700).
+
+## 5. IL v2 dataset details (moved from SESSION_HANDOFF 2026-11-21)
+* Dataset facts (VanguardX101/IL_Replay, "Firstlight anonymized"): 252,238 battles, 17.8M actions; trophies and dates
+  removed; part 0 modes: 89% Ranked, 7% friendly-type ("1v1 Battle", "Normal Battle"), rest Ladder / challenges.
+  Only ~7% of battles are usable with 47 cards; full 123-card coverage would allow ~30M samples.
+* IL notebook cell 3 loads obs as preallocated **float16** (~3.5 KB/sample; ~1.3M samples ≈ 4.6 GB; RAM check
+  before loading); `get_batch` casts obs back to float32. Verified locally on 12k real samples (labels identical,
+  max obs error 8e-4). For ~1.3M samples consider `IL_EPOCHS=10` (T4 time not measured yet).
+* Shards now store `deck` (index into manifest `learner_decks`, sorted 8 card ids) per sample.
