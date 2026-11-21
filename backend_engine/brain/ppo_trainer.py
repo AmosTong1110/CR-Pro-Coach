@@ -28,7 +28,9 @@ placement grammar of the IL policy.
 Opponents (fictitious self-play), per match: ScriptedBot with a random aggression (`opp_mix[0]`), frozen
 crbot_il_v2 (`opp_mix[1]`), or a PPO snapshot from the pool (`opp_mix[2]`; the newest policy while the pool is
 empty). Decks: random playable presets (with their evolution slots); a ScriptedBot only gets decks it can push
-with. Checkpoints (state + optimizer + snapshots + history) every `ckpt_every` updates, resumed automatically;
+with. `learner_decks` (preset names) turns the learner into a deck specialist (e.g. ("Hog 2.6 Cycle",)): only
+the learner's deck is restricted, opponents still get every preset. `time_budget_h` ends a run cleanly after that
+many hours (e.g. 12 per day; the next run resumes from the checkpoint). Checkpoints (state + optimizer + snapshots + history) every `ckpt_every` updates, resumed automatically;
 the best rolling score is exported as crbot_ppo_v2.onnx + .json (same format NeuralBot loads).
 """
 from __future__ import annotations
@@ -52,7 +54,7 @@ from backend_engine.brain.il_model import CRbotIL, check_against_onnx, export_on
     save_weights
 from backend_engine.brain.scripted_bot import ScriptedBot
 from backend_engine.contracts import ActionIntent, ActionKind, TilePos
-from backend_engine.meta.presets import load_presets, playable
+from backend_engine.meta.presets import load_presets, playable, select_presets
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.engine import Match, MatchConfig
 from backend_engine.simulator.match_runner import MatchRunner
@@ -89,6 +91,9 @@ class PPOConfig:
     score_window: int = 5               # rolling window (updates) for picking the best model
     device: str = "cpu"
     seed: int = 0
+    learner_decks: Tuple[str, ...] = ()  # preset names the learner plays (a deck specialist); () = every playable preset
+    time_budget_h: Optional[float] = None  # stop cleanly (checkpoint + export) after this many hours; resume next run
+    export_name: str = "crbot_ppo_v2"     # <out_dir>/<export_name>.onnx (best) and <export_name>_last.onnx
 
 
 # -- networks -------------------------------------------------------------------------------------------------
@@ -205,7 +210,7 @@ class Env:
         self.learner_side = rng.randrange(2)
         L, O = self.learner_side, 1 - self.learner_side
         kind = rng.choices(("scripted", "il", "snapshot"), weights=t.cfg.opp_mix)[0]
-        mine = rng.choice(t.presets)
+        mine = rng.choice(t.learner_presets)
         theirs = rng.choice(t.pushers if kind == "scripted" else t.presets)
         decks, evos = [None, None], [None, None]
         decks[L], evos[L] = mine.cards, mine.evo
@@ -291,6 +296,7 @@ class PPOTrainer:
         self.opt = torch.optim.Adam(self.model.parameters(), lr=cfg.lr, eps=1e-5)
         self.presets = playable(self.db.cards, load_presets())
         self.pushers = [p for p in self.presets if p.ai_pushes] or self.presets
+        self.learner_presets = select_presets(self.presets, cfg.learner_decks)
         self.ckpt_dir, self.out_dir = Path(ckpt_dir), Path(out_dir)
         self.ckpt_dir.mkdir(parents=True, exist_ok=True)
         self.out_dir.mkdir(parents=True, exist_ok=True)
@@ -486,7 +492,13 @@ class PPOTrainer:
 
     def train(self, updates: Optional[int] = None) -> dict:
         target = self.update + (updates if updates is not None else self.cfg.updates - self.update)
+        deadline = time.time() + self.cfg.time_budget_h * 3600 if self.cfg.time_budget_h else None
+        name = self.cfg.export_name
         while self.update < target:
+            if deadline is not None and time.time() >= deadline:
+                self.log(f"time budget of {self.cfg.time_budget_h} h used at update {self.update}: "
+                         f"stopping (the next run resumes here)")
+                break
             t0 = time.time()
             eps = self.collect()
             t1 = time.time()
@@ -510,12 +522,12 @@ class PPOTrainer:
                 self._add_snapshot()
             if len(self.history) >= min(self.cfg.score_window, 2) and self.score() > self.best_score:
                 self.best_score = self.score()
-                self.export("crbot_ppo_v2")
-                self.log(f"  new best rolling score {self.best_score:.3f}: exported crbot_ppo_v2")
+                self.export(name)
+                self.log(f"  new best rolling score {self.best_score:.3f}: exported {name}")
             if self.update % self.cfg.ckpt_every == 0:
                 self.save()
         self.save()
-        self.export("crbot_ppo_v2_last")
+        self.export(f"{name}_last")
         return {"updates": self.update, "best_score": self.best_score}
 
     def export(self, name: str) -> Tuple[Path, Path]:

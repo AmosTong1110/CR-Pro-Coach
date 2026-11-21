@@ -46,6 +46,18 @@ def playable(simulated: Collection[str], presets: Optional[Iterable[PresetDeck]]
     return [p for p in (load_presets() if presets is None else presets) if all(c in sim for c in p.cards)]
 
 
+def select_presets(presets: Sequence[PresetDeck], names: Sequence[str]) -> List[PresetDeck]:
+    """`presets` restricted to `names` (in that order); every preset when `names` is empty. Used by the PPO
+    trainer to make a deck specialist. Unknown or unplayable names raise ValueError listing the valid ones."""
+    if not names:
+        return list(presets)
+    by_name = {p.name: p for p in presets}
+    missing = [n for n in names if n not in by_name]
+    if missing:
+        raise ValueError(f"{missing} are not playable presets; choose from {sorted(by_name)}")
+    return [by_name[n] for n in names]
+
+
 def find_preset(cards: Sequence[str], evo: Sequence[str] = (),
                 presets: Optional[Iterable[PresetDeck]] = None) -> Optional[PresetDeck]:
     """The preset with these cards (order does not matter): an exact evolution match first, else the same 8

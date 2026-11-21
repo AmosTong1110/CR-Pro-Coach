@@ -1,5 +1,7 @@
 """Deck Builder presets: ready-made decks, all playable with the cards CRbot simulates."""
-from backend_engine.meta.presets import find_preset, load_presets, playable
+import pytest
+
+from backend_engine.meta.presets import find_preset, load_presets, playable, select_presets
 from backend_engine.simulator.card_db import CardDB
 from backend_engine.simulator.match_runner import DEFAULT_DECK
 
@@ -28,3 +30,12 @@ def test_find_preset():
     assert find_preset(hog26.cards, ("knight",)) == hog26                 # other evo: same cards still match
     assert find_preset(("knight",) * 8) is None
     assert playable({"knight"}) == []
+
+
+def test_select_presets_makes_a_deck_specialist():
+    pool = playable(CardDB.load().cards, load_presets())
+    assert select_presets(pool, ()) == pool                      # no names: every playable preset
+    hog = select_presets(pool, ("Hog 2.6 Cycle",))
+    assert [p.name for p in hog] == ["Hog 2.6 Cycle"] and "hog_rider" in hog[0].cards
+    with pytest.raises(ValueError, match="not playable presets"):
+        select_presets(pool, ("Hog 2.6 Cycle", "No Such Deck"))
