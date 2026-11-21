@@ -75,5 +75,5 @@ data/**/*.zip
 runs/
 detector_ipad_ft*.zip
 
-# Raw CC0 model packs for tools/art/build_sprites.py (re-downloadable; the rendered sprites are committed)
-art_src/
+# Supercell fan kit (official art, Fan Content Policy): local only, never commit
+fankit/

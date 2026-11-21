@@ -9,7 +9,7 @@ sections: 1 completed work per file, 2 progress, 3 open issues 1–27, 4 next st
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v7** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
   independent). Cards: 123 in the catalog, **47 playable**, 76 quarantined. 7 of 14 evolutions, 5 heroes simulated.
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (578 pass, 1 skip expected; torch tests skip).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (547 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall vs the 4-week plan: ~70%. Weakest: PPO 45%, Coach v2 65%, current card stats 78%.
 
@@ -18,6 +18,9 @@ M1 8 GB budget (no torch at runtime; heavy work on Colab) · AI sees only human-
 HumanDelayBuffer · determinism (re-record goldens + bump `ENGINE_VERSION` only for intentional gameplay changes) ·
 English-only UI · snake_case card ids · scan downloaded model files · user data stays local (`user_data/`).
 No automation of the real game or play against real players on the live ladder (Supercell ToS).
+Board art (user decision 2026-11-21): **official Supercell Fan Kit only** (fankit.supercell.com, downloaded by the
+user), under the Fan Content Policy: non-commercial (remove it if CRbot ever charges), "unofficial / not endorsed"
+disclaimer with policy link, kit files stay local + git-ignored. Never extract assets from the game client / APK.
 
 ## Done 2026-11-21 (IL dataset details: HANDOFF_ARCHIVE §5)
 * **IL v2 shards** (`data/il_shards*/` git-ignored; v1 shards, the 400k set and the old PPO bundle deleted).
@@ -46,22 +49,17 @@ No automation of the real game or play against real players on the live ladder (
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
    (b) `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`; PPO notebook with `PPO_NAME=crbot_ppo_hog26`,
    `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`, `PPO_UPDATES=100000` (so the time budget decides); rerun daily (resumes). No app persona yet.
-2b. **Visual upgrade (user priority)**. Phase 1 (2026-11-21): original QPainter art (`art.py`, `fx.py` animations,
-   `widgets.CardButton` card faces; no placement-zone overlay, `BoardWidget.show_zone=False`). **Phase 2 started
-   2026-11-21: CC0 3D sprites** (user approved after a trial): `tools/art/build_sprites.py` downloads KayKit packs
-   (Kay Lousberg, CC0, licence checked) to git-ignored `art_src/`, renders them with Blender 5.3 (`brew install --cask
-   blender`; `tools/art/blender_render.py`, headless, autoexec off) and packs `frontend_app/qt/assets/sprites/`
-   (committed, 4.7 MB: arena.jpg, towers/castles, knight/archer/skeleton sheets per side, manifest.json).
-   `sprites.py` (SpriteBank + `pose()` walk/attack/idle from engine state, attack synced to cooldown) and board
-   sprite mode: 35° tilted mapping (`BoardWidget.cos`, margins; clicks inverted), ground circles flattened.
-   `CRBOT_ART=vector` or missing assets -> old vector board. Unmapped cards still draw vector tokens.
-   **Next**: models for the other 43 cards (`CHARACTERS`/`CARDS` in build_sprites.py; fliers, giants, Hog Rider,
-   buildings need more CC0 packs, e.g. Quaternius / other KayKit), 8 facings, sprite effects, sound (CC0).
+2b. **Visual upgrade (user priority)**: 2026-11-21 the user rejected both own-art routes (QPainter vector art and
+   CC0 KayKit/Quaternius 3D sprites via Blender) and had them **reverted** (commits f0a9630, 1466a61, 4537db7); the
+   board is back to the original circles + grid. Wanted: the official look. Next: the user downloads the Clash
+   Royale fan kit into `fankit/` (git-ignored); inspect its contents, then write a loader (art stays local, git-ignored) that draws official card
+   / character images on the board + the disclaimer. The fan kit has static art only (no in-game animation frames).
+   Blender 5.3 is still installed (Homebrew cask) if ever needed again.
 3. Retrain the value model on engine v7 (`tools/train_value_model.py`, Colab or a quiet machine).
 4. Then: replay-agreement benchmark (re-simulate real battles, compare outcomes), Phase 2 cards (plan §10), Elo ladder.
 
 ## Open issues (top)
-* Fight page: the elixir counter's "Ahead +x" label is clipped at 1200 px (pre-existing, not the board).
+* Fight page: the elixir counter's "Ahead +x" label is clipped at 1200 px.
 * No machine-readable current (Nov 2026) card stats; many mass / radius / timing values are `assumed` per card.
 * IL v2 value head ≈ coin flip (Brier 0.237); coach still grades with the logistic value model (trained on engine v6).
 * Replay data (HF IL_Replay) has no licence: personal research only.

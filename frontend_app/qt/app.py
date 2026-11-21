@@ -43,8 +43,7 @@ from frontend_app.qt.board import BoardWidget
 from frontend_app.qt.review import ReviewPanel, mmss
 from frontend_app.qt.session import AI, HUMAN, PERSONAS, persona_label, GameSession, LogEntry
 from frontend_app.qt.theme import C, cls
-from frontend_app.qt.art import role as card_role
-from frontend_app.qt.widgets import CardButton, DeckView, card_frame, deck_costs, deck_names, label
+from frontend_app.qt.widgets import DeckView, card_frame, deck_costs, deck_names, label
 
 # Why a play was refused (kept in English; tests match on these)
 REASONS = {
@@ -137,25 +136,18 @@ class HandBar(QWidget):
         lay.setSpacing(6)
         row = QHBoxLayout()
         row.setSpacing(8)
-        self.next_label = QLabel()                         # kept for text access; the NEXT card face shows it
-        self.next_label.hide()
-        self.next_card = CardButton(height=64, compact=True)
-        self.next_card.setFixedWidth(58)
-        self.next_card.setEnabled(False)
-        self.next_card.setToolTip("Next card")
-        next_col = QVBoxLayout()
-        next_col.setSpacing(0)
-        next_col.addStretch(1)
-        next_tag = QLabel("NEXT")
-        next_tag.setAlignment(Qt.AlignCenter)
-        next_tag.setStyleSheet(f"color:{C['muted']}; font-size:10px; font-weight:700; letter-spacing:1px;")
-        next_col.addWidget(next_tag)
-        next_col.addWidget(self.next_card)
-        row.addLayout(next_col)
+        self.next_label = QLabel()
+        self.next_label.setAlignment(Qt.AlignCenter)
+        self.next_label.setFixedWidth(68)
+        self.next_label.setWordWrap(True)
+        self.next_label.setStyleSheet(f"color:{C['muted']}; font-size:11px;")
+        row.addWidget(self.next_label)
         self.buttons: List[QPushButton] = []
+        self._styles: Dict[int, str] = {}
         for i in range(4):
-            b = CardButton(height=76)
+            b = QPushButton()
             b.setCheckable(True)
+            b.setMinimumHeight(56)
             b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             b.setToolTip(f"Key {i + 1}")
             b.clicked.connect(lambda _=False, i=i: self.on_select(i))
@@ -179,20 +171,25 @@ class HandBar(QWidget):
 
     def refresh(self, hand: List[str], next_card: str, names, costs, elixir: float,
                 selected: Optional[str], evo_ready: set, enabled: bool = True,
-                abilities: Sequence[Tuple[str, int]] = (), roles: Optional[Dict[str, str]] = None) -> None:
+                abilities: Sequence[Tuple[str, int]] = ()) -> None:
         self.ability_btn.setVisible(enabled and bool(abilities))
         if abilities:
             card, cost = abilities[0]
             self.ability_btn.setText(f"⚡ {names[card]} ability · {cost}  (A)")
-        roles = roles or {}
-        for b, c in zip(self.buttons, hand):
+        for i, (b, c) in enumerate(zip(self.buttons, hand)):
+            evo = c in evo_ready
+            b.setText(f"{names[c]}{'  ★ Evo' if evo else ''}\n{costs[c]} elixir")
             b.setChecked(c == selected)
             b.setEnabled(enabled)
-            b.set_face(c, names[c], costs[c], roles.get(c, "melee"), afford=costs[c] <= elixir + 1e-9,
-                       selected=c == selected, evo=c in evo_ready, enabled=enabled)
+            afford = enabled and costs[c] <= elixir + 1e-9
+            border = C["gold"] if c == selected else (C["violet"] if evo else ("#3a5277" if afford else C["line"]))
+            style = (f"QPushButton{{font-size:13px; font-weight:600; border-radius:8px; padding:4px;"
+                     f"background:{'#22324a' if afford else C['panel']}; color:{C['text'] if afford else C['muted']};"
+                     f"border:2px solid {border};}}")
+            if self._styles.get(i) != style:          # restyling every tick is slow; only on change
+                self._styles[i] = style
+                b.setStyleSheet(style)
         self.next_label.setText(f"NEXT\n{names[next_card]}")
-        self.next_card.set_face(next_card, names[next_card], costs[next_card], roles.get(next_card, "melee"),
-                                enabled=enabled)
         self.elixir.set_value(elixir)
 
 
@@ -1612,12 +1609,6 @@ class MainWindow(QMainWindow):
             self.log_list.addItem(it)
         self.log_list.scrollToBottom()
 
-    def _card_roles(self, db) -> Dict[str, str]:
-        """Card id -> type glyph for the hand faces (computed once per card database)."""
-        if getattr(self, "_roles_db", None) is not db:
-            self._roles_db, self._roles = db, {cid: card_role(c) for cid, c in db.cards.items()}
-        return self._roles
-
     def refresh(self) -> None:
         s = self.session
         m = s.match
@@ -1639,8 +1630,7 @@ class MainWindow(QMainWindow):
             evo_ready = {c for c in st.evo_cards if st.evo_counter[c] >= s.db.evo_cycles(c)}
             self.hand.refresh(st.hand, st.queue[0], names, costs, st.elixir, self.selected, evo_ready,
                               enabled=self.mode == LIVE,
-                              abilities=[(c, s.ability_cost(c)) for c in s.ability_cards()] if self.mode == LIVE else (),
-                              roles=self._card_roles(s.db))
+                              abilities=[(c, s.ability_cost(c)) for c in s.ability_cards()] if self.mode == LIVE else ())
         if self.mode == LIVE:
             self.counter.refresh()
         end = max(s.max_known_ms(), 1000)
