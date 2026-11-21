@@ -9,7 +9,7 @@ sections: 1 completed work per file, 2 progress, 3 open issues 1–27, 4 next st
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v7** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
   independent). Cards: 123 in the catalog, **47 playable**, 76 quarantined. 7 of 14 evolutions, 5 heroes simulated.
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (572 pass, 1 skip expected; torch tests skip).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (578 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall vs the 4-week plan: ~70%. Weakest: PPO 45%, Coach v2 65%, current card stats 78%.
 
@@ -46,15 +46,17 @@ No automation of the real game or play against real players on the live ladder (
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5`; install it in `pretrained_weights/crbot_il_v2_hog26/`.
    (b) `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`; PPO notebook with `PPO_NAME=crbot_ppo_hog26`,
    `PPO_INIT=crbot_il_v2_hog26`, `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`, `PPO_UPDATES=100000` (so the time budget decides); rerun daily (resumes). No app persona yet.
-2b. **Visual upgrade (user priority)**. Phase 1 done 2026-11-21 (route A, original QPainter art, rendering only):
-   `frontend_app/qt/art.py` (role glyph per card from CardDB: melee/ranged/air/building/kamikaze/champion/spell,
-   hashed card colour, cached grass/river/bridge background, stone towers + rubble, cached unit tokens = side-tinted
-   disc + glyph + card-colour dot, card faces), `fx.py` (FxTracker: diffs match states -> land/death/collapse/hit/
-   impact/burst + hurt flash, smooth motion between 50 ms steps, resets on seek), `board.py` (16 ms repaint only
-   while animating; zone shown only when a card is selected), `widgets.CardButton` (hand + NEXT faces). Paint
-   ~1.5 ms median offscreen. Tests `tests/test_board_art.py`. **Phase 2 (user picked all four)**: CC0 low-poly
-   models -> Blender sprite sheets (check each licence), tilted 3/4 camera (invert clicks), particles + game feel
-   (white flash, scorch, shake, tower rubble anim), CC0 sound effects (QSoundEffect). No Supercell assets/look-alikes.
+2b. **Visual upgrade (user priority)**. Phase 1 (2026-11-21): original QPainter art (`art.py`, `fx.py` animations,
+   `widgets.CardButton` card faces; no placement-zone overlay, `BoardWidget.show_zone=False`). **Phase 2 started
+   2026-11-21: CC0 3D sprites** (user approved after a trial): `tools/art/build_sprites.py` downloads KayKit packs
+   (Kay Lousberg, CC0, licence checked) to git-ignored `art_src/`, renders them with Blender 5.3 (`brew install --cask
+   blender`; `tools/art/blender_render.py`, headless, autoexec off) and packs `frontend_app/qt/assets/sprites/`
+   (committed, 4.7 MB: arena.jpg, towers/castles, knight/archer/skeleton sheets per side, manifest.json).
+   `sprites.py` (SpriteBank + `pose()` walk/attack/idle from engine state, attack synced to cooldown) and board
+   sprite mode: 35° tilted mapping (`BoardWidget.cos`, margins; clicks inverted), ground circles flattened.
+   `CRBOT_ART=vector` or missing assets -> old vector board. Unmapped cards still draw vector tokens.
+   **Next**: models for the other 43 cards (`CHARACTERS`/`CARDS` in build_sprites.py; fliers, giants, Hog Rider,
+   buildings need more CC0 packs, e.g. Quaternius / other KayKit), 8 facings, sprite effects, sound (CC0).
 3. Retrain the value model on engine v7 (`tools/train_value_model.py`, Colab or a quiet machine).
 4. Then: replay-agreement benchmark (re-simulate real battles, compare outcomes), Phase 2 cards (plan §10), Elo ladder.
 

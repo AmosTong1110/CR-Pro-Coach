@@ -1,0 +1,320 @@
+{
+ "characters": {
+  "knight": {
+   "cell": 192,
+   "cols": 8,
+   "feet": [
+    0.5,
+    0.7
+   ],
+   "sheets": {
+    "blue": "knight_blue.png",
+    "red": "knight_red.png"
+   },
+   "actions": {
+    "down/idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "down/walk": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "down/death": [
+     12,
+     13,
+     14,
+     15,
+     16,
+     17
+    ],
+    "down/attack": [
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25
+    ],
+    "up/idle": [
+     26,
+     27,
+     28,
+     29
+    ],
+    "up/walk": [
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37
+    ],
+    "up/death": [
+     38,
+     39,
+     40,
+     41,
+     42,
+     43
+    ],
+    "up/attack": [
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51
+    ]
+   }
+  },
+  "archer": {
+   "cell": 192,
+   "cols": 8,
+   "feet": [
+    0.5,
+    0.7
+   ],
+   "sheets": {
+    "blue": "archer_blue.png",
+    "red": "archer_red.png"
+   },
+   "actions": {
+    "down/idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "down/walk": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "down/death": [
+     12,
+     13,
+     14,
+     15,
+     16,
+     17
+    ],
+    "down/attack": [
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25
+    ],
+    "up/idle": [
+     26,
+     27,
+     28,
+     29
+    ],
+    "up/walk": [
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37
+    ],
+    "up/death": [
+     38,
+     39,
+     40,
+     41,
+     42,
+     43
+    ],
+    "up/attack": [
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51
+    ]
+   }
+  },
+  "skeleton": {
+   "cell": 192,
+   "cols": 8,
+   "feet": [
+    0.5,
+    0.7
+   ],
+   "sheets": {
+    "blue": "skeleton_blue.png",
+    "red": "skeleton_red.png"
+   },
+   "actions": {
+    "down/idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "down/walk": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "down/death": [
+     12,
+     13,
+     14,
+     15,
+     16,
+     17
+    ],
+    "down/attack": [
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25
+    ],
+    "up/idle": [
+     26,
+     27,
+     28,
+     29
+    ],
+    "up/walk": [
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37
+    ],
+    "up/death": [
+     38,
+     39,
+     40,
+     41,
+     42,
+     43
+    ],
+    "up/attack": [
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51
+    ]
+   }
+  }
+ },
+ "arena": {
+  "file": "arena.jpg",
+  "px_per_tile": 64,
+  "tilt": 35.0,
+  "margin": [
+   2.0,
+   2.2
+  ],
+  "size": [
+   1408,
+   1908
+  ]
+ },
+ "towers": {
+  "tower_blue": {
+   "file": "tower_blue.png",
+   "size": 319,
+   "px_per_tile": 64,
+   "ground_center": [
+    0.5,
+    0.7335566729307175
+   ],
+   "height_tiles": 3.1352126598358154
+  },
+  "tower_red": {
+   "file": "tower_red.png",
+   "size": 319,
+   "px_per_tile": 64,
+   "ground_center": [
+    0.5,
+    0.7335566729307175
+   ],
+   "height_tiles": 3.1352126598358154
+  },
+  "castle_blue": {
+   "file": "castle_blue.png",
+   "size": 449,
+   "px_per_tile": 64,
+   "ground_center": [
+    0.5,
+    0.7349035143852234
+   ],
+   "height_tiles": 4.444356441497803
+  },
+  "castle_red": {
+   "file": "castle_red.png",
+   "size": 449,
+   "px_per_tile": 64,
+   "ground_center": [
+    0.5,
+    0.7349035143852234
+   ],
+   "height_tiles": 4.444356441497803
+  }
+ },
+ "version": 1,
+ "px_per_tile": 64,
+ "tilt": 35.0,
+ "cards": {
+  "knight": "knight",
+  "archers": "archer",
+  "skeletons": "skeleton",
+  "skeleton_army": "skeleton"
+ },
+ "card_scale": {
+  "skeletons": 0.8,
+  "skeleton_army": 0.75,
+  "archers": 0.95
+ },
+ "credits": "KayKit by Kay Lousberg (CC0) - see CREDITS.md"
+}

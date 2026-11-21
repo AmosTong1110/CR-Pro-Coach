@@ -173,6 +173,13 @@ class FxTracker:
             return x, y
         return px + (x - px) * a, py + (y - py) * a
 
+    def step(self, uid: int, x: float, y: float) -> Tuple[float, float]:
+        """How far a unit moved during the last simulation step (tiles); (0, 0) if unknown."""
+        prev = self._prev_pos.get(uid)
+        if prev is None:
+            return 0.0, 0.0
+        return x - prev[0], y - prev[1]
+
     def hurt_level(self, uid: int, now: float) -> float:
         t = self.hurt.get(uid)
         return 0.0 if t is None else max(0.0, 1.0 - (now - t) / HURT_S)

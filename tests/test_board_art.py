@@ -216,3 +216,86 @@ def test_no_placement_zone_overlay_by_default(app):
     b.set_selected(card)
     assert b.legal and not b.show_zone
     assert b.grab().toImage() == plain                      # selecting a card (no hover) changes nothing
+
+
+# ---------------------------------------------------------------- sprite art (CC0 3D renders)
+def test_sprite_manifest_and_frames(app):
+    from frontend_app.qt.sprites import SpriteBank
+    bank = SpriteBank()
+    assert bank.ok, "frontend_app/qt/assets/sprites/manifest.json missing: run tools/art/build_sprites.py"
+    for card in ("knight", "archers", "skeletons"):
+        name = bank.character(card)
+        assert name is not None
+        counts = bank.counts(name)
+        assert {"idle", "walk", "attack", "death"} <= set(counts)
+        for side in ("blue", "red"):
+            for facing in ("up", "down"):
+                pm = bank.frame(name, side, facing, "walk", 0, 20.0, 1.0)
+                assert pm is not None and not pm.isNull()
+    assert bank.character("hog_rider") is None                 # unmapped cards keep vector tokens
+    for kind in ("tower", "castle"):
+        pm, (gx, gy) = bank.tower(kind, "red", 20.0, 2.0)
+        assert pm is not None and 0 < gx < 1 and 0 < gy < 1
+    assert bank.arena(400, 600, 1.0) is not None
+
+
+def test_missing_sprites_fall_back_to_vector(app, tmp_path):
+    from frontend_app.qt.board import BoardWidget
+    from frontend_app.qt.sprites import SpriteBank
+    b = BoardWidget(GameSession(cfg=SessionConfig(seed=3)))
+    b.bank = SpriteBank(tmp_path)                              # empty folder: no manifest
+    b.set_art_mode("sprites")
+    assert b.art_mode == "vector" and b.cos == 1.0 and b.margin == (0.0, 0.0)
+    b.resize(450, 800)
+    assert not b.grab().isNull()
+
+
+@pytest.mark.parametrize("mode", ["vector", "sprites"])
+def test_click_mapping_round_trips(app, mode):
+    from frontend_app.qt.board import BoardWidget
+    b = BoardWidget(GameSession(cfg=SessionConfig(seed=3)))
+    b.set_art_mode(mode)
+    b.resize(600, 760)
+    for x, y in ((0.5, 0.5), (9.0, 16.0), (17.5, 31.5), (3.5, 14.5)):
+        c = b.to_px(x, y)
+        tx, ty = b.to_tile(c.x(), c.y())
+        assert abs(tx - x) < 1e-9 and abs(ty - y) < 1e-9
+    if mode == "sprites":
+        assert b.cos < 0.9                                     # tilted: the ground is foreshortened
+
+
+def test_pose_follows_engine_state():
+    from frontend_app.qt.sprites import IMPACT_AT, pose
+    counts = {"idle": 4, "walk": 8, "attack": 8, "death": 6}
+    u = SimpleNamespace(uid=3, side=HUMAN, y=10.0, deploy_ms=0, target_uid=None, hit_speed_ms=1200, cooldown_ms=0)
+    assert pose(u, (0.0, 0.1), None, 0, counts)[:2] == ("up", "walk")
+    assert pose(u, (0.0, -0.1), None, 0, counts)[:2] == ("down", "walk")
+    assert pose(u, (0.0, 0.0), None, 0, counts)[:2] == ("up", "idle")
+    u.target_uid = 9
+    u.cooldown_ms = 1200                                       # the blow just landed
+    assert pose(u, (0.0, 0.0), (10.0, 8.0), 0, counts) == ("down", "attack", int(IMPACT_AT * 8))
+    u.deploy_ms = 300
+    assert pose(u, (0.0, 0.0), (10.0, 8.0), 0, counts)[1:] == ("idle", 0)
+
+
+def test_sprite_board_draws_sprites_read_only(app):
+    from frontend_app.qt.board import BoardWidget
+    s = busy_session()
+    b = BoardWidget(s)
+    b.set_art_mode("sprites")
+    b.resize(600, 760)
+    knights = [u for u in s.match.units.values() if u.card_id == "knight"]
+    assert knights
+    h = s.match.state_hash()
+    times = []
+    for _ in range(30):
+        t0 = time.perf_counter()
+        assert not b.grab().isNull()
+        times.append(time.perf_counter() - t0)
+    assert s.match.state_hash() == h
+    assert statistics.median(times) < 0.012                   # cached scaled frames: ~2-4 ms offscreen
+    from PySide6.QtGui import QPainter, QImage
+    img = QImage(600, 760, QImage.Format_ARGB32)
+    p = QPainter(img)
+    assert b._paint_sprite(p, knights[0], 20.0, (knights[0].x, knights[0].y), b.clock())
+    p.end()
