@@ -276,7 +276,7 @@ New mechanics (grouped; each needs a unit test + golden scenario like Phase 1):
 Which evo/hero each deck runs is not in our data, except Hero Electro Wizard (deck 1) and evo bats / evo skeletons.
 **Status 2026-11-16**: all 21 saved evo / hero pages are in the card data and verified (`sync_meta --variants`); simulated:
 Evo Knight and the heroes Knight, Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie (`use_ability`). The other 13
-evolutions and the Barbarian Barrel / Dark Prince heroes are data with a planned mechanic (handoff issue 18).
+evolutions and the Barbarian Barrel / Dark Prince heroes are data with a planned mechanic (HANDOFF_ARCHIVE issue 18).
 * Pages still to save for Phase 2 (official list says these cards have an evo): baby_dragon, battle_ram, goblin_barrel,
   goblin_cage, goblin_drill, inferno_dragon, lumberjack, princess, royal_giant. Hero pages: electro_wizard, balloon,
   magic_archer, mega_minion, tombstone.
@@ -286,4 +286,4 @@ evolutions and the Barbarian Barrel / Dark Prince heroes are data with a planned
 
 ### Stats source (new, 2026-11-16)
 `sync_meta --html-dir data/raw_sources/cards` parses the saved Fandom pages (current numbers, L1–L16) and checks
-L11 / L16 against the DB (read-only); `--apply-wiki` stores the numbers as `level_overrides` (done for the 22 simulated cards, engine v4; see SESSION_HANDOFF open issue 13).
+L11 / L16 against the DB (read-only); `--apply-wiki` stores the numbers as `level_overrides` (done for the 22 simulated cards, engine v4; see HANDOFF_ARCHIVE open issue 13).

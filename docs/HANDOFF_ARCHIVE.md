@@ -1,4 +1,7 @@
-# CRbot — Session Handoff (2026-11-17)
+# CRbot — Handoff archive (full history up to 2026-11-17)
+
+Detailed history moved here on 2026-11-21 to keep session start cheap. Current state: `docs/SESSION_HANDOFF.md`.
+Search this file by section instead of reading it whole.
 
 Read this first in every new session. Roadmap: `docs/CRBOT_UPGRADE_PLAN.md`.
 State at handoff: **544 passing, 1 skipped (all green)**, engine **v7**, observation **il_obs_v2 (OBS_DIM 1752, card-pool independent)** (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`), all work committed on `main` and pushed (2026-11-17, `a325061`).

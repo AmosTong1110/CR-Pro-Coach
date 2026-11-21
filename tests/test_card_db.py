@@ -69,7 +69,7 @@ def test_rarity_affects_scaling(db2023):
 
 
 # Exact per-level numbers from the saved Clash Royale Wiki pages (2026-11-16); they differ from the 2023 data
-# (L16 is ~0.8% higher; spell crown-tower damage and several balance changes), see SESSION_HANDOFF issue 13.
+# (L16 is ~0.8% higher; spell crown-tower damage and several balance changes), see docs/HANDOFF_ARCHIVE.md issue 13.
 @pytest.mark.parametrize("card,level,field,expected", [
     ("knight", 11, "hitpoints", 1766), ("knight", 16, "hitpoints", 2844), ("knight", 16, "damage", 325),
     ("hog_rider", 11, "hitpoints", 1697), ("hog_rider", 11, "damage", 317),
