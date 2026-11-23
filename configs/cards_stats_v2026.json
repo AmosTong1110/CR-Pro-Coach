@@ -5202,7 +5202,59 @@
       ],
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "coffin_cadets",
+                "elixir": 2,
+                "uses": 1,
+                "delay_ms": 1000,
+                "range_tiles": 6.5,
+                "token": "skeletrooper",
+                "landing_damage_stat": "landing_damage",
+                "landing_crown_tower_damage_stat": "landing_crown_tower_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "landing_damage": 263,
+              "landing_crown_tower_damage": 27
+            },
+            "12": {
+              "landing_damage": 289,
+              "landing_crown_tower_damage": 30
+            },
+            "13": {
+              "landing_damage": 318,
+              "landing_crown_tower_damage": 33
+            },
+            "14": {
+              "landing_damage": 350,
+              "landing_crown_tower_damage": 36
+            },
+            "15": {
+              "landing_damage": 385,
+              "landing_crown_tower_damage": 40
+            },
+            "16": {
+              "landing_damage": 424,
+              "landing_crown_tower_damage": 43
+            }
+          },
+          "wiki_columns": {
+            "landing_damage": "Landing Damage",
+            "landing_crown_tower_damage": "Landing Crown Tower Damage"
+          },
+          "data_source": "wiki-fandom-html:Balloon_Hero",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "1 s flight before the Skeletrooper lands"
+          ]
+        }
       },
       "base_stats": {
         "hitpoints": 1679,
@@ -5683,7 +5735,45 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_recoil_blast",
+              "params": {
+                "radius_tiles": 2.5,
+                "knockback_tiles": 1.0,
+                "damage_stat": "recoil_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "recoil_damage": 81
+            },
+            "12": {
+              "recoil_damage": 89
+            },
+            "13": {
+              "recoil_damage": 98
+            },
+            "14": {
+              "recoil_damage": 108
+            },
+            "15": {
+              "recoil_damage": 119
+            },
+            "16": {
+              "recoil_damage": 130
+            }
+          },
+          "wiki_columns": {
+            "recoil_damage": "Recoil Damage"
+          },
+          "cycles_required": 1,
+          "data_source": "wiki-fandom-html:Evolved Royal Giant",
+          "wiki_as_of": "2026-11-23"
+        },
         "hero": null
       },
       "base_stats": {
@@ -5856,7 +5946,30 @@
       ],
       "mechanics": [],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_frost_shots",
+              "params": {
+                "every": 2,
+                "radius_tiles": 3.0,
+                "slow_ms": 5500,
+                "zone_ms": 5500
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "wiki_columns": {},
+          "cycles_required": 2,
+          "cycles_source": "spec (the wiki page has no cycle count)",
+          "data_source": "wiki-fandom-html:Evolved Princess",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "2 cycles (Gaming on Phone; the wiki page has no table)",
+            "the parting zone only slows (its damage has no published figure)"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -6131,7 +6244,27 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "rage_on_death",
+              "params": {
+                "radius_tiles": 3.0,
+                "duration_ms": 5500,
+                "ghost": "lumberjack_ghost"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "wiki_columns": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Lumberjack",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "the ghost fades 1 s after leaving the Rage and when the Rage ends"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -6247,7 +6380,64 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_ram_trample",
+              "params": {
+                "knockback_tiles": 2.0,
+                "damage_stat": "charge_pushback_damage"
+              }
+            },
+            {
+              "kind": "evo_ram_bounce",
+              "params": {
+                "bounce_tiles": 2.0
+              }
+            },
+            {
+              "kind": "death_spawn",
+              "params": {
+                "token": "evo_barbarian",
+                "count": 2,
+                "deploy_ms": 1000
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "charge_pushback_damage": 212
+            },
+            "12": {
+              "charge_pushback_damage": 233
+            },
+            "13": {
+              "charge_pushback_damage": 257
+            },
+            "14": {
+              "charge_pushback_damage": 282
+            },
+            "15": {
+              "charge_pushback_damage": 310
+            },
+            "16": {
+              "charge_pushback_damage": 341
+            }
+          },
+          "remove_mechanics": [
+            "break_on_hit"
+          ],
+          "wiki_columns": {
+            "charge_pushback_damage": "Evolved Battle Ram Charge Pushback Damage"
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Battle Ram",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "trample knockback 2 tiles (2026-09-08 Battle Ram Evolution Knockback 2.5 -> 2), self pushback 2 tiles (wiki)"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -6353,7 +6543,60 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "ramp_damage",
+              "params": {
+                "stage_ms": 2000,
+                "stats": [
+                  "damage",
+                  "damage_stage2",
+                  "damage_stage3",
+                  "damage_stage4"
+                ],
+                "stage_at_ms": [
+                  0,
+                  2000,
+                  4000,
+                  20000
+                ],
+                "keep_ms": 7000
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "damage_stage4": 844
+            },
+            "12": {
+              "damage_stage4": 928
+            },
+            "13": {
+              "damage_stage4": 1021
+            },
+            "14": {
+              "damage_stage4": 1123
+            },
+            "15": {
+              "damage_stage4": 1236
+            },
+            "16": {
+              "damage_stage4": 1359
+            }
+          },
+          "wiki_columns": {
+            "damage_stage4": "4 stage Damage"
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Inferno Dragon",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "4th stage after 20 s of beam time (wiki: 'after 20 seconds of damage')",
+            "keeps its stage 7 s after a kill (2026-06-01: 9 -> 7 s)"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -6439,7 +6682,49 @@
       "mechanics": [],
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "wounding_warp",
+                "elixir": 2,
+                "uses": 1,
+                "stay_ms": 3500,
+                "warp_damage_stat": "warp_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "warp_damage": 399
+            },
+            "12": {
+              "warp_damage": 439
+            },
+            "13": {
+              "warp_damage": 483
+            },
+            "14": {
+              "warp_damage": 531
+            },
+            "15": {
+              "warp_damage": 584
+            },
+            "16": {
+              "warp_damage": 643
+            }
+          },
+          "wiki_columns": {
+            "warp_damage": "Warp Damage"
+          },
+          "data_source": "wiki-fandom-html:Mega Minion_Hero",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "targets the lowest-hitpoint enemy troop or building (towers excluded)"
+          ]
+        }
       },
       "base_stats": {
         "hitpoints": 837,
@@ -6639,7 +6924,30 @@
       ],
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "surging_strikes",
+                "elixir": 2,
+                "uses": 1,
+                "hits": 5,
+                "hit_every_ms": 650,
+                "stun_ms": 650,
+                "damage_pct": 127
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "wiki_columns": {},
+          "data_source": "wiki-fandom-html:Electro Wizard_Hero",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "the wiki page is unfinished: 5 hits over ~3.25 s and ~1464 total damage are RoyaleAPI's estimate; per-hit damage (127% of a zap per beam) and the stun length are derived from it"
+          ]
+        }
       },
       "base_stats": {
         "hitpoints": 714,
@@ -7367,7 +7675,59 @@
       ],
       "variants": {
         "evo": null,
-        "hero": null
+        "hero": {
+          "mechanics": [
+            {
+              "kind": "champion_ability",
+              "params": {
+                "name": "triple_threat",
+                "elixir": 2,
+                "uses": 1,
+                "teleport_tiles": 3.5,
+                "triple_range_tiles": 13.5,
+                "token": "ma_decoy",
+                "decoy_hitpoints_stat": "decoy_hitpoints",
+                "triple_damage_stat": "triple_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "decoy_hitpoints": 271,
+              "triple_damage": 48
+            },
+            "12": {
+              "decoy_hitpoints": 298,
+              "triple_damage": 53
+            },
+            "13": {
+              "decoy_hitpoints": 328,
+              "triple_damage": 58
+            },
+            "14": {
+              "decoy_hitpoints": 361,
+              "triple_damage": 64
+            },
+            "15": {
+              "decoy_hitpoints": 397,
+              "triple_damage": 70
+            },
+            "16": {
+              "decoy_hitpoints": 436,
+              "triple_damage": 77
+            }
+          },
+          "wiki_columns": {
+            "decoy_hitpoints": "Decoy Hitpoints",
+            "triple_damage": "Triple Shot Damage"
+          },
+          "data_source": "wiki-fandom-html:Magic Archer_Hero",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "the three arrows fan out 10 degrees apart"
+          ]
+        }
       },
       "base_stats": {
         "hitpoints": 529,
@@ -8204,7 +8564,52 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_cage_trap",
+              "params": {
+                "radius_tiles": 3.0,
+                "hit_every_ms": 1000,
+                "cooldown_ms": 300,
+                "damage_stat": "cage_damage"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {
+            "11": {
+              "cage_damage": 366
+            },
+            "12": {
+              "cage_damage": 403
+            },
+            "13": {
+              "cage_damage": 443
+            },
+            "14": {
+              "cage_damage": 488
+            },
+            "15": {
+              "cage_damage": 535
+            },
+            "16": {
+              "cage_damage": 590
+            }
+          },
+          "wiki_columns": {
+            "cage_damage": "Goblin Cage Damage"
+          },
+          "newer_than_wiki": {
+            "cage_damage": "x 366/337 (Supercell balance notes newer than the wiki table)"
+          },
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Goblin Cage",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "2026-08-04: trapped DPS 337 -> 366, capture cooldown 0.5 -> 0.3 s, cycles 1 -> 2 (the page has the cycles)"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -8315,7 +8720,33 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "evo_resurface",
+              "params": {
+                "at_hp": [
+                  0.66,
+                  0.33
+                ],
+                "goblins": 1,
+                "dig_ms": 1000,
+                "tower_tiles": 2.0,
+                "token": "drill_goblin"
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "wiki_columns": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Goblin Drill",
+          "wiki_as_of": "2026-11-23",
+          "assumed": [
+            "dig time 1 s and 'next to a Crown Tower' = within 2 tiles (no figures on the page)",
+            "1 Goblin per resurface (2026-05-04: 2 -> 1 on the second)"
+          ]
+        },
         "hero": null
       },
       "base_stats": {
@@ -8485,7 +8916,28 @@
         }
       ],
       "variants": {
-        "evo": null,
+        "evo": {
+          "mechanics": [
+            {
+              "kind": "barrel_drop",
+              "params": {
+                "token": "barrel_goblin",
+                "count": 3,
+                "deploy_ms": 1100,
+                "mirror": {
+                  "token": "decoy_goblin",
+                  "count": 3
+                }
+              }
+            }
+          ],
+          "stat_mods": {},
+          "level_overrides": {},
+          "wiki_columns": {},
+          "cycles_required": 2,
+          "data_source": "wiki-fandom-html:Evolved Goblin Barrel",
+          "wiki_as_of": "2026-11-23"
+        },
         "hero": null
       },
       "base_stats": {},
@@ -9813,6 +10265,361 @@
       "name": "Phoenix (reborn)",
       "rarity": "legendary",
       "elixir": 4
+    },
+    "evo_barbarian": {
+      "name": "Evolved Barbarian",
+      "type": "troop",
+      "rarity": "rare",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 737,
+          "damage": 192
+        },
+        "12": {
+          "hitpoints": 811,
+          "damage": 211
+        },
+        "13": {
+          "hitpoints": 892,
+          "damage": 232
+        },
+        "14": {
+          "hitpoints": 981,
+          "damage": 256
+        },
+        "15": {
+          "hitpoints": 1079,
+          "damage": 281
+        },
+        "16": {
+          "hitpoints": 1187,
+          "damage": 309
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [
+        {
+          "kind": "boost_on_attack",
+          "params": {
+            "ms": 3000
+          }
+        }
+      ],
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.7,
+        "hit_speed_s": 1.4,
+        "first_hit_s": 0.9,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "base_stats": {
+        "hitpoints": 737,
+        "damage": 192
+      },
+      "data_source": "wiki-fandom-html:Evolved Battle Ram (token columns)",
+      "data_as_of": "2026-11-23",
+      "wiki_as_of": "2026-11-23",
+      "assumed": [
+        "hit speed 1.4 s like the Barbarians since 2026-03-02"
+      ],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 1.0
+      },
+      "deploy_time_s": 1.0,
+      "count": 1,
+      "collision_radius_tiles": 0.5,
+      "mass": 4
+    },
+    "decoy_goblin": {
+      "name": "Decoy Goblin",
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 3,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 81,
+          "damage": 66
+        },
+        "12": {
+          "hitpoints": 89,
+          "damage": 73
+        },
+        "13": {
+          "hitpoints": 98,
+          "damage": 80
+        },
+        "14": {
+          "hitpoints": 108,
+          "damage": 88
+        },
+        "15": {
+          "hitpoints": 119,
+          "damage": 96
+        },
+        "16": {
+          "hitpoints": 130,
+          "damage": 106
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [],
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.5,
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.3,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "base_stats": {
+        "hitpoints": 81,
+        "damage": 66
+      },
+      "data_source": "wiki-fandom-html:Evolved Goblin Barrel (token columns)",
+      "data_as_of": "2026-11-23",
+      "wiki_as_of": "2026-11-23",
+      "assumed": [
+        "2026-08-04 Decoy Goblin Damage 89 -> 66 (L11)"
+      ],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "deploy_time_s": 1.1,
+      "count": 1,
+      "collision_radius_tiles": 0.5,
+      "mass": 2
+    },
+    "lumberjack_ghost": {
+      "name": "Lumberjack Ghost",
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 1282,
+          "damage": 256,
+          "crown_tower_damage": 128
+        },
+        "12": {
+          "hitpoints": 1410,
+          "damage": 282,
+          "crown_tower_damage": 141
+        },
+        "13": {
+          "hitpoints": 1551,
+          "damage": 310,
+          "crown_tower_damage": 155
+        },
+        "14": {
+          "hitpoints": 1706,
+          "damage": 341,
+          "crown_tower_damage": 170
+        },
+        "15": {
+          "hitpoints": 1877,
+          "damage": 375,
+          "crown_tower_damage": 187
+        },
+        "16": {
+          "hitpoints": 2065,
+          "damage": 412,
+          "crown_tower_damage": 206
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [
+        {
+          "kind": "ghost",
+          "params": {
+            "outside_ms": 1000
+          }
+        },
+        {
+          "kind": "tower_damage",
+          "params": {}
+        }
+      ],
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.7,
+        "hit_speed_s": 0.8,
+        "first_hit_s": 0.4,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "base_stats": {
+        "hitpoints": 1282,
+        "damage": 256,
+        "crown_tower_damage": 128
+      },
+      "data_source": "wiki-fandom-html:Evolved Lumberjack (token columns)",
+      "data_as_of": "2026-11-23",
+      "wiki_as_of": "2026-11-23",
+      "assumed": [],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "deploy_time_s": 0.0,
+      "count": 1,
+      "collision_radius_tiles": 0.5,
+      "mass": 4
+    },
+    "skeletrooper": {
+      "name": "Skeletrooper",
+      "type": "troop",
+      "rarity": "epic",
+      "elixir": 5,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 473,
+          "damage": 204
+        },
+        "12": {
+          "hitpoints": 520,
+          "damage": 224
+        },
+        "13": {
+          "hitpoints": 572,
+          "damage": 247
+        },
+        "14": {
+          "hitpoints": 630,
+          "damage": 272
+        },
+        "15": {
+          "hitpoints": 693,
+          "damage": 299
+        },
+        "16": {
+          "hitpoints": 762,
+          "damage": 329
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [
+        {
+          "kind": "tower_damage",
+          "params": {}
+        }
+      ],
+      "attack": {
+        "targets": [
+          "ground"
+        ],
+        "range_tiles": 0.8,
+        "hit_speed_s": 1.1,
+        "first_hit_s": 0.5,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "base_stats": {
+        "hitpoints": 473,
+        "damage": 204
+      },
+      "data_source": "wiki-fandom-html:Balloon_Hero (token columns)",
+      "data_as_of": "2026-11-23",
+      "wiki_as_of": "2026-11-23",
+      "assumed": [
+        "first hit 0.5 s, melee range 0.8 ('Melee: Short')"
+      ],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 2.0
+      },
+      "deploy_time_s": 0.0,
+      "count": 1,
+      "collision_radius_tiles": 0.5,
+      "mass": 2,
+      "crown_tower_damage_pct": -90
+    },
+    "ma_decoy": {
+      "name": "Magic Archer Decoy",
+      "type": "troop",
+      "rarity": "legendary",
+      "elixir": 4,
+      "verified": false,
+      "level_overrides": {
+        "11": {
+          "hitpoints": 271
+        },
+        "12": {
+          "hitpoints": 298
+        },
+        "13": {
+          "hitpoints": 328
+        },
+        "14": {
+          "hitpoints": 361
+        },
+        "15": {
+          "hitpoints": 397
+        },
+        "16": {
+          "hitpoints": 436
+        }
+      },
+      "variants": {
+        "evo": null,
+        "hero": null
+      },
+      "mechanics": [
+        {
+          "kind": "timed_life",
+          "params": {
+            "ms": 7000
+          }
+        }
+      ],
+      "attack": {
+        "targets": [],
+        "range_tiles": 0.0,
+        "hit_speed_s": 1.0,
+        "first_hit_s": 1.0,
+        "splash_radius_tiles": 0.0,
+        "sight_tiles": 5.5
+      },
+      "base_stats": {
+        "hitpoints": 271
+      },
+      "data_source": "wiki-fandom-html:Magic Archer_Hero (token columns)",
+      "data_as_of": "2026-11-23",
+      "wiki_as_of": "2026-11-23",
+      "assumed": [],
+      "movement": {
+        "layer": "ground",
+        "speed_tiles_s": 0.0
+      },
+      "deploy_time_s": 0.0,
+      "count": 1,
+      "collision_radius_tiles": 0.6,
+      "mass": 3
     }
   }
 }

@@ -287,10 +287,121 @@ class PensiveProtection:
         return False
 
 
+def _spawn(m, side: int, token: str, x: float, y: float, eid: int, deploy_ms: int = 0) -> list:
+    before = set(m.units)
+    m._spawn_card_units(side, token, x, y, eid, False, deploy_ms=deploy_ms)
+    return [m.units[k] for k in sorted(set(m.units) - before)]
+
+
+class CoffinCadets(_Delayed):
+    """Hero Balloon, Coffin Cadets (2 elixir): a Skeletrooper (`token`) flies at the closest enemy ground unit (troop,
+    building or tower) within `range_tiles` of the Balloon, lands after `delay_ms` for `landing_damage` (towers
+    `landing_crown_tower_damage`) and then fights. Nothing in range: the ability is spent for nothing."""
+    phase = "cadets"
+
+    @staticmethod
+    def fire(m, u, p) -> None:
+        pool = [e for e in _foes(m, u) if (e.is_structure or e.layer == "ground") and S.targetable(e)
+                and m._edge_dist(u, e) <= float(p.get("range_tiles", 6.5))]
+        if not pool:
+            return
+        t = min(pool, key=lambda e: (m._edge_dist(u, e), e.uid))
+        m._deal(t, float(p.get("landing_crown_tower_damage", 0)) if t.kind == "tower" else float(p.get("landing_damage", 0)), u)
+        dx, dy = u.x - t.x, u.y - t.y
+        n = (dx * dx + dy * dy) ** 0.5 or 1.0
+        off = t.radius + 0.5
+        _spawn(m, u.side, p["token"], t.x + dx / n * off, t.y + dy / n * off, u.source_event_id or 0)
+
+
+class SurgingStrikes:
+    """Hero Electro Wizard, Surging Strikes (2 elixir): two beams lock onto the two closest enemies in range and land
+    `hits` zaps, one every `hit_every_ms`, each `damage_pct`% of his zap and a `stun_ms` stun (so the targets stay
+    stunned while connected). Numbers from RoyaleAPI's estimate (5 hits, ~3.25 s); the wiki page is unfinished."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        u.mstate["ab"].update(phase="surge", ms=0, done=0)
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        every, hits = int(p.get("hit_every_ms", 650)), int(p.get("hits", 5))
+        while ab["done"] < hits and ab["ms"] >= every * ab["done"]:
+            ab["done"] += 1
+            pool = [e for e in _foes(m, u) if m._can_target(u, e) and S.targetable(e) and m._in_range(u, e)]
+            pool.sort(key=lambda e: (m._edge_dist(u, e), e.uid))
+            for e in pool[:2]:
+                m._deal(e, float(u.damage) * float(p.get("damage_pct", 127)) / 100.0, u)
+                if e.hp > 0:
+                    m.apply_status(e, S.STUN, int(p.get("stun_ms", 650)))
+        if ab["done"] >= hits:
+            ab["phase"] = None
+        return False
+
+
+class TripleThreat:
+    """Hero Magic Archer, Triple Threat (2 elixir): leaves a decoy (`token`, `decoy_hitpoints`) where he stands, darts
+    `teleport_tiles` back (away from the nearest enemy) and his next attack is three arrows (`triple_damage` each,
+    `triple_range_tiles` long, 10 degrees apart)."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        for d in _spawn(m, u.side, p["token"], u.x, u.y, u.source_event_id or 0):
+            d.hp = d.max_hp = float(p.get("decoy_hitpoints", d.max_hp))
+        foes = [e for e in _foes(m, u) if e.kind != "tower"]
+        if foes:
+            e = min(foes, key=lambda e: (G.dist(e.x, e.y, u.x, u.y), e.uid))
+            dx, dy = u.x - e.x, u.y - e.y
+        else:
+            dx, dy = 0.0, -float(G.forward(u.side))
+        n = (dx * dx + dy * dy) ** 0.5 or 1.0
+        step = float(p.get("teleport_tiles", 3.5))
+        m._move_clamped(u, u.x + dx / n * step, u.y + dy / n * step)
+        u.mstate["triple"] = {"angles": [-10, 0, 10], "length_tiles": float(p.get("triple_range_tiles", 13.5)),
+                              "damage": float(p.get("triple_damage", 0))}
+        u.target_uid = None
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        return False
+
+
+class WoundingWarp:
+    """Hero Mega Minion, Wounding Warp (2 elixir): warps to the lowest-hitpoint enemy troop or building anywhere, hits
+    it for `warp_damage`, fights it until it falls or `stay_ms` pass, then warps back to where he started."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        pool = [e for e in _foes(m, u) if e.kind != "tower" and m._can_target(u, e) and S.targetable(e)]
+        if not pool:
+            u.mstate["ab"]["phase"] = None
+            return
+        t = min(pool, key=lambda e: (e.hp, e.uid))
+        u.mstate["ab"].update(phase="warp", ms=0, home=(u.x, u.y), target=t.uid)
+        u.x, u.y = t.x, min(max(t.y - G.forward(u.side) * (t.radius + u.radius), 0.0), G.H - 0.01)
+        m._deal(t, float(p.get("warp_damage", 0)), u)
+        u.target_uid = t.uid
+        u.cooldown_ms = u.hit_speed_ms
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        t = m.units.get(ab["target"])
+        if t is None or t.hp <= 0 or ab["ms"] >= int(p.get("stay_ms", 3500)):
+            u.x, u.y = ab["home"]
+            ab["phase"] = None
+            u.target_uid = None
+        return False
+
+
 ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape, "royal_rescue": Rescue,
                               "triumphant_taunt": Taunt, "breakfast_boost": BreakfastBoost, "snowstorm": Snowstorm,
                               "trusty_turret": TrustyTurret, "whirl_power": WhirlPower,
-                              "pensive_protection": PensiveProtection}
+                              "pensive_protection": PensiveProtection, "coffin_cadets": CoffinCadets,
+                              "surging_strikes": SurgingStrikes, "triple_threat": TripleThreat,
+                              "wounding_warp": WoundingWarp}
 
 
 @register("champion_ability")

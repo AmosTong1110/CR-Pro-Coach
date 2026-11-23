@@ -51,8 +51,11 @@ def use(m, card, elixir=9.0):
 # ------------------------------------------------------------------ data + verification
 def test_slots_parse_and_validate(db):
     assert split_slot("knight") == ("knight", "evo") and split_slot("knight#hero") == ("knight", "hero")
-    assert set(db.hero_capable()) == {"knight", "mini_pekka", "ice_golem", "musketeer", "valkyrie"}
-    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla", "mortar"}   # the rest are data only
+    assert set(db.hero_capable()) == {"knight", "mini_pekka", "ice_golem", "musketeer", "valkyrie",
+                                      "balloon", "electro_wizard", "magic_archer", "mega_minion"}      # + batch-4 heroes
+    assert set(db.evo_capable()) == {"knight", "firecracker", "skeletons", "zap", "valkyrie", "tesla", "mortar",
+                                     "royal_giant", "battle_ram", "goblin_barrel", "goblin_cage", "goblin_drill",
+                                     "inferno_dragon", "lumberjack", "princess"}   # the rest are data only
     for bad in ("archers", "archers#hero", "barbarian_barrel#hero", "skeletons#hero", "fireball#hero"):
         deck = (*H[:7], "archers") if bad.startswith("archers") else H if bad.split("#")[0] in H else (*H[:7], bad.split("#")[0])
         with pytest.raises(ValueError, match="cannot be an evolution / hero slot"):
@@ -66,8 +69,9 @@ def test_every_evo_and_hero_page_is_in_the_data_and_matches(db):
     if not real.is_dir():
         pytest.skip("saved wiki pages not present")
     rows = verify_variants(db, load_wiki_dir(real))
-    assert len(rows) == 21 and all(r["status"].startswith("ok") for r in rows)
-    assert all(r["cycles_db"] == r["cycles_wiki"] == 2 for r in rows if r["variant"] == "evo")
+    assert len(rows) == 33 and all(r["status"].startswith("ok") for r in rows)       # 21 + 12 batch-4 variants
+    assert all(r["cycles_db"] == r["cycles_wiki"] for r in rows if r["variant"] == "evo" and r["cycles_wiki"])
+    assert {r["card"]: r["cycles_db"] for r in rows if r["variant"] == "evo"}["royal_giant"] == 1
 
 
 @pytest.mark.parametrize("cid,level,expected", [

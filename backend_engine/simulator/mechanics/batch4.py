@@ -320,6 +320,12 @@ class RageOnDeath(Mechanic):
         m.effects.append(AreaEffect(m._uid(), u.side, u.card_id, u.x, u.y, r, 0.0, 0.0,
                                     int(p.get("duration_ms", 5500)), G.TICK_MS, 0.0, u.source_event_id or 0,
                                     kind="rage_zone"))
+        if p.get("ghost"):                         # Evolved Lumberjack: his ghost keeps fighting in the Rage
+            before = set(m.units)
+            m._spawn_card_units(u.side, p["ghost"], u.x, u.y, u.source_event_id or 0, False, deploy_ms=0)
+            for uid in sorted(set(m.units) - before):
+                m.units[uid].params.setdefault("ghost", {}).update(
+                    x=u.x, y=u.y, r=r, until=m.t_ms + int(p.get("duration_ms", 5500)))
 
 
 @register_spell("rage_zone")
@@ -348,14 +354,29 @@ class PierceShot(Mechanic):
         n = math.sqrt(dx * dx + dy * dy)
         if n < 1e-9:
             return False
-        ux, uy, length, half = dx / n, dy / n, float(p.get("length_tiles", 11.0)), float(p.get("width_tiles", 0.5)) / 2
+        triple = u.mstate.pop("triple", None)       # Hero Magic Archer's Triple Threat: 3 longer, weaker arrows
+        if triple:
+            for ang in triple["angles"]:
+                c, s = TRIG[ang]
+                self._line(m, u, (dx * c - dy * s) / n, (dx * s + dy * c) / n, float(triple["length_tiles"]),
+                           float(p.get("width_tiles", 0.5)) / 2, float(triple["damage"]))
+            return True
+        self._line(m, u, dx / n, dy / n, float(p.get("length_tiles", 11.0)), float(p.get("width_tiles", 0.5)) / 2,
+                   float(u.damage))
+        return True
+
+    @staticmethod
+    def _line(m, u, ux: float, uy: float, length: float, half: float, dmg: float) -> None:
         for e in _foes(m, u.side):
             if not m._can_target(u, e):
                 continue
             t = (e.x - u.x) * ux + (e.y - u.y) * uy
             if -e.radius <= t <= length + e.radius and abs((e.x - u.x) * uy - (e.y - u.y) * ux) <= half + e.radius:
-                m._deal(e, float(u.damage), u)
-        return True
+                m._deal(e, dmg, u)
+
+
+# cos / sin of the Triple Threat spread (constant table: no transcendental call in the tick)
+TRIG = {-10: (0.984807753012208, -0.17364817766693033), 0: (1.0, 0.0), 10: (0.984807753012208, 0.17364817766693033)}
 
 
 # ---------------------------------------------------------------- Goblin Drill
@@ -378,6 +399,13 @@ class EmergeDamage(Mechanic):
 @register_spell("barrel_drop")
 class BarrelDrop(AreaSpell):
     """Goblin Barrel: thrown from the king tower (travel time); on landing `count` `token`s step out (no damage)."""
+
+    def cast(self, m, side, card_id, x, y, eid, stats, params) -> None:
+        super().cast(m, side, card_id, x, y, eid, stats, params)
+        mir = params.get("barrel_drop", {}).get("mirror")      # Evolved Goblin Barrel: a second barrel, other lane
+        if mir:
+            more = {**params, "barrel_drop": {**params["barrel_drop"], **mir, "mirror": None}}
+            super().cast(m, side, card_id, G.W - x, y, eid, stats, more)
 
     def impact(self, m, sp: Spell) -> None:
         p = sp.params.get("barrel_drop", {})

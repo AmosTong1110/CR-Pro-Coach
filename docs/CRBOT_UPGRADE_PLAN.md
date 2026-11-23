@@ -156,12 +156,12 @@ Mechanics as built (2026-11-23):
 7. `rebirth` + `hatch` (phoenix), `combo_hit` + ability `pensive_protection` (monk), `volley_spell` (arrows).
 
 ### Evolutions and heroes
-Simulated: 7 of 14 evolutions (Knight, Firecracker, Skeletons, Zap, Valkyrie, Tesla, Mortar) and 5 heroes (Knight,
-Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie). Data only, cheapest first: bats (heal pulse), ice spirit, archers,
-then the ones that add a new entity (cannon barrage, dart goblin poison, royal ghost soldiers, skeleton army General
-Gerry); Barbarian Barrel / Dark Prince heroes (HANDOFF_ARCHIVE issue 18).
-* Pages still to save for Phase 2 evos: battle_ram, goblin_barrel, goblin_cage, goblin_drill, inferno_dragon,
-  lumberjack, princess, royal_giant. Hero pages: electro_wizard, balloon, magic_archer, mega_minion.
+Simulated: 15 of 22 evolutions (Knight, Firecracker, Skeletons, Zap, Valkyrie, Tesla, Mortar; 2026-11-23: Royal Giant,
+Battle Ram, Goblin Barrel, Goblin Cage, Goblin Drill, Inferno Dragon, Lumberjack, Princess) and 9 heroes (Knight,
+Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie; 2026-11-23: Balloon, Electro Wizard, Magic Archer, Mega Minion).
+A variant mechanic of the same kind replaces the base one; `remove_mechanics` drops base kinds (`CardDB.mechanics_for`).
+Data only, cheapest first: bats (heal pulse), ice spirit, archers, then cannon barrage, dart goblin poison, royal ghost
+soldiers, skeleton army General Gerry; Barbarian Barrel / Dark Prince heroes (HANDOFF_ARCHIVE issue 18).
 
 ### Stats source
 `sync_meta --html-dir data/raw_sources/cards` parses the saved Fandom pages (current numbers, L1–L16) and checks

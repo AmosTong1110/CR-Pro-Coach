@@ -543,10 +543,16 @@ def verify_variants(db: CardDB, pages: List[WikiPage]) -> List[Dict[str, Any]]:
         row["cycles_db"] = (v or {}).get("cycles_required")
         row["simulated"] = db.variant_simulated(pg.card_id, pg.variant)
         b = base.get(pg.card_id)
-        row["delta_l11"] = (variant_overrides(b, pg, entry, {}).get("11", {}) if b else {})
+        if v and v.get("wiki_columns") is not None:            # explicit columns (tools/add_variants.py "columns")
+            newer = v.get("newer_than_wiki") or {}
+            row["delta_l11"] = {s: int(pg.levels[11][c]) for s, c in v["wiki_columns"].items()
+                                if c in pg.levels.get(11, {}) and s not in newer}
+        else:
+            row["delta_l11"] = (variant_overrides(b, pg, entry, {}).get("11", {}) if b else {})
         if not v:
             row["status"] = "missing"
-        elif pg.variant == "evo" and row["cycles_db"] != row["cycles_wiki"]:
+        elif pg.variant == "evo" and row["cycles_db"] != row["cycles_wiki"] and not (
+                row["cycles_wiki"] is None and v.get("cycles_source")):
             row["status"] = "cycles differ"
         else:
             ok = all(db.stats(pg.card_id, 11, pg.variant).stats.get(k) == val for k, val in row["delta_l11"].items())

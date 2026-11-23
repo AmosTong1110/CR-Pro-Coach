@@ -622,7 +622,9 @@
     {
       "name": "Battle Ram Bridge Spam",
       "style": "Bridge Spam",
-      "evo": [],
+      "evo": [
+        "electro_wizard#hero"
+      ],
       "cards": [
         "arrows",
         "bandit",
@@ -633,7 +635,7 @@
         "lumberjack",
         "royal_ghost"
       ],
-      "tip": "Season meta: Battle Ram, Bandit and Lumberjack at the bridge. Punish every elixir lead. (The meta list runs Hero Electro Wizard; his hero ability is not simulated yet, so he plays as the base card.)"
+      "tip": "Season meta: Battle Ram, Bandit and Lumberjack at the bridge. Punish every elixir lead. Hero Electro Wizard's Surging Strikes locks down two attackers."
     },
     {
       "name": "Rune Giant Miner Control",

@@ -138,12 +138,22 @@ class RampDamage(Mechanic):
 
     def on_attack(self, m, u, target) -> bool:
         p = u.params.get("ramp_damage", {})
+        keep = int(p.get("keep_ms", 0))            # Evolved Inferno Dragon: the stage survives a kill for keep_ms
         if u.mstate.get("ramp_target") != target.uid:
-            u.mstate.update(ramp_target=target.uid, ramp_ms=0)
+            prev = u.mstate.get("ramp_target")
+            kept = bool(keep) and prev is not None and prev not in m.units \
+                and m.t_ms - u.mstate.get("ramp_last", -10 ** 9) <= keep
+            u.mstate.update(ramp_target=target.uid, ramp_ms=u.mstate["ramp_ms"] + u.hit_speed_ms if kept else 0)
         else:
             u.mstate["ramp_ms"] += u.hit_speed_ms
+        if keep:
+            u.mstate["ramp_last"] = m.t_ms
         damages = p.get("damages") or [u.damage]
-        stage = min(len(damages) - 1, u.mstate["ramp_ms"] // int(p.get("stage_ms", 2000)))
+        at = p.get("stage_at_ms")                  # explicit stage start times (a 4th stage after 20 s)
+        if at:
+            stage = max(i for i, t0 in enumerate(at[: len(damages)]) if u.mstate["ramp_ms"] >= t0)
+        else:
+            stage = min(len(damages) - 1, u.mstate["ramp_ms"] // int(p.get("stage_ms", 2000)))
         m._deal(target, float(damages[stage]), u)
         return True
 

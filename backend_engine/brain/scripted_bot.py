@@ -42,9 +42,10 @@ class ScriptedBot:
         for c in obs.get("abilities", ()):
             name, cost = info[c]["name"], int(info[c]["elixir"])
             reach = {"dash": 5.0, "royal_rescue": 4.0, "trusty_turret": 6.0, "triumphant_taunt": 7.5,
-                     "snowstorm": 4.0, "whirl_power": 2.5, "pensive_protection": 5.0}.get(name, 2.0)
+                     "snowstorm": 4.0, "whirl_power": 2.5, "pensive_protection": 5.0, "coffin_cadets": 6.5,
+                     "surging_strikes": 5.0, "triple_threat": 3.0, "wounding_warp": 40.0}.get(name, 2.0)
             need = {"dash": 2, "triumphant_taunt": 2, "snowstorm": 2, "whirl_power": 2,
-                    "pensive_protection": 2}.get(name, 1)
+                    "pensive_protection": 2, "surging_strikes": 2}.get(name, 1)
             for u in obs["units"]:
                 if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
                     continue

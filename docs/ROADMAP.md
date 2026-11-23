@@ -22,7 +22,7 @@ non-commercial, with the "unofficial / not endorsed" notice.
 | module | done | what is left |
 |---|---|---|
 | Simulator engine (v8, 50 ms tick) | 100% | only new mechanics for new cards |
-| Cards | 72 of 123 playable | all 8 season meta decks complete (MS4 done 2026-11-23); 7 of 14 evolutions data-only, no evos / heroes for the 25 new cards |
+| Cards | 72 of 123 playable | all 8 season meta decks complete (MS4 done 2026-11-23); 15 evolutions + 9 heroes simulated, 7 evolutions data-only |
 | Current card stats (Nov 2026) | 92% | audited 2026-11-23 against the wiki + the 2026 balance notes; open: pocket depth, skeleton spawn spread, a few `assumed` fields |
 | App shell + Fight / Analysis / Decks / Account | 95% | board art (MS3) |
 | Elixir counter / deck guesser / delay buffer | 92% | minor |
@@ -64,7 +64,9 @@ static art, with no animation frames.
 game data for mass / radius / sight (`tools/card_specs/batch4.json`, mechanics in `mechanics/batch4.py`). The 7
 new decks are presets ("Season meta"). Same day: audit of every older card (`tools/card_specs/audit_2026_11.json`,
 `tools/apply_card_patches.py`): 9 hand-entered cards rebuilt from the wiki, ~40 balance-note fixes, Crown Tower
-L12-16. Left: evolutions / heroes of the new cards (e.g. Hero Electro Wizard), the remaining 51 catalog cards.
+L12-16. Also 2026-11-23: 8 evolutions + 4 heroes of the new cards (`tools/card_specs/variants_batch4.json`,
+`mechanics/variants4.py`, hero abilities in `mechanics/abilities.py`). Left: the remaining 51 catalog cards and 7
+data-only evolutions; Hero Electro Wizard's numbers are estimates (unfinished wiki page).
 
 ### MS5. Validation
 1. Replay agreement: re-simulate real battles whose cards are all playable and compare tower damage and results.
@@ -98,6 +100,6 @@ HF replays (18,570 battles)          simulator (engine v8)
 1. Phone app and store release: the Fan Kit rules allow non-commercial use only. Free, or not at all?
 2. Exit criteria for MS1 and MS2 (the proposed numbers above).
 3. After MS1: specialise in more decks (one model per deck) or train one general model?
-4. Pocket depth: how far into the enemy half can you deploy after taking a Princess Tower? The engine uses 6
-   tiles past the river; no source gives the exact number (the wiki only says "between the Crown and King Towers").
-5. Board art: OK to download the official Fan Kit (it means accepting Supercell's Fan Content Policy)?
+4. Pocket depth: kept at 6 tiles past the river (user decision 2026-11-23; no source gives the number).
+5. Board art: the user agreed (2026-11-23) to the Fan Kit, but fankit.supercell.com is a browser portal (Frontify);
+   the user downloads it into `fankit/`.

@@ -1,0 +1,126 @@
+{
+  "_doc": "Evolutions and heroes of the batch-4 cards, built by tools/add_variants.py from the Clash Royale Wiki variant pages fetched 2026-11-23 (data/raw_sources/cards), with Supercell's 2026 balance notes on top ('stat_scale'). 'columns' lists exactly which page columns become variant level_overrides. Mechanics: mechanics/variants4.py and the hero abilities in mechanics/abilities.py. A variant mechanic of the same kind replaces the base one (CardDB.mechanics_for); 'remove_mechanics' drops base kinds.",
+  "evo": {
+    "royal_giant": {
+      "columns": {"recoil_damage": "Recoil Damage"},
+      "mechanics": [{"kind": "evo_recoil_blast", "params": {"radius_tiles": 2.5, "knockback_tiles": 1.0, "damage_stat": "recoil_damage"}}],
+      "assumed": []
+    },
+    "battle_ram": {
+      "columns": {"charge_pushback_damage": "Evolved Battle Ram Charge Pushback Damage"},
+      "mechanics": [{"kind": "evo_ram_trample", "params": {"knockback_tiles": 2.0, "damage_stat": "charge_pushback_damage"}},
+                    {"kind": "evo_ram_bounce", "params": {"bounce_tiles": 2.0}},
+                    {"kind": "death_spawn", "params": {"token": "evo_barbarian", "count": 2, "deploy_ms": 1000}}],
+      "remove_mechanics": ["break_on_hit"],
+      "assumed": ["trample knockback 2 tiles (2026-09-08 Battle Ram Evolution Knockback 2.5 -> 2), self pushback 2 tiles (wiki)"]
+    },
+    "goblin_barrel": {
+      "columns": {},
+      "mechanics": [{"kind": "barrel_drop", "params": {"token": "barrel_goblin", "count": 3, "deploy_ms": 1100,
+                                                       "mirror": {"token": "decoy_goblin", "count": 3}}}],
+      "assumed": []
+    },
+    "goblin_cage": {
+      "columns": {"cage_damage": "Goblin Cage Damage"},
+      "stat_scale": {"cage_damage": [366, 337]},
+      "mechanics": [{"kind": "evo_cage_trap", "params": {"radius_tiles": 3.0, "hit_every_ms": 1000, "cooldown_ms": 300, "damage_stat": "cage_damage"}}],
+      "assumed": ["2026-08-04: trapped DPS 337 -> 366, capture cooldown 0.5 -> 0.3 s, cycles 1 -> 2 (the page has the cycles)"]
+    },
+    "goblin_drill": {
+      "columns": {},
+      "mechanics": [{"kind": "evo_resurface", "params": {"at_hp": [0.66, 0.33], "goblins": 1, "dig_ms": 1000, "tower_tiles": 2.0, "token": "drill_goblin"}}],
+      "assumed": ["dig time 1 s and 'next to a Crown Tower' = within 2 tiles (no figures on the page)", "1 Goblin per resurface (2026-05-04: 2 -> 1 on the second)"]
+    },
+    "inferno_dragon": {
+      "columns": {"damage_stage4": "4 stage Damage"},
+      "mechanics": [{"kind": "ramp_damage", "params": {"stage_ms": 2000, "stats": ["damage", "damage_stage2", "damage_stage3", "damage_stage4"],
+                                                       "stage_at_ms": [0, 2000, 4000, 20000], "keep_ms": 7000}}],
+      "assumed": ["4th stage after 20 s of beam time (wiki: 'after 20 seconds of damage')", "keeps its stage 7 s after a kill (2026-06-01: 9 -> 7 s)"]
+    },
+    "lumberjack": {
+      "columns": {},
+      "mechanics": [{"kind": "rage_on_death", "params": {"radius_tiles": 3.0, "duration_ms": 5500, "ghost": "lumberjack_ghost"}}],
+      "assumed": ["the ghost fades 1 s after leaving the Rage and when the Rage ends"]
+    },
+    "princess": {
+      "cycles": 2,
+      "columns": {},
+      "mechanics": [{"kind": "evo_frost_shots", "params": {"every": 2, "radius_tiles": 3.0, "slow_ms": 5500, "zone_ms": 5500}}],
+      "assumed": ["2 cycles (Gaming on Phone; the wiki page has no table)", "the parting zone only slows (its damage has no published figure)"]
+    }
+  },
+  "hero": {
+    "balloon": {
+      "columns": {"landing_damage": "Landing Damage", "landing_crown_tower_damage": "Landing Crown Tower Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "coffin_cadets", "elixir": 2, "uses": 1, "delay_ms": 1000, "range_tiles": 6.5,
+                                                            "token": "skeletrooper", "landing_damage_stat": "landing_damage",
+                                                            "landing_crown_tower_damage_stat": "landing_crown_tower_damage"}}],
+      "assumed": ["1 s flight before the Skeletrooper lands"]
+    },
+    "electro_wizard": {
+      "columns": {},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "surging_strikes", "elixir": 2, "uses": 1, "hits": 5, "hit_every_ms": 650,
+                                                            "stun_ms": 650, "damage_pct": 127}}],
+      "assumed": ["the wiki page is unfinished: 5 hits over ~3.25 s and ~1464 total damage are RoyaleAPI's estimate; per-hit damage (127% of a zap per beam) and the stun length are derived from it"]
+    },
+    "magic_archer": {
+      "columns": {"decoy_hitpoints": "Decoy Hitpoints", "triple_damage": "Triple Shot Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "triple_threat", "elixir": 2, "uses": 1, "teleport_tiles": 3.5,
+                                                            "triple_range_tiles": 13.5, "token": "ma_decoy",
+                                                            "decoy_hitpoints_stat": "decoy_hitpoints", "triple_damage_stat": "triple_damage"}}],
+      "assumed": ["the three arrows fan out 10 degrees apart"]
+    },
+    "mega_minion": {
+      "columns": {"warp_damage": "Warp Damage"},
+      "mechanics": [{"kind": "champion_ability", "params": {"name": "wounding_warp", "elixir": 2, "uses": 1, "stay_ms": 3500, "warp_damage_stat": "warp_damage"}}],
+      "assumed": ["targets the lowest-hitpoint enemy troop or building (towers excluded)"]
+    }
+  },
+  "tokens": {
+    "evo_barbarian": {
+      "from": {"card": "battle_ram", "variant": "evo"}, "rarity": "rare", "elixir": 4, "type": "troop",
+      "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+      "attack": {"targets": ["ground"], "range_tiles": 0.7, "hit_speed_s": 1.4, "first_hit_s": 0.9, "splash_radius_tiles": 0.0, "sight_tiles": 5.5},
+      "movement": {"layer": "ground", "speed_tiles_s": 1.0},
+      "mechanics": [{"kind": "boost_on_attack", "params": {"ms": 3000}}],
+      "extra": {"name": "Evolved Barbarian", "deploy_time_s": 1.0, "count": 1, "collision_radius_tiles": 0.5, "mass": 4},
+      "assumed": ["hit speed 1.4 s like the Barbarians since 2026-03-02"]
+    },
+    "decoy_goblin": {
+      "from": {"card": "goblin_barrel", "variant": "evo"}, "rarity": "epic", "elixir": 3, "type": "troop",
+      "stats": {"hitpoints": "Decoy Goblin Hitpoints", "damage": "Decoy Goblin Damage"},
+      "stat_scale": {"damage": [66, 89]},
+      "attack": {"targets": ["ground"], "range_tiles": 0.5, "hit_speed_s": 1.1, "first_hit_s": 0.3, "splash_radius_tiles": 0.0, "sight_tiles": 5.5},
+      "movement": {"layer": "ground", "speed_tiles_s": 2.0},
+      "extra": {"name": "Decoy Goblin", "deploy_time_s": 1.1, "count": 1, "collision_radius_tiles": 0.5, "mass": 2},
+      "assumed": ["2026-08-04 Decoy Goblin Damage 89 -> 66 (L11)"]
+    },
+    "lumberjack_ghost": {
+      "from": {"card": "lumberjack", "variant": "evo"}, "rarity": "legendary", "elixir": 4, "type": "troop",
+      "stats": {"hitpoints": "Hitpoints", "damage": "Ghost Damage", "crown_tower_damage": "Ghost Crown Damage"},
+      "attack": {"targets": ["ground"], "range_tiles": 0.7, "hit_speed_s": 0.8, "first_hit_s": 0.4, "splash_radius_tiles": 0.0, "sight_tiles": 5.5},
+      "movement": {"layer": "ground", "speed_tiles_s": 2.0},
+      "mechanics": [{"kind": "ghost", "params": {"outside_ms": 1000}}, {"kind": "tower_damage", "params": {}}],
+      "extra": {"name": "Lumberjack Ghost", "deploy_time_s": 0.0, "count": 1, "collision_radius_tiles": 0.5, "mass": 4},
+      "assumed": []
+    },
+    "skeletrooper": {
+      "from": {"card": "balloon", "variant": "hero"}, "rarity": "epic", "elixir": 5, "type": "troop",
+      "stats": {"hitpoints": "Skeletrooper Hitpoints", "damage": "Skeletrooper Damage"},
+      "attack": {"targets": ["ground"], "range_tiles": 0.8, "hit_speed_s": 1.1, "first_hit_s": 0.5, "splash_radius_tiles": 0.0, "sight_tiles": 5.5},
+      "movement": {"layer": "ground", "speed_tiles_s": 2.0},
+      "mechanics": [{"kind": "tower_damage", "params": {}}],
+      "extra": {"name": "Skeletrooper", "deploy_time_s": 0.0, "count": 1, "collision_radius_tiles": 0.5, "mass": 2, "crown_tower_damage_pct": -90},
+      "assumed": ["first hit 0.5 s, melee range 0.8 ('Melee: Short')"]
+    },
+    "ma_decoy": {
+      "from": {"card": "magic_archer", "variant": "hero"}, "rarity": "legendary", "elixir": 4, "type": "troop",
+      "stats": {"hitpoints": "Decoy Hitpoints"},
+      "attack": {"targets": [], "range_tiles": 0.0, "hit_speed_s": 1.0, "first_hit_s": 1.0, "splash_radius_tiles": 0.0, "sight_tiles": 5.5},
+      "movement": {"layer": "ground", "speed_tiles_s": 0.0},
+      "mechanics": [{"kind": "timed_life", "params": {"ms": 7000}}],
+      "extra": {"name": "Magic Archer Decoy", "deploy_time_s": 0.0, "count": 1, "collision_radius_tiles": 0.6, "mass": 3},
+      "assumed": []
+    }
+  }
+}

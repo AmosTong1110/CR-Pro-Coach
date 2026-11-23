@@ -305,7 +305,13 @@ class CardDB:
         c = self.entry(card_id)
         lst = list(c["mechanics"])
         if variant != "base":
-            lst += list((self.variant(card_id, variant) or {}).get("mechanics", []))
+            v = self.variant(card_id, variant) or {}
+            # a variant mechanic of the same kind replaces the base one in place (its params win); `remove_mechanics`
+            # drops base kinds (Evolved Battle Ram keeps hitting instead of breaking)
+            own = {m["kind"]: m for m in v.get("mechanics", [])}
+            drop = set(v.get("remove_mechanics", []))
+            lst = [own.get(m["kind"], m) for m in lst if m["kind"] not in drop]
+            lst += [m for m in v.get("mechanics", []) if m["kind"] not in {x["kind"] for x in lst}]
         derived = []
         if c.get("attack", {}).get("projectile_speed_tiles_s"):
             derived.append("projectile")          # before splash: the projectile carries the splash

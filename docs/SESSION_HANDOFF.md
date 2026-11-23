@@ -9,9 +9,9 @@ Grep the long files for the section you need; don't read them whole.
 * CRbot = local Clash Royale simulator + human-limited AI opponent + post-match coach (single mode; screen capture
   "Mode B" removed 2026-11-17). Not a bot for the real game.
 * Engine **v8** (deterministic 50 ms tick), observation **il_obs_v2** (OBS_DIM 1752, attribute-based, card-pool
-  independent). Cards: 123 in the catalog, **72 playable** (all 8 season meta decks), 51 quarantined. 7 of 14
-  evolutions, 5 heroes simulated. Models: `crbot_il_v2` (Neural persona; trained on v7, still valid: card-pool free).
-* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (588 pass, 1 skip expected; torch tests skip).
+  independent). Cards: 123 in the catalog, **72 playable** (all 8 season meta decks), 51 quarantined. 15
+  evolutions, 9 heroes simulated. Models: `crbot_il_v2` (Neural persona; trained on v7, still valid: card-pool free).
+* Tests: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` (603 pass, 1 skip expected; torch tests skip).
 * Env: `.venv` (Python 3.14). Homebrew `python3` has no packages. App: `.venv/bin/python -m frontend_app.qt.app`.
 * Overall ~75%. Weakest: PPO 45%, Coach v2 65%.
 
@@ -33,6 +33,8 @@ disclaimer with policy link, kit files stay local + git-ignored. Never extract a
   the 9 hand-entered cards were wrong (e.g. Goblins x4 not x3, Giant / P.E.K.K.A. speed, Baby Dragon splash, Witch
   range, Tombstone spawns); ~40 balance-note fixes; Crown Tower L12-16. Engine v8, goldens re-recorded.
 * `verify_wiki` status `newer` = official value newer than the wiki table on purpose (`newer_than_wiki`).
+* 8 evolutions + 4 heroes of the new cards (`variants_batch4.json`, `mechanics/variants4.py`, abilities Coffin Cadets,
+  Surging Strikes (estimated numbers), Triple Threat, Wounding Warp). Variants can replace / remove base mechanics.
 * Value model retrained on v8 (2000 bot games, 45 presets) and installed: log loss 0.442 vs 0.443 for the old one.
 
 ## Next steps (details: ROADMAP)
@@ -41,11 +43,11 @@ disclaimer with policy link, kit files stay local + git-ignored. Never extract a
    musketeer,skeletons,the_log`, `IL_LR=1e-4`, `IL_EPOCHS=5` → `pretrained_weights/crbot_il_v2_hog26/`; then
    `pack_ppo_bundle.py --il-model crbot_il_v2_hog26`, PPO `PPO_NAME=crbot_ppo_hog26`, `PPO_INIT=crbot_il_v2_hog26`,
    `PPO_DECKS=Hog 2.6 Cycle`, `PPO_HOURS=12`, `PPO_UPDATES=100000`, rerun daily. Re-run the gauntlet on v8.
-2. **MS3 board art**: needs the user's OK to download the Fan Kit (accepting the Fan Content Policy), then a loader
-   for official card / character art for the 72 cards + disclaimer. Own art was rejected 2026-11-21.
+2. **MS3 board art**: the user agreed to the Fan Kit (2026-11-23) but must download it in a browser (the portal is a
+   Frontify app; scripted access was refused) into `fankit/`; then a loader for the 72 cards' art + disclaimer.
 3. **MS2 coach**: value net on simulator states. Then MS5 validation, MS6 personas, evos / heroes of new cards.
 
 ## Open issues (top)
-* Pocket depth after a Princess Tower falls is unverified (engine: 6 tiles past the river); ask the user.
+* Pocket depth after a Princess Tower falls: kept at 6 tiles (user decision 2026-11-23, no source).
 * IL v2 value head ≈ coin flip (Brier 0.237); the coach grades with the logistic value model.
 * Replay data (HF IL_Replay) has no licence: personal research only.
