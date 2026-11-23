@@ -75,7 +75,7 @@ def test_rarity_affects_scaling(db2023):
     ("hog_rider", 11, "hitpoints", 1697), ("hog_rider", 11, "damage", 317),
     ("fireball", 11, "damage", 688), ("fireball", 11, "crown_tower_damage", 159),
     ("the_log", 11, "damage", 268), ("the_log", 11, "crown_tower_damage", 35),
-    ("skeleton_army", 11, "hitpoints", 81), ("ice_golem", 16, "hitpoints", 2118),
+    ("skeleton_army", 11, "hitpoints", 81), ("ice_golem", 16, "hitpoints", 1978),
 ])
 def test_wiki_values_in_the_live_config(db, card, level, field, expected):
     assert db.stats(card, level).stats[field] == expected

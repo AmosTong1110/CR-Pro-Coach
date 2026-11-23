@@ -51,12 +51,12 @@ def test_all_30_plan_cards_are_simulated(db):
 @pytest.mark.parametrize("cid,level,expected", [
     ("dark_prince", 11, {"hitpoints": 1200, "damage": 266, "shield_hitpoints": 256, "charge_damage": 532}),
     ("dark_prince", 16, {"hitpoints": 1933, "damage": 428, "shield_hitpoints": 412, "charge_damage": 857}),
-    ("miner", 11, {"hitpoints": 1210, "damage": 194, "crown_tower_damage": 48}),
-    ("miner", 16, {"hitpoints": 1949, "damage": 312, "crown_tower_damage": 77}),
-    ("mighty_miner", 11, {"hitpoints": 2250, "damage": 40, "damage_stage2": 204, "damage_stage3": 409,
+    ("miner", 11, {"hitpoints": 1210, "damage": 194, "crown_tower_damage": 39}),   # 2026-07-06 49 -> 39
+    ("miner", 16, {"hitpoints": 1949, "damage": 312, "crown_tower_damage": 63}),
+    ("mighty_miner", 11, {"hitpoints": 2250, "damage": 43, "damage_stage2": 204, "damage_stage3": 409,
                            "escape_damage": 332}),
-    ("lightning", 16, {"damage": 1702, "crown_tower_damage": 461}),
-    ("earthquake", 11, {"damage": 84, "crown_tower_damage": 53, "building_damage": 287}),
+    ("lightning", 16, {"damage": 1702, "crown_tower_damage": 427}),          # 2026-06-01 286 -> 265 at L11
+    ("earthquake", 11, {"damage": 84, "crown_tower_damage": 49, "building_damage": 287}),   # 2026-06-01 159 -> 147 (3 pulses)
     ("firecracker", 11, {"hitpoints": 304, "damage": 320}),
     ("goblin_demolisher", 11, {"hitpoints": 1300, "damage": 186, "death_damage": 404, "kamikaze_hp_per_s": 65}),
     ("royal_recruit", 11, {"hitpoints": 547, "damage": 133, "shield_hitpoints": 240}),
@@ -137,7 +137,7 @@ def test_miner_is_untargetable_while_digging_and_hits_towers_for_less(db):
     mi.x, mi.y = tw.x, tw.y - 2.0                               # next to the tower, off the knight
     foe.x, foe.y = 14.0, 30.0
     d = hp_deltas(tw, 0, m, 3000)
-    assert d and set(d) == {48}                                 # crown-tower damage
+    assert d and set(d) == {39}                                 # crown-tower damage (2026-07-06)
     mi.x, mi.y, foe.x, foe.y = 9.5, 21.0, 9.5, 21.8
     mi.target_uid = None
     d2 = hp_deltas(foe, 0, m, 3000)
@@ -150,9 +150,9 @@ def test_mighty_miner_damage_ramps_every_two_seconds(db):
     play(m, 0, "mighty_miner", 9.5, 20.0)
     foe = tank(m, 1, "knight", 9.5, 21.0)
     d = hp_deltas(foe, 0, m, 7000)
-    assert d[0] == 40 and 204 in d and d[-1] == 409
+    assert d[0] == 43 and 204 in d and d[-1] == 409
     assert d == sorted(d)                                       # never drops while on the same target
-    assert [d.count(x) for x in (40, 204)] == [5, 5]            # 2 s per stage at 0.4 s per hit
+    assert [d.count(x) for x in (43, 204)] == [5, 5]            # 2 s per stage at 0.4 s per hit
 
 
 # ------------------------------------------------------------------ Firecracker: recoil
@@ -244,7 +244,7 @@ def test_earthquake_hits_towers_for_tower_damage(db):
     hp = tw.hp
     play(m, 0, "earthquake", tw.x, tw.y)
     run(m, 3200)
-    assert hp - tw.hp == 3 * 53
+    assert hp - tw.hp == 3 * 49
 
 
 # ------------------------------------------------------------------ Lightning
@@ -269,7 +269,7 @@ def test_lightning_hits_a_tower_for_tower_damage(db):
     hp = tw.hp
     play(m, 0, "lightning", tw.x, tw.y)
     run(m, 100)
-    assert hp - tw.hp == 286
+    assert hp - tw.hp == 265                                  # 2026-06-01 286 -> 265
 
 
 # ------------------------------------------------------------------ Vines
@@ -302,7 +302,7 @@ def test_royal_delivery_lands_after_three_seconds_and_a_shielded_recruit_steps_o
     run(m, 2900)
     assert foe.hp == BIG and not [u for u in m.units.values() if u.card_id == "royal_recruit"]
     run(m, 200)
-    assert BIG - foe.hp == 437
+    assert BIG - foe.hp == 384                               # 2026-08-04 437 -> 384
     (r,) = [u for u in m.units.values() if u.card_id == "royal_recruit"]
     assert r.side == 0 and r.max_hp == 547 and r.mstate["shield"] == 240 and r.deploy_ms > 0
 

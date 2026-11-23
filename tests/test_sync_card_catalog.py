@@ -37,10 +37,10 @@ def test_parse_the_three_source_formats():
 
 
 def test_new_cards_are_enabled_only_when_complete_and_standard(raw):
-    royal_giant = {"name": "Royal Giant", "game_id": 26000024, "type": "troop", "rarity": "common", "elixir": 6,
+    royal_giant = {"name": "Royal Hogs", "game_id": 26000059, "type": "troop", "rarity": "rare", "elixir": 5,
                    "stats": {"11": {"hitpoints": 3000, "damage": 254}},
-                   "attack": {"targets": ["buildings"], "range_tiles": 5.0, "hit_speed_s": 1.7, "first_hit_s": 0.8,
-                              "splash_radius_tiles": 0.0, "sight_tiles": 7.5},
+                   "attack": {"targets": ["buildings"], "range_tiles": 0.7, "hit_speed_s": 1.2, "first_hit_s": 0.5,
+                              "splash_radius_tiles": 0.0, "sight_tiles": 9.5},
                    "movement": {"layer": "ground", "speed_tiles_s": 1.0}, "mechanics": [{"kind": "building_targeting",
                                                                                          "params": {}}],
                    "count": 1, "deploy_time_s": 1.0, "collision_radius_tiles": 0.75, "mass": 18}
@@ -48,15 +48,15 @@ def test_new_cards_are_enabled_only_when_complete_and_standard(raw):
              "elixir": 5, "stats": {"11": {"hitpoints": 1500, "damage": 300}}, "attack": royal_giant["attack"],
              "movement": royal_giant["movement"], "mechanics": [{"kind": "time_rewind", "params": {}}]}
     bare = {"name": "Bare Card", "game_id": 28000999, "type": "spell", "rarity": "rare", "elixir": 2}
-    new, rep = plan_sync(raw, parse_source(_snapshot(royal_giant=royal_giant, super_future_card_2027=novel,
+    new, rep = plan_sync(raw, parse_source(_snapshot(royal_hogs=royal_giant, super_future_card_2027=novel,
                                                      bare_card=bare)), "2027-01-01")
     status = {**dict(rep.added), **dict(rep.updated)}
-    # Royal Giant is already in the catalog (identity only, from the official list): the stats complete it
-    assert "-> enabled" in status["royal_giant"] or status["royal_giant"].startswith("enabled")
+    # Royal Hogs is already in the catalog (identity only, from the official list): the stats complete it
+    assert "-> enabled" in status["royal_hogs"] or status["royal_hogs"].startswith("enabled")
     assert status["super_future_card_2027"].startswith("needs_hook") and "time_rewind" in status["super_future_card_2027"]
     assert status["bare_card"].startswith("disabled")
     db = CardDB(new)
-    assert "royal_giant" in db.cards and db.stats("royal_giant", 11).hitpoints == 3000
+    assert "royal_hogs" in db.cards and db.stats("royal_hogs", 11).hitpoints == 3000
     assert db.quarantined()["super_future_card_2027"] == "needs_hook" and db.quarantined()["bare_card"] == "disabled"
 
 
@@ -105,7 +105,7 @@ def test_committed_catalog_is_in_sync_with_the_official_list(raw):
     new, rep = plan_sync(raw, parse_source(json.loads(OFFICIAL.read_text())), "2027-01-01")
     assert not rep.added and not rep.updated and not rep.conflicts
     db = CardDB(raw)
-    assert len(db.catalog) >= 123 and len(db.cards) == 47
+    assert len(db.catalog) >= 123 and len(db.cards) == 72
 
 
 def test_cli_dry_run_writes_nothing_and_write_validates(tmp_path, raw):

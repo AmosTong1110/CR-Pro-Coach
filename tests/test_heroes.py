@@ -74,7 +74,7 @@ def test_every_evo_and_hero_page_is_in_the_data_and_matches(db):
     ("knight", 11, {"hitpoints": 1766, "damage": 202, "shield_hitpoints": 512}),
     ("knight", 16, {"hitpoints": 2844, "damage": 325, "shield_hitpoints": 825}),
     ("mini_pekka", 11, {"hitpoints": 1433, "damage": 755}),
-    ("ice_golem", 11, {"hitpoints": 1315, "damage": 84, "death_damage": 84, "blizzard_damage": 69}),
+    ("ice_golem", 11, {"hitpoints": 1228, "damage": 84, "death_damage": 84, "blizzard_damage": 69}),
     ("valkyrie", 16, {"hitpoints": 3071, "damage": 428, "ability_damage": 156}),
     ("musketeer", 16, {"hitpoints": 1161, "damage": 349, "turret_spawn_damage": 329}),
 ])

@@ -261,8 +261,12 @@ def parse_wiki_html(path: Path) -> WikiPage:
                 lvl = wiki_number(r[0])
                 if lvl is None or len(r) < 2:
                     continue
-                page.levels[int(lvl)] = {h: v for h, c in zip(rows[0][1:], r[1:])
-                                         if (v := wiki_number(c)) is not None}
+                row: Dict[str, float] = {}
+                for h, c in zip(rows[0][1:], r[1:]):            # a repeated header keeps its first column
+                    v = wiki_number(c)                           # (Tombstone: its own Hitpoints, then the Skeleton's)
+                    if v is not None and h not in row:
+                        row[h] = v
+                page.levels[int(lvl)] = row
                 for h, c in zip(rows[0][1:], r[1:]):         # "64 x5 (320)": keep the total as well
                     mt = re.search(r"\(\s*(\d[\d,]*)\s*\)\s*$", c)
                     if mt:
@@ -330,9 +334,22 @@ def verify_wiki(db: CardDB, pages: List[WikiPage], levels: Tuple[int, ...] = (11
                          "wiki": {L: pg.levels.get(L, {}) for L in levels}})
             continue
         entry = db.entry(pg.card_id)
-        cols = headline_columns(pg, entry)
-        for col, stat, token in cols:
-            holder = _token_id(entry) if token else pg.card_id
+        if "wiki_columns" in entry:
+            # cards built by tools/add_wiki_cards.py record which column each stat came from; the tokens built from
+            # the same page (data_source "...:<title>#tableN") are checked too
+            heads = set(_COLUMN_TO_STAT.values())
+            cols = [(col, stat, None) for stat, col in entry["wiki_columns"].items()
+                    if stat in heads and col in pg.columns]
+            for tid in sorted(db.tokens):
+                t = db.tokens[tid]
+                if str(t.get("data_source", "")).startswith(f"wiki-fandom-html:{pg.title}#"):
+                    cols += [(col, stat, tid) for stat, col in (t.get("wiki_columns") or {}).items()
+                             if stat in heads and col in pg.columns]
+        else:
+            cols = [(col, stat, _token_id(entry) if token else None) for col, stat, token in headline_columns(pg, entry)]
+        for col, stat, tok in cols:
+            token = tok is not None
+            holder = tok if token else pg.card_id
             ours = {L: db.stats(holder, L).stats for L in levels}
             wiki = {L: pg.levels.get(L, {}).get(col) for L in levels}
             if all(v is None for v in wiki.values()):
@@ -342,8 +359,10 @@ def verify_wiki(db: CardDB, pages: List[WikiPage], levels: Tuple[int, ...] = (11
             tot = {L: pg.totals.get(L, {}).get(col) for L in levels}      # "64 x5 (320)": we may hold the total
             ok = all(wiki[L] is None or mine[L] is not None and (abs(mine[L] - wiki[L]) <= tol or mine[L] == tot[L])
                      for L in levels)
+            newer = (db.tokens.get(holder) if token else entry) or {}
+            status = "ok" if ok else ("newer" if stat in (newer.get("newer_than_wiki") or {}) else "DIFF")
             rows.append({"card": pg.card_id + ("/" + holder if token else ""), "stat": stat, "wiki": wiki,
-                         "ours": mine, "status": "ok" if ok else "DIFF", "data_as_of": entry.get("data_as_of")})
+                         "ours": mine, "status": status, "data_as_of": entry.get("data_as_of")})
         if not cols:
             rows.append({"card": pg.card_id, "stat": "-", "status": "no comparable column", "wiki": {}})
     return rows
@@ -379,7 +398,7 @@ def print_verification(rows: List[Dict[str, Any]], pages: List[WikiPage], levels
     counts = {"ok": 0, "DIFF": 0, "not simulated yet": 0, "no comparable column": 0}
     for r in rows:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
-        if r["status"] in ("ok", "DIFF"):
+        if r["status"] in ("ok", "DIFF", "newer"):
             cells = "".join(f"{fmt(r['wiki'][L]):>9}{fmt(r['ours'][L]):>9}" for L in levels)
             print(f"{r['card']:<18}{r['stat']:<20}{cells}  {r['status']}")
     print("\n-- on the wiki, not simulated yet (wiki headline numbers, no comparison possible) --")

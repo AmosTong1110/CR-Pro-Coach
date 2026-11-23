@@ -234,17 +234,17 @@ def test_rocket_damage_radius_knockback_and_tower_share(db):
     hp0 = tw.hp
     play(m, 0, "rocket", tw.x, tw.y)
     run(m, 5000)                                               # ~24 tiles from the king tower at 5.8 tiles/s
-    assert hp0 - tw.hp == st["crown_tower_damage"] == 371
+    assert hp0 - tw.hp == st["crown_tower_damage"] == 342       # 2026-06-01 balance notes
 
 
 # ------------------------------------------------------------------ data of the 10 added cards
-EXPECTED_L11 = {            # L11 values from the saved Clash Royale Wiki pages (2026-11-16), stored as level_overrides
+EXPECTED_L11 = {            # L11 values: saved Clash Royale Wiki pages + 2026 balance notes (audit 2026-11-23)
     "ice_spirit": {"hitpoints": 215, "damage": 110},
-    "fire_spirit": {"hitpoints": 215, "damage": 207},
+    "fire_spirit": {"hitpoints": 215, "damage": 215},          # 2026-09-16 207 -> 215
     "electro_spirit": {"hitpoints": 215, "damage": 99},
     "zap": {"damage": 192, "crown_tower_damage": 48},
-    "rocket": {"damage": 1484, "crown_tower_damage": 371},
-    "ice_golem": {"hitpoints": 1315, "damage": 92, "death_damage": 92},
+    "rocket": {"damage": 1484, "crown_tower_damage": 342},     # 2026-06-01 371 -> 342
+    "ice_golem": {"hitpoints": 1228, "damage": 92, "death_damage": 92},   # 2026-09-08 1315 -> 1228
 }
 
 

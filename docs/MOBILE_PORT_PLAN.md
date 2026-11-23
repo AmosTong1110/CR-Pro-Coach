@@ -1,6 +1,8 @@
 # CRbot mobile port plan (iPhone + Android)
 
-Status: accepted, 2026-11-15. Target: **public App Store and Play Store release**. Companion to `CRBOT_UPGRADE_PLAN.md`.
+Status: **on hold** (2026-11-23). Accepted 2026-11-15 with a public App Store / Play Store target, but the board-art
+decision of 2026-11-21 (official Fan Kit, non-commercial only) means the release model must be decided again first
+(§9). Overall plan: `ROADMAP.md`. Mode B parts were removed (Mode B was dropped on 2026-11-17).
 
 ## 1. Goal and targets
 
@@ -8,7 +10,7 @@ CRbot on iPhone and Android that opens fast and runs smoothly, with the same sim
 
 | target | value |
 |---|---|
-| download size | < 30 MB (without the optional Mode B detector) |
+| download size | < 30 MB |
 | cold start to the Fight screen | < 1 s on a 2021+ phone |
 | arena rendering | 60 fps, simulation never drops a 50 ms tick |
 | full coach review (~30 plays) | < 2 s on the phone |
@@ -24,7 +26,7 @@ CRbot on iPhone and Android that opens fast and runs smoothly, with the same sim
 | Phone UI | **Flutter** (Dart), calling the core through `dart:ffi` | One UI codebase for both phones; `CustomPainter` handles the 18×32 arena at 60 fps; small plain-C API boundary. |
 | C#? | Not used. | Only worth it with Unity, which is heavy for this app. |
 | AI inference | ONNX Runtime Mobile (Android, iOS) or Core ML (iOS) | Same `.onnx` models we train on Colab. |
-| When | **After batch-1 cards** (engine stable). Phase 0 can start any time. | Porting a moving engine doubles every change. |
+| When | **After the release decision** and a stable engine (Phase 2 cards). Phase 0 can start any time. | Porting a moving engine doubles every change. |
 
 Alternatives considered: Rust core (equally good technically; C++ chosen for pybind11 and ONNX Runtime integration),
 SwiftUI + Kotlin (best native feel, but two UIs to maintain), Kotlin Multiplatform (weaker iOS UI story).
@@ -44,7 +46,7 @@ SwiftUI + Kotlin (best native feel, but two UIs to maintain), Kotlin Multiplatfo
    │ engine · mechanics · card DB + scaling · human delay buffer ·     │
    │ opponent elixir tracker · deck guesser · scripted bot ·           │
    │ value model · coach analyzer · match store (JSON)                 │
-   │ ONNX Runtime (policy/value nets, Mode B detector)                 │
+   │ ONNX Runtime (policy/value nets)                                  │
    └──────────────────────────────────────────────────────────────────┘
    shared data: configs/*.json (cards, rules, meta decks, value model), match JSON formats
 ```
@@ -68,7 +70,7 @@ Stays in Python: `sync_meta`, `migrate_cards_v4`, training (IL, PPO), dataset bu
 
 ## 5. Phases
 
-### Phase 0: make the Python engine port-friendly (engine v3, in Python, any time)
+### Phase 0: make the Python engine port-friendly (next engine version, in Python, any time)
 Bit-exact parity between two languages needs every source of platform-dependent arithmetic removed first:
 1. **Own RNG.** Replace Python's `random.Random` (Mersenne Twister with Python-specific seeding, `shuffle` via
    `getrandbits`, `gauss` via `cos`/`log`) with a small project RNG (e.g. PCG32) with integer-only `shuffle` and
@@ -76,10 +78,10 @@ Bit-exact parity between two languages needs every source of platform-dependent 
 2. **No transcendental functions in the tick.** Replace `math.cos/sin` (spawn ring offsets, collision tie-break
    angle) with precomputed constant tables; replace `math.hypot` with `sqrt(dx*dx + dy*dy)` (`sqrt` is exact in
    IEEE 754, `hypot` is not guaranteed identical across libms).
-3. Re-record golden hashes on purpose, bump `ENGINE_VERSION` to 3, retrain the value model (same as v2 today).
+3. Re-record golden hashes on purpose, bump `ENGINE_VERSION`, retrain the value model.
 4. Freeze the JSON formats (cards v4, match store) with a JSON-schema file each.
 
-### Phase 1: `crbot_core` engine with parity (after batch-1 cards)
+### Phase 1: `crbot_core` engine with parity
 1. CMake project `core/`, C++20, compiled with `-ffp-contract=off` and no fast-math (no fused multiply-add
    differences), integer milliseconds as today.
 2. Port geometry, entities, mechanics, engine, card DB.
@@ -94,7 +96,7 @@ Parity: identical delay samples, estimates and review grades on recorded session
 
 ### Phase 3: Flutter app
 1. Screens: Fight (arena painter, hand, elixir bar, timeline, review sheet), Analysis, Decks, Account.
-   One design shared with the Mac app (CRbot palette: charcoal, teal, violet; own icons, no Supercell art).
+   One design shared with the Mac app (CRbot palette; Fan Kit art only if the release stays non-commercial).
 2. The sim runs on a background isolate/thread; the UI reads a render snapshot each frame.
 3. Match store in the app's private folder; optional export/import of match JSON (Mac ↔ phone).
 
@@ -102,32 +104,16 @@ Parity: identical delay samples, estimates and review grades on recorded session
 Policy/value ONNX models from the IL/PPO work (target < 20 MB, < 2 ms per call) through ONNX Runtime Mobile /
 Core ML. MCTS "Hard" mode only if it fits the frame budget.
 
-### Phase 5: Mode B on phones (optional, see §6)
-
-## 6. Mode B (screen companion) on phones
-
-| | Android | iPhone |
-|---|---|---|
-| read the game screen | MediaProjection (user approves each session) | ReplayKit broadcast extension only; tight memory limit, no live overlay |
-| show tips over the game | overlay permission (`SYSTEM_ALERT_WINDOW`) | not allowed |
-| detector | YOLOv8 ONNX via ONNX Runtime Mobile (NNAPI/GPU) | Core ML |
-| recommendation | live companion possible | **post-match only**: import a screen recording, analyse it offline |
-
-Mode B stays strictly read-only (no taps, no input injection), as on the Mac.
-
 ## 7. Launch blockers (public release)
 
 These must be solved before a store release; none of them blocks Phases 0–3.
 
-1. **Supercell IP**: follow Supercell's Fan Content Policy; no Supercell art, logos or sounds; app name and listing must
-   not imply endorsement; keep a visible "not affiliated with Supercell" notice. Check the policy for apps (including
-   whether paid features are allowed) before choosing a business model.
-2. **Detector licence**: the SudhishNeel model is "personal use only". Ship our own detector, trained on frames we
-   record and label ourselves.
-3. **Current card stats**: a stats source we are allowed to use and can refresh each balance patch.
-4. **Store review**: Mode B must be presented as a training aid that never controls the game; be ready to ship
-   without the live overlay if a store rejects it.
-5. **Privacy**: no account needed; player tag stays on device; a privacy policy and the store privacy labels
+1. **Supercell IP**: the Fan Content Policy allows Fan Kit art only in non-commercial fan content; the app name and
+   listing must not imply endorsement; keep a visible "unofficial / not endorsed" notice with the policy link. A paid
+   app or paid features would mean removing all Supercell art.
+2. **Current card stats**: a stats source we are allowed to use and can refresh each balance patch.
+3. **Replay data licence**: the HF replays have no licence; models trained on them may not be fit to ship.
+4. **Privacy**: no account needed; player tag stays on device; a privacy policy and the store privacy labels
    ("data not collected") are still required.
 
 ## 8. Risks and concerns
@@ -143,7 +129,5 @@ These must be solved before a store release; none of them blocks Phases 0–3.
 5. **Effort**: Phase 0 is small; Phase 1–2 is the bulk (~3k lines plus tests); Phase 3 is a new UI codebase.
 
 ## 9. Open questions for the owner
-1. ~~Personal use or public release?~~ Public release (2026-11-15).
+1. Public release: free and non-commercial (keeps Fan Kit art), paid (own art only), or no store release at all?
 2. Phone-only app, or keep the Mac app too? (The plan keeps both, sharing `crbot_core`.)
-3. Is Android-first acceptable for Mode B, with iPhone getting post-match video analysis?
-4. Business model (free / paid / subscription)? Depends on what Supercell's policy allows (§7.1).

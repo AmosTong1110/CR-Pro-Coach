@@ -87,13 +87,15 @@ def tile_mask(obs: Mapping, card_id: str, db: CardDB) -> np.ndarray:
         rad = card["footprint_tiles"][0] / 2.0
     else:
         rad = float(card.get("collision_radius_tiles", 0.5))
+    burrow = any(m["kind"] == "burrow" for m in card["mechanics"])
     blocked = np.zeros(NUM_TILES, dtype=bool)
     for u in obs["units"]:
         if u["kind"] in ("tower", "building") and u["hp"] > 0:
-            r = (rad + u["radius"] - 1e-4) if building else u["radius"]
+            # burrowers (Miner, Goblin Drill) only may not surface inside a structure (Match.check_play)
+            r = (rad + u["radius"] - 1e-4) if building and not burrow else u["radius"]
             blocked |= (np.abs(wx - u["x"]) < r) & (np.abs(wy - u["y"]) < r)
     river = (wy >= G.RIVER_Y0) & (wy < G.RIVER_Y1)
-    if any(m["kind"] == "burrow" for m in card["mechanics"]):
+    if burrow:
         on_bridge = np.zeros(NUM_TILES, dtype=bool)
         for b in G.BRIDGE_X:
             on_bridge |= np.abs(wx - b) <= G.BRIDGE_HALF_W

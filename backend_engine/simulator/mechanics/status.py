@@ -12,7 +12,7 @@ SLOW30 = "slow30"      # Hero Ice Golem blizzard: speed and hit speed -30%
 SLOW15 = "slow15"      # Poison: speed and hit speed -15% (slows never stack: the strongest one counts)
 SLOW_FACTOR = 0.65      # game buff IceWizardSlowDown: speed and hit speed -35% (2023-10 data); duration is per card
 SLOW_PCT = 65           # same factor in integer percent, for attack-timer arithmetic
-RAGE_FACTOR = 1.35      # Rage spell: +35% movement and hit speed
+RAGE_FACTOR = 1.30      # Rage (Lumberjack's bottle): +30% movement and hit speed (Clash Royale Wiki, 2026-11)
 
 
 def apply(u, tag: str, ms: int) -> None:

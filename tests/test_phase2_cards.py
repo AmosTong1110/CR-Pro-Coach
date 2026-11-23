@@ -34,14 +34,14 @@ def test_phase2_cards_exist_and_stats(db):
     assert "goblins" in db.cards
     assert "goblin" in db.tokens
 
-    # X-Bow: Epic, 6 Elixir, 11.5 Range, 0.3s Hit Speed
+    # X-Bow: Epic, 6 Elixir, 11.5 Range, 0.4s Hit Speed (2026-08-04)
     xb = db.stats("x_bow", 11)
     assert xb.elixir == 6
     assert xb.type == "building"
     assert xb.attack["range_tiles"] == 11.5
-    assert xb.attack["hit_speed_s"] == 0.3
+    assert xb.attack["hit_speed_s"] == 0.4
     assert xb.stats["hitpoints"] == 1600
-    assert xb.stats["damage"] == 42
+    assert xb.stats["damage"] == 61                          # 2026-08-04 / 10-06
 
     # Mortar: Common, 4 Elixir, 11.5 Range, 3.5 Min Range (blind spot), 2.0 Splash
     mo = db.stats("mortar", 11)
@@ -50,7 +50,7 @@ def test_phase2_cards_exist_and_stats(db):
     assert mo.attack["range_tiles"] == 11.5
     assert mo.attack["min_range_tiles"] == 3.5
     assert mo.attack["splash_radius_tiles"] == 2.0
-    assert mo.stats["hitpoints"] == 1472
+    assert mo.stats["hitpoints"] == 1369                     # wiki 2026-11-23
     assert mo.stats["damage"] == 266
 
     # Inferno Tower: Rare, 5 Elixir, 6.0 Range, 0.4s Hit Speed, Ramp stages
@@ -59,18 +59,18 @@ def test_phase2_cards_exist_and_stats(db):
     assert it.type == "building"
     assert it.attack["range_tiles"] == 6.0
     assert it.attack["hit_speed_s"] == 0.4
-    assert it.stats["hitpoints"] == 1730
-    assert it.stats["damage"] == 42
-    assert it.stats["damage_stage2"] == 173
-    assert it.stats["damage_stage3"] == 868
+    assert it.stats["hitpoints"] == 1748                     # wiki 2026-11-23
+    assert it.stats["damage"] == 43
+    assert it.stats["damage_stage2"] == 158
+    assert it.stats["damage_stage3"] == 847
 
-    # Goblins: Common, 2 Elixir, count 3, 1.5 speed
+    # Goblins: Common, 2 Elixir, count 4, Very Fast (wiki 2026-11-23)
     gob = db.stats("goblins", 11)
     assert gob.elixir == 2
     assert gob.type == "troop"
-    assert db.cards["goblins"]["count"] == 3
+    assert db.cards["goblins"]["count"] == 4                 # wiki 2026-11-23
     assert gob.stats["hitpoints"] == 202
-    assert gob.stats["damage"] == 120
+    assert gob.stats["damage"] == 125                        # 2026-08-04 120 -> 125
 
 
 def test_mortar_blind_spot(db):
@@ -139,23 +139,23 @@ def test_inferno_tower_ramp_and_stun_reset(db):
     m._attack(it, tank)
     assert it.mstate.get("ramp_ms") == 0
     hp_after_1 = tank.hp
-    # Deals initial stage 1 damage (42)
-    assert 10000.0 - hp_after_1 == 42.0
+    # Deals initial stage 1 damage (43, wiki 2026-11-23)
+    assert 10000.0 - hp_after_1 == 43.0
 
     # Advance ramp time to 2500ms (Stage 2)
     it.mstate["ramp_ms"] = 2500
     it.mstate["ramp_target"] = tank.uid
     m._attack(it, tank)
     hp_after_2 = tank.hp
-    # Deals stage 2 damage (173)
-    assert hp_after_1 - hp_after_2 == 173.0
+    # Deals stage 2 damage (158)
+    assert hp_after_1 - hp_after_2 == 158.0
 
     # Advance ramp time to 4500ms (Stage 3)
     it.mstate["ramp_ms"] = 4500
     m._attack(it, tank)
     hp_after_3 = tank.hp
-    # Deals stage 3 maximum melt damage (868)
-    assert hp_after_2 - hp_after_3 == 868.0
+    # Deals stage 3 maximum melt damage (847)
+    assert hp_after_2 - hp_after_3 == 847.0
 
     # Stun Inferno Tower (e.g. Zap)
     m.apply_status(it, S.STUN, 500)
@@ -166,7 +166,7 @@ def test_inferno_tower_ramp_and_stun_reset(db):
     m._attack(it, tank)
     assert it.mstate["ramp_ms"] == 0
     hp_after_reset = tank.hp
-    assert hp_after_3 - hp_after_reset == 42.0
+    assert hp_after_3 - hp_after_reset == 43.0
 
 
 def test_evolved_mortar_spawns_goblin_on_hit(db):
@@ -208,15 +208,15 @@ def test_evolved_mortar_spawns_goblin_on_hit(db):
 
 
 def test_goblins_swarm_spawn(db):
-    """Goblins card spawns 3 fast melee units."""
+    """Goblins card spawns 4 very fast melee units (wiki 2026-11-23)."""
     deck = ("goblins", "knight", "archers", "skeletons", "fireball", "the_log", "ice_spirit", "musketeer")
     m = Match(MatchConfig((deck, deck), shuffle=False), db)
 
     spawn(m, "goblins", 0, 9.0, 9.0)
     gobs = [u for u in m.units.values() if u.card_id == "goblins" and u.side == 0]
-    assert len(gobs) == 3
+    assert len(gobs) == 4
     for g in gobs:
-        assert g.speed == 1.5
+        assert g.speed == 2.0
         assert g.range == 0.5
         assert g.hp == 202
 

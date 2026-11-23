@@ -101,7 +101,7 @@ def test_evo_valkyrie_tornado_pulls_and_hurts_air(db):
     d0 = ((far.x - 9.5) ** 2 + (far.y - 10.5) ** 2) ** 0.5
     _run(m, 3000)
     t_dmg = db.stats("valkyrie", 11, "evo").stats["tornado_damage"]
-    assert t_dmg == 84
+    assert t_dmg == 42                                           # 2026-08-04 84 -> 42
     swings = round((100_000 - air.hp) / t_dmg)
     assert swings >= 1 and 100_000 - air.hp == pytest.approx(swings * t_dmg)
     assert 100_000 - far.hp >= swings * t_dmg                     # tornado hits (+ the axe once pulled in)
@@ -123,7 +123,7 @@ def test_evo_tesla_pulses_when_it_surfaces_and_when_it_dies(db):
     _run(m, 2000)                                                    # deployed, nothing near: hidden
     assert t.mstate.get("hidden")
     pulse = db.stats("tesla", 11, "evo").stats["pulse_damage"]
-    assert pulse == 174
+    assert pulse == 148                                           # 2026-05-04 174 -> 148
     foe = _dummy(m, 1, "knight", 9.5, 12.5, hp=100_000)
     m.step(); m.step()
     assert 100_000 - foe.hp >= pulse and S.STUN in foe.status     # surfaced: pulse + stun

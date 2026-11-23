@@ -1,0 +1,83 @@
+{
+  "_doc": "Card / tower audit of 2026-11-23 (tools/apply_card_patches.py). Two kinds of source: (1) Clash Royale Wiki pages fetched 2026-11-23 through the MediaWiki API (data/raw_sources/cards, /towers) for the 9 cards that had been entered by hand and never checked against the wiki, and for the Crown Towers' level 12-16 numbers; (2) Supercell's official balance notes Jan-Oct 2026 (supercell.com/en/games/clashroyale/blog), which are newer than several wiki tables. Values are level 11 as printed in the notes.",
+  "ops": [
+    {"op": "wiki_levels", "card": "baby_dragon", "page": "Baby Dragon", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki Baby Dragon 2026-11-23 (incl. 2026-07-06 damage 161 -> 168)"},
+    {"op": "set", "card": "baby_dragon", "path": "attack.first_hit_s", "value": 0.3, "source": "wiki Baby Dragon 2026-11-23"},
+    {"op": "set", "card": "baby_dragon", "path": "attack.splash_radius_tiles", "value": 1.5, "source": "wiki Baby Dragon 2026-11-23"},
+    {"op": "set", "card": "baby_dragon", "path": "movement.speed_tiles_s", "value": 1.5, "source": "wiki Baby Dragon 2026-11-23"},
+    {"op": "set", "card": "baby_dragon", "path": "attack.projectile_speed_tiles_s", "value": 8.333333333333334, "source": "wiki Baby Dragon 2026-11-23"},
+
+    {"op": "wiki_levels", "card": "giant", "page": "Giant", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki Giant 2026-11-23 (incl. 2026-02-02 hitpoints 4090 -> 3968)"},
+    {"op": "set", "card": "giant", "path": "attack.first_hit_s", "value": 0.5, "source": "wiki Giant 2026-11-23"},
+    {"op": "set", "card": "giant", "path": "movement.speed_tiles_s", "value": 0.75, "source": "wiki Giant 2026-11-23 (Slow, 45)"},
+
+    {"op": "wiki_levels", "card": "goblins", "page": "Goblins", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki Goblins 2026-11-23 (incl. 2026-08-04 damage 120 -> 125)"},
+    {"op": "set", "card": "goblins", "path": "count", "value": 4, "source": "wiki Goblins 2026-11-23 (x4)"},
+    {"op": "set", "card": "goblins", "path": "attack.first_hit_s", "value": 0.6, "source": "wiki Goblins 2026-11-23"},
+    {"op": "set", "card": "goblins", "path": "movement.speed_tiles_s", "value": 2.0, "source": "wiki Goblins 2026-11-23 (Very Fast, 120)"},
+    {"op": "official_l11", "card": "goblin", "stat": "damage", "l11": 125, "source": "balance 2026-08-04 Goblin Damage 120 -> 125 (the Goblin token, e.g. Evolved Mortar's)"},
+
+    {"op": "wiki_levels", "card": "inferno_tower", "page": "Inferno Tower", "stats": {"hitpoints": "Hitpoints", "damage": "1 stage Damage", "damage_stage2": "2 stage Damage", "damage_stage3": "3 stage Damage"}, "source": "wiki Inferno Tower 2026-11-23"},
+
+    {"op": "wiki_levels", "card": "mortar", "page": "Mortar", "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage"}, "source": "wiki Mortar 2026-11-23"},
+    {"op": "set", "card": "mortar", "path": "attack.first_hit_s", "value": 1.0, "source": "wiki Mortar 2026-11-23"},
+    {"op": "set", "card": "mortar", "path": "attack.projectile_speed_tiles_s", "value": 5.0, "source": "wiki Mortar 2026-11-23 (projectile speed 300)"},
+    {"op": "set", "card": "mortar", "path": "attack.hit_speed_s", "value": 4.7, "source": "balance 2026-08-04 Mortar Hit Speed 5 -> 4.7 s"},
+
+    {"op": "wiki_levels", "card": "pekka", "page": "P.E.K.K.A.", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki P.E.K.K.A. 2026-11-23 (incl. 2026-07-06 damage 816 -> 842)"},
+    {"op": "set", "card": "pekka", "path": "attack.first_hit_s", "value": 0.5, "source": "wiki P.E.K.K.A. 2026-11-23"},
+    {"op": "set", "card": "pekka", "path": "movement.speed_tiles_s", "value": 0.75, "source": "wiki P.E.K.K.A. 2026-11-23 (Slow, 45)"},
+
+    {"op": "wiki_levels", "card": "tombstone", "page": "Tombstone", "stats": {"hitpoints": "Hitpoints"}, "source": "wiki Tombstone 2026-11-23"},
+    {"op": "mech_param", "card": "tombstone", "kind": "periodic_spawn", "param": "count", "value": 2, "source": "wiki Tombstone 2026-11-23: 2 Skeletons every 3.5 s, 4 on death, at most 20"},
+    {"op": "mech_param", "card": "tombstone", "kind": "periodic_spawn", "param": "interval_ms", "value": 3500, "source": "wiki Tombstone 2026-11-23: 2 Skeletons every 3.5 s, 4 on death, at most 20"},
+    {"op": "mech_param", "card": "tombstone", "kind": "periodic_spawn", "param": "initial_delay_ms", "value": 3500, "source": "wiki Tombstone 2026-11-23: 2 Skeletons every 3.5 s, 4 on death, at most 20"},
+
+    {"op": "wiki_levels", "card": "witch", "page": "Witch", "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage"}, "source": "wiki Witch 2026-11-23"},
+    {"op": "set", "card": "witch", "path": "attack.range_tiles", "value": 5.5, "source": "wiki Witch 2026-11-23"},
+    {"op": "set", "card": "witch", "path": "attack.splash_radius_tiles", "value": 1.5, "source": "wiki Witch 2026-11-23"},
+    {"op": "set", "card": "witch", "path": "attack.first_hit_s", "value": 0.7, "source": "wiki Witch 2026-11-23"},
+    {"op": "set", "card": "witch", "path": "attack.projectile_speed_tiles_s", "value": 10.0, "source": "wiki Witch 2026-11-23 (projectile speed 600)"},
+
+    {"op": "wiki_levels", "card": "x_bow", "page": "X-Bow", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki X-Bow 2026-11-23 (incl. 2026-08-04 and 2026-10-06 damage 43 -> 58 -> 61)"},
+    {"op": "set", "card": "x_bow", "path": "attack.hit_speed_s", "value": 0.4, "source": "balance 2026-08-04 X-Bow Hit Speed 0.3 -> 0.4 s (wiki agrees)"},
+    {"op": "set", "card": "x_bow", "path": "attack.first_hit_s", "value": 0.4, "source": "wiki X-Bow 2026-11-23"},
+    {"op": "set", "card": "x_bow", "path": "attack.projectile_speed_tiles_s", "value": 26.666666666666668, "source": "balance 2026-08-04 X-Bow Projectile Speed 1400 -> 1600"},
+
+    {"op": "wiki_levels", "tower": "king_tower", "page": "King's Tower", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki King's Tower 2026-11-23 (L16 7704 / 173; the formula gave 7707 / 174)"},
+    {"op": "wiki_levels", "tower": "princess_tower", "page": "Princess Towers", "stats": {"hitpoints": "Hitpoints", "damage": "Damage"}, "source": "wiki Princess Towers 2026-11-23 (L16 4858 / 173; the formula gave 4876 / 174)"},
+
+    {"op": "official_l11", "card": "cannon", "stat": "damage", "l11": 202, "source": "balance 2026-04-06 Cannon Damage 212 -> 202"},
+    {"op": "official_l11", "card": "dart_goblin", "stat": "damage", "l11": 143, "source": "balance 2026-01-12 Damage 156 -> 151, 2026-10-19 151 -> 143"},
+    {"op": "set", "card": "dart_goblin", "path": "attack.sight_tiles", "value": 7.0, "source": "balance 2026-03-02 Dart Goblin Sight Range 7.5 -> 7 tiles (the wiki history has it backwards)"},
+    {"op": "official_l11", "card": "little_prince", "stat": "rescue_damage", "l11": 320, "source": "balance 2026-08-26 Little Prince Charge Damage 256 -> 320"},
+    {"op": "official_l11", "card": "guardienne", "stat": "damage", "l11": 232, "source": "balance 2026-08-04 Guardienne Damage 217 -> 232"},
+    {"op": "official_l11", "card": "golden_knight", "stat": "damage", "l11": 168, "source": "balance 2026-10-06 Golden Knight Damage 161 -> 168"},
+    {"op": "mech_param", "card": "golden_knight", "kind": "champion_ability", "param": "max_dash_tiles", "value": 5.0, "source": "balance 2026-10-06 Golden Knight Dash Range 5.5 -> 5 tiles"},
+    {"op": "official_l11", "card": "royal_ghost", "stat": "hitpoints", "l11": 1152, "source": "balance 2026-10-06 Royal Ghost Hitpoints 1210 -> 1152"},
+    {"op": "official_l11", "card": "royal_ghost", "stat": "damage", "l11": 263, "source": "balance 2026-10-06 Royal Ghost Damage 261 -> 263 (bug fix)"},
+    {"op": "mech_param", "card": "royal_ghost", "kind": "invisible_when_idle", "param": "delay_ms", "value": 2000, "source": "balance 2026-03-02 Royal Ghost Invisibility Delay 1.8 -> 2 s"},
+    {"op": "official_l11", "card": "vines", "stat": "crown_tower_damage", "l11": 35, "source": "balance 2026-06-01 Vines Crown Tower Damage 76 -> 70 (2 pulses)"},
+    {"op": "set", "card": "bats", "path": "attack.hit_speed_s", "value": 1.2, "source": "balance 2026-03-02 Bats Hit Speed 1.3 -> 1.2 s"},
+    {"op": "official_l11", "card": "tesla", "stat": "hitpoints", "l11": 1182, "source": "balance 2026-06-01 Tesla Hitpoints 1152 -> 1182 (lifetime 25 s already set)"},
+    {"op": "official_l11", "card": "rune_giant", "stat": "damage", "l11": 153, "source": "balance 2026-06-01 Rune Giant Damage 120 -> 153"},
+    {"op": "official_l11", "card": "rune_giant", "stat": "hitpoints", "l11": 2816, "source": "balance 2026-08-04 Rune Giant Hitpoints 2662 -> 2816"},
+    {"op": "mech_param", "card": "rune_giant", "kind": "enchant", "param": "linger_ms", "value": 500, "source": "balance 2026-10-19 Rune Giant Enchantment Linger Duration 5 -> 0.5 s"},
+    {"op": "official_l11", "card": "earthquake", "stat": "crown_tower_damage", "l11": 49, "source": "balance 2026-06-01 Earthquake Crown Tower Damage 159 -> 147 (3 pulses)"},
+    {"op": "official_l11", "card": "lightning", "stat": "crown_tower_damage", "l11": 265, "source": "balance 2026-06-01 Lightning Crown Tower Damage 286 -> 265"},
+    {"op": "official_l11", "card": "poison", "stat": "crown_tower_damage", "l11": 21, "source": "balance 2026-06-01 Poison Crown Tower Damage 184 -> 168 (8 pulses)"},
+    {"op": "official_l11", "card": "rocket", "stat": "crown_tower_damage", "l11": 342, "source": "balance 2026-06-01 Rocket Crown Tower Damage 371 -> 342"},
+    {"op": "official_l11", "card": "miner", "stat": "crown_tower_damage", "l11": 39, "source": "balance 2026-07-06 Miner Crown Tower Damage 49 -> 39"},
+    {"op": "mech_param", "card": "electro_spirit", "kind": "suicide", "param": "chain.radius_tiles", "value": 3.0, "source": "balance 2026-08-26 Electro Spirit Chain Range 4 -> 3 tiles"},
+    {"op": "official_l11", "card": "fire_spirit", "stat": "damage", "l11": 215, "source": "balance 2026-09-16 Fire Spirit Damage 207 -> 215"},
+    {"op": "official_l11", "card": "mighty_miner", "stat": "damage", "l11": 43, "source": "balance 2026-08-04 Mighty Miner Base Damage 40 -> 43"},
+    {"op": "official_l11", "card": "royal_delivery", "stat": "damage", "l11": 384, "source": "balance 2026-08-04 Royal Delivery Damage 437 -> 384"},
+    {"op": "official_l11", "card": "minion_giant", "stat": "damage", "l11": 153, "source": "balance 2026-09-16 Damage 189 -> 168, 2026-10-19 168 -> 153"},
+    {"op": "official_l11", "card": "ice_golem", "stat": "hitpoints", "l11": 1228, "source": "balance 2026-09-08 Ice Golem Hitpoints 1315 -> 1228"},
+    {"op": "mech_param", "card": "ice_golem", "kind": "death_damage", "param": "status.ms", "value": 2500, "source": "balance 2026-09-08 Ice Golem Slow Duration 2 -> 2.5 s"},
+    {"op": "official_l11", "card": "tesla", "variant": "evo", "stat": "pulse_damage", "l11": 148, "source": "balance 2026-05-04 Evolved Tesla Pulse Damage 174 -> 148"},
+    {"op": "official_l11", "card": "valkyrie", "variant": "evo", "stat": "tornado_damage", "l11": 42, "source": "balance 2026-08-04 Evolved Valkyrie Tornado Damage 84 -> 42"},
+    {"op": "official_l11", "card": "valkyrie", "variant": "evo", "stat": "tornado_crown_tower_damage", "l11": 18, "source": "assumed: halved with the 2026-08-04 Tornado Damage cut (the note gives no tower value)"},
+    {"op": "mech_param", "card": "knight", "variant": "hero", "kind": "champion_ability", "param": "taunt_tiles", "value": 6.5, "source": "balance 2026-03-02 Hero Knight Taunt Radius 7.5 -> 6.5 tiles"}
+  ]
+}

@@ -32,37 +32,37 @@ def test_phase3_cards_exist_and_stats(db):
     assert "baby_dragon" in db.cards
     assert "witch" in db.cards
 
-    # Giant: Rare, 5 Elixir, 4091 HP, 254 Damage, Building targeter
+    # Giant: Rare, 5 Elixir, 3968 HP, 253 Damage, Building targeter (wiki 2026-11-23)
     g = db.stats("giant", 11)
     assert g.elixir == 5
-    assert g.stats["hitpoints"] == 4091
-    assert g.stats["damage"] == 254
+    assert g.stats["hitpoints"] == 3968
+    assert g.stats["damage"] == 253
     assert g.attack["targets"] == ["buildings"]
     assert db.cards["giant"]["mass"] == 6
 
-    # P.E.K.K.A: Epic, 7 Elixir, 3760 HP, 816 Damage (DPS 453), Mass 8
+    # P.E.K.K.A: Epic, 7 Elixir, 3760 HP, 842 Damage (2026-07-06), Mass 8
     p = db.stats("pekka", 11)
     assert p.elixir == 7
     assert p.stats["hitpoints"] == 3760
-    assert p.stats["damage"] == 816
+    assert p.stats["damage"] == 842
     assert p.attack["hit_speed_s"] == 1.8
     assert db.cards["pekka"]["mass"] == 8
 
-    # Baby Dragon: Epic, 4 Elixir, 1200 HP, 160 Splash Damage, Air
+    # Baby Dragon: Epic, 4 Elixir, 1152 HP, 168 Splash Damage, Air (wiki 2026-11-23)
     bd = db.stats("baby_dragon", 11)
     assert bd.elixir == 4
-    assert bd.stats["hitpoints"] == 1200
-    assert bd.stats["damage"] == 160
+    assert bd.stats["hitpoints"] == 1152
+    assert bd.stats["damage"] == 168
     assert bd.movement["layer"] == "air"
-    assert bd.attack["splash_radius_tiles"] == 1.2
+    assert bd.attack["splash_radius_tiles"] == 1.5
     assert set(bd.attack["targets"]) == {"ground", "air"}
 
-    # Witch: Epic, 5 Elixir, 832 HP, 134 Splash Damage, Periodic Spawn
+    # Witch: Epic, 5 Elixir, 839 HP, 135 Splash Damage, Periodic Spawn (wiki 2026-11-23)
     w = db.stats("witch", 11)
     assert w.elixir == 5
-    assert w.stats["hitpoints"] == 832
-    assert w.stats["damage"] == 134
-    assert w.attack["splash_radius_tiles"] == 1.0
+    assert w.stats["hitpoints"] == 839
+    assert w.stats["damage"] == 135
+    assert w.attack["splash_radius_tiles"] == 1.5
     mechs = [m["kind"] for m in db.cards["witch"]["mechanics"]]
     assert "periodic_spawn" in mechs
 
@@ -96,7 +96,7 @@ def test_pekka_massive_damage_and_mass(db):
     spawn(m, "pekka", 0, 9.0, 9.0)
     pekka = [u for u in m.units.values() if u.card_id == "pekka" and u.side == 0][0]
     assert pekka.mass == 8.0
-    assert pekka.damage == 816
+    assert pekka.damage == 842
 
     # Spawn a Knight (1766 HP at L11)
     spawn(m, "knight", 1, 9.0, 10.0)
@@ -105,7 +105,7 @@ def test_pekka_massive_damage_and_mass(db):
 
     # P.E.K.K.A strikes
     m._attack(pekka, knight)
-    assert initial_hp - knight.hp == 816.0
+    assert initial_hp - knight.hp == 842.0
 
 
 def test_baby_dragon_air_and_splash(db):
@@ -116,7 +116,7 @@ def test_baby_dragon_air_and_splash(db):
     spawn(m, "baby_dragon", 0, 9.0, 9.0)
     bd = [u for u in m.units.values() if u.card_id == "baby_dragon" and u.side == 0][0]
     assert bd.layer == "air"
-    assert bd.splash == 1.2
+    assert bd.splash == 1.5
 
     # Spawn two enemy skeletons close together
     spawn(m, "skeletons", 1, 9.0, 11.5)
@@ -127,7 +127,7 @@ def test_baby_dragon_air_and_splash(db):
     m._attack(bd, skellys[0])
     assert len(m.projectiles) == 1
     proj = m.projectiles[0]
-    assert proj.splash == 1.2
+    assert proj.splash == 1.5
 
 
 def test_witch_periodic_skeleton_spawn(db):

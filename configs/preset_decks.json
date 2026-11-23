@@ -1,5 +1,5 @@
 {
-  "about": "Ready-made 8-card decks for the Deck Builder. Only cards CRbot simulates today. The scripted AI only pushes with building-targeting win conditions (Hog Rider), so Hog decks are the strongest AI opponents.",
+  "about": "Ready-made 8-card decks for the Deck Builder. Only cards CRbot simulates today. The 8 'Season meta' decks are the season 2026 top-200 archetypes (configs/meta_decks_top200.json).",
   "decks": [
     {
       "name": "Hog 2.6 Cycle",
@@ -618,6 +618,126 @@
         "ice_spirit"
       ],
       "tip": "Overwhelm single-target defense with Witch skeleton summons and Baby Dragon air splash."
+    },
+    {
+      "name": "Battle Ram Bridge Spam",
+      "style": "Bridge Spam",
+      "evo": [],
+      "cards": [
+        "arrows",
+        "bandit",
+        "battle_ram",
+        "electro_wizard",
+        "giant_skeleton",
+        "heal_spirit",
+        "lumberjack",
+        "royal_ghost"
+      ],
+      "tip": "Season meta: Battle Ram, Bandit and Lumberjack at the bridge. Punish every elixir lead. (The meta list runs Hero Electro Wizard; his hero ability is not simulated yet, so he plays as the base card.)"
+    },
+    {
+      "name": "Rune Giant Miner Control",
+      "style": "Control",
+      "evo": [],
+      "cards": [
+        "bats",
+        "goblin_cage",
+        "goblin_demolisher",
+        "inferno_dragon",
+        "little_prince",
+        "miner",
+        "poison",
+        "rune_giant"
+      ],
+      "tip": "Season meta: Rune Giant enchants the Little Prince; Miner and Poison chip, Goblin Cage defends."
+    },
+    {
+      "name": "Golem Beatdown Night Witch",
+      "style": "Beatdown",
+      "evo": [],
+      "cards": [
+        "baby_dragon",
+        "barbarian_barrel",
+        "golem",
+        "lightning",
+        "lumberjack",
+        "mega_minion",
+        "night_witch",
+        "tornado"
+      ],
+      "tip": "Season meta: build one huge Golem push in double elixir with Night Witch and Baby Dragon behind."
+    },
+    {
+      "name": "Royal Giant Monk Fisherman",
+      "style": "Beatdown",
+      "evo": [
+        "skeletons"
+      ],
+      "cards": [
+        "electro_spirit",
+        "fisherman",
+        "lightning",
+        "monk",
+        "phoenix",
+        "royal_giant",
+        "skeletons",
+        "the_log"
+      ],
+      "tip": "Season meta: Royal Giant from the bridge; Fisherman pulls the defenders off him, Monk holds the counterpush."
+    },
+    {
+      "name": "Lavaloon Guards",
+      "style": "Air Beatdown",
+      "evo": [
+        "zap"
+      ],
+      "cards": [
+        "balloon",
+        "fireball",
+        "guards",
+        "lava_hound",
+        "mega_minion",
+        "skeleton_dragons",
+        "tombstone",
+        "zap"
+      ],
+      "tip": "Season meta: Lava Hound in the back, Balloon on top, Skeleton Dragons and Guards in support."
+    },
+    {
+      "name": "Classic Princess Logbait",
+      "style": "Bait",
+      "evo": [
+        "knight"
+      ],
+      "cards": [
+        "goblin_barrel",
+        "goblin_gang",
+        "ice_spirit",
+        "inferno_tower",
+        "knight",
+        "princess",
+        "rocket",
+        "the_log"
+      ],
+      "tip": "Season meta: bait out their small spell, then Goblin Barrel the tower. Princess and Goblin Gang share the bait."
+    },
+    {
+      "name": "Goblin Drill Poison Marcher",
+      "style": "Chip",
+      "evo": [
+        "tesla"
+      ],
+      "cards": [
+        "goblin_drill",
+        "knight",
+        "magic_archer",
+        "poison",
+        "skeletons",
+        "tesla",
+        "the_log",
+        "tornado"
+      ],
+      "tip": "Season meta: Goblin Drill on the tower, Poison and Magic Archer chip, Tesla and Knight defend."
     },
     {
       "name": "Sparring: PEKKA Cannon",

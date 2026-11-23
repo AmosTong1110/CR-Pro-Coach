@@ -211,6 +211,24 @@ def test_shell_pages_and_pause(shell):
         assert not shell.grab().isNull()
 
 
+@pytest.mark.parametrize("height", [900, 700])
+def test_elixir_counter_label_not_clipped(shell, height):
+    """The "Ahead/Behind +x" label keeps its full width and height in a 1200 px wide window."""
+    from PySide6.QtWidgets import QApplication
+
+    shell.resize(1200, height)
+    f = shell.fight
+    f.start_match()
+    c = f.counter
+    for adv in (7.3, -6.8, 10.0, -10.0):
+        f.session.elixir_advantage = lambda a=adv: a
+        c.refresh()
+        QApplication.processEvents()
+        hint, geo = c.adv.sizeHint(), c.adv.geometry()
+        assert geo.width() >= hint.width() and geo.height() >= hint.height(), (adv, geo, hint)
+        assert c.contentsRect().contains(geo), (adv, geo, c.contentsRect())
+
+
 def test_shell_saves_and_reopens_match(shell):
     f = shell.fight
     assert shell.save_current() is None                   # nothing played: nothing saved

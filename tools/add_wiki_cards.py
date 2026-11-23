@@ -55,6 +55,11 @@ def _build(cid: str, sp: Dict[str, Any], pg: WikiPage, official: Dict[str, dict]
     attrs = pg.tables[sp.get("table", 0)] if pg.tables else {}
     stats = {**sp["stats"], **sp.get("stats_extra", {})}
     ov = _overrides(pg, stats, sp.get("totals", []))
+    # "stat_scale": {stat: [new, old]} applies a newer official level-11 change (balance notes) the wiki table does
+    # not have yet to every level: value * new / old, rounded
+    for key, (new, old) in sp.get("stat_scale", {}).items():
+        for row in ov.values():
+            row[key] = int(round(row[key] * float(new) / float(old)))
     card: Dict[str, Any] = {"type": sp["type"], "verified": False, "level_overrides": ov}
     stub = {"type": card["type"], "spell": {"radius_tiles": 0, "width_tiles": 0} if sp["type"] == "spell" else {}}
     if sp["type"] == "spell":
@@ -84,6 +89,10 @@ def _build(cid: str, sp: Dict[str, Any], pg: WikiPage, official: Dict[str, dict]
     card["mechanics"] = copy.deepcopy(sp["mechanics"])
     card["variants"] = {"evo": None, "hero": None}
     card["base_stats"] = {k: ov["11"][k] for k in stats}        # reference only: every level is overridden
+    card["wiki_columns"] = dict(stats)              # stat -> wiki column, read back by sync_meta.verify_wiki
+    if sp.get("stat_scale"):                        # official values newer than the wiki table: verify says "newer"
+        card["newer_than_wiki"] = {k: f"x {n}/{o} (Supercell balance notes newer than the wiki table)"
+                                   for k, (n, o) in sp["stat_scale"].items()}
     card["data_source"] = f"wiki-fandom-html:{pg.title}" + (f"#table{sp['table']}" if token else "")
     card["data_as_of"] = as_of
     card["wiki_as_of"] = as_of

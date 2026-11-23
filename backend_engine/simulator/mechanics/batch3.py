@@ -6,6 +6,9 @@ from backend_engine.simulator import geometry as G
 from backend_engine.simulator.mechanics.base import Mechanic, register
 
 
+_KAMIKAZE = {"suicide", "break_on_hit"}       # spirits, Wall Breakers, Battle Ram
+
+
 def _set_enchanted(a, params) -> None:
     a.params["enchanted"] = params
     a.mechanics = tuple(dict.fromkeys(a.mechanics + ("enchanted",)))
@@ -34,6 +37,7 @@ class Enchant(Mechanic):
             pool = [e for e in sorted(m.units.values(), key=lambda e: e.uid)
                     if e.side == u.side and e.uid != u.uid and e.kind == "troop" and e.hp > 0
                     and e.uid not in live and "enchanted" not in e.mechanics and e.deploy_ms <= 0
+                    and not _KAMIKAZE & set(e.mechanics)                     # 2026-08-04: no self-destructing troops
                     and G.dist(e.x, e.y, u.x, u.y) <= float(p.get("range_tiles", 8.5))]
             pool.sort(key=lambda e: (G.dist(e.x, e.y, u.x, u.y), e.uid))
             for e in pool[:free]:

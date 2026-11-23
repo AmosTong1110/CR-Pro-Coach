@@ -37,7 +37,10 @@ from backend_engine.simulator.tables import MAX_SPAWN, SPAWN_FORMATIONS, SPAWN_R
 #   5: wiki timings (hit speed, first hit, range) of the simulated cards
 #   6: batch 2: charge, shield, burrow, ramp damage, recoil, hide underground, form change, Earthquake / Lightning /
 #      Vines / Royal Delivery spell kinds, 50% slow; champion abilities (`Match.use_ability`, `card#ability` log entries)
-ENGINE_VERSION = 7
+#   7: Phase-2 buildings / spells, 7 evolutions, 5 heroes
+#   8: 2026-11-23 audit: the 9 hand-entered cards rebuilt from the wiki, the 2026 balance notes applied to every card,
+#      Crown Tower L12-16 from the wiki; batch 4 (25 cards for the 8 season meta decks)
+ENGINE_VERSION = 8
 
 # 战斗感知与物理常量
 from backend_engine.simulator.entities import TROOP_SIGHT  # noqa: E402,F401  军队通用视野警戒半径 (格子)
@@ -376,6 +379,14 @@ class Match:
             self.units[u.uid] = u
             for mech in hooks_for(u.mechanics, "on_spawn"):
                 mech.on_spawn(self, u)
+        # a card that deploys a second unit type (Goblin Gang: 3 Goblins + 3 Spear Goblins behind them); only when the
+        # card itself is played, not when its units are re-spawned by a mechanic with an explicit count
+        if count is None and card.get("companions"):
+            for comp in card["companions"]:
+                cy = y - G.forward(side) * float(comp.get("behind_tiles", 0.0))
+                self._spawn_card_units(side, comp["token"], x, min(max(cy, 0.0), G.H - 0.01), eid, False,
+                                       deploy_ms=int(card.get("deploy_time_s", 1.0) * 1000) + int(comp.get("delay_ms", 0)),
+                                       count=int(comp.get("count", 1)))
 
     def _cast_spell(self, side: int, card_id: str, x: float, y: float, eid: int, variant: str = "base") -> None:
         """释放法术：交给对应的法术类型组件 (area_spell 弹道落地 / rolling_spell 滚木)；variant "evo" adds the

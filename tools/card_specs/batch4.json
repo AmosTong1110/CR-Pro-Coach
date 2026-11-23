@@ -1,0 +1,302 @@
+{
+  "_doc": "Batch-4 cards (Phase 2: the 25 cards that complete the 8 meta decks of configs/meta_decks_top200.json), built by tools/add_wiki_cards.py from Clash Royale Wiki pages fetched on 2026-11-23 through the MediaWiki parse API (data/raw_sources/cards/, CC BY-SA). Format as batch2.json, plus 'stat_scale': {stat: [new, old]}, which applies a newer official level-11 value from Supercell's 2026 balance notes (not yet in the wiki table) to every level. Fields the wiki does not list (mass, collision radius, sight, knockback, spawn delays) come from RoyaleAPI cr-api-data (decoded game files, 2023-10) unless a 2026 balance note changed them; 'source_notes' says which. 'assumed' lists what no source gave.",
+  "inferno_dragon": {
+    "wiki": "Inferno Dragon", "type": "troop", "layer": "air", "internal_name": "InfernoDragon",
+    "stats": {"hitpoints": "Hitpoints", "damage": "1 stage Damage", "damage_stage2": "2 stage Damage", "damage_stage3": "3 stage Damage"},
+    "attack": {"targets": ["ground", "air"], "first_hit_s": 1.2, "sight_tiles": 5.5},
+    "mechanics": [{"kind": "ramp_damage", "params": {"stage_ms": 2000, "stats": ["damage", "damage_stage2", "damage_stage3"]}}],
+    "extra": {"mass": 5, "collision_radius_tiles": 0.5, "source_notes": ["first_hit_s, mass, radius, sight: RoyaleAPI InfernoDragon (load_time 1200)"]},
+    "assumed": []
+  },
+  "goblin_cage": {
+    "wiki": "Goblin Cage", "type": "building", "internal_name": "GoblinCage",
+    "stats": {"hitpoints": "Goblin Cage Hitpoints"},
+    "attack": {"targets": []},
+    "mechanics": [{"kind": "decay", "params": {}}, {"kind": "pulls_building_targeters", "params": {}},
+                  {"kind": "death_spawn", "params": {"token": "goblin_brawler", "count": 1, "deploy_ms": 500}}],
+    "extra": {"footprint_tiles": [2, 2], "collision_radius_tiles": 1.0, "source_notes": ["footprint from RoyaleAPI collision_radius 1000; brawler deploy 500 ms = death_spawn_deploy_time"]},
+    "assumed": []
+  },
+  "goblin_drill": {
+    "wiki": "Goblin Drill", "type": "building", "internal_name": "GoblinDrill",
+    "stats": {"hitpoints": "Goblin Drill Hitpoints", "spawn_damage": "Goblin Drill Spawn Damage", "spawn_tower_damage": "Goblin Drill Spawn Tower Damage"},
+    "stat_scale": {"spawn_tower_damage": [20, 26]},
+    "attack": {"targets": []},
+    "mechanics": [{"kind": "burrow", "params": {}}, {"kind": "decay", "params": {}},
+                  {"kind": "emerge_damage", "params": {"radius_tiles": 2.0, "knockback_tiles": 1.0}},
+                  {"kind": "periodic_spawn", "params": {"token": "drill_goblin", "count": 1, "interval_ms": 3000, "initial_delay_ms": 800}},
+                  {"kind": "death_spawn", "params": {"token": "drill_goblin", "count": 2, "deploy_ms": 500}}],
+    "extra": {"collision_radius_tiles": 0.5, "source_notes": ["2026-08-04 tower spawn damage removed, 2026-10-06 Crown Tower Spawn Damage 0 -> 20 (L11)", "spawns 1 Goblin every 3 s, first 0.8 s after deploy, 2 on death (wiki text)", "emerge radius 2 and knockback 1 tile: RoyaleAPI GoblinDrillDamage"]},
+    "assumed": ["no underground travel time from the king tower (it surfaces after its 1 s deploy, like Miner)"]
+  },
+  "magic_archer": {
+    "wiki": "Magic Archer", "type": "troop", "layer": "ground", "internal_name": "EliteArcher",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage"},
+    "stat_scale": {"damage": [135, 133]},
+    "attack": {"targets": ["ground", "air"], "sight_tiles": 7.5},
+    "mechanics": [{"kind": "pierce_shot", "params": {"length_tiles": 11.0, "width_tiles": 0.5}}],
+    "extra": {"mass": 3, "collision_radius_tiles": 0.6, "source_notes": ["2026-08-04 Damage 143 -> 135 (L11)", "mass, radius, sight: RoyaleAPI EliteArcher"]},
+    "assumed": ["the arrow hits instantly along its line (its ~0.6 s flight is not simulated)"]
+  },
+  "goblin_barrel": {
+    "wiki": "Goblin Barrel", "type": "spell", "internal_name": "GoblinBarrel",
+    "stats": {},
+    "spell": {"travel_speed_tiles_s": 6.666666666666667},
+    "mechanics": [{"kind": "barrel_drop", "params": {"token": "barrel_goblin", "count": 3, "deploy_ms": 1100}}],
+    "extra": {"source_notes": ["travel speed: RoyaleAPI projectile GoblinBarrel speed 400 / 60", "goblins deploy 1.1 s after landing (wiki)"]},
+    "assumed": []
+  },
+  "princess": {
+    "wiki": "Princess", "type": "troop", "layer": "ground", "internal_name": "Princess",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage"},
+    "attack": {"targets": ["ground", "air"], "sight_tiles": 9.5},
+    "mechanics": [],
+    "extra": {"mass": 3, "collision_radius_tiles": 0.5, "source_notes": ["mass, radius, sight: RoyaleAPI Princess"]},
+    "assumed": []
+  },
+  "goblin_gang": {
+    "wiki": "Goblin Gang", "type": "troop", "layer": "ground", "internal_name": "GoblinGang",
+    "stats": {"hitpoints": "Goblin Hitpoints", "damage": "Goblin Damage"},
+    "stat_scale": {"damage": [125, 120]},
+    "attack": {"targets": ["ground"]},
+    "mechanics": [{"kind": "swarm", "params": {}}],
+    "extra": {"mass": 2, "collision_radius_tiles": 0.5,
+              "companions": [{"token": "gang_spear_goblin", "count": 3, "behind_tiles": 1.0, "delay_ms": 100}],
+              "source_notes": ["2026-08-04 Goblin Damage 120 -> 125 (L11), applied to the Goblin character of the new cards", "Spear Goblins deploy 100 ms after the Goblins (RoyaleAPI summon_deploy_delay)"]},
+    "assumed": ["Spear Goblins stand 1 tile behind the Goblins (wiki: hexagon formation)"]
+  },
+  "golem": {
+    "wiki": "Golem", "type": "troop", "layer": "ground", "internal_name": "Golem",
+    "stats": {"hitpoints": "Golem Hitpoints", "damage": "Golem Damage", "death_damage": "Golem Death Damage"},
+    "attack": {"targets": ["buildings"], "sight_tiles": 7.5},
+    "mechanics": [{"kind": "building_targeting", "params": {}}, {"kind": "heavy_knockback_immune", "params": {}},
+                  {"kind": "death_damage", "params": {"radius_tiles": 2.0, "knockback_tiles": 1.8}},
+                  {"kind": "death_spawn", "params": {"token": "golemite", "count": 2}}],
+    "extra": {"mass": 20, "collision_radius_tiles": 0.75, "source_notes": ["2026-09-08 Sight Range 7 -> 7.5", "death knockback 1.8 tiles, mass, radius: RoyaleAPI Golem"]},
+    "assumed": ["Golemites are ready at once (no spawn delay)"]
+  },
+  "night_witch": {
+    "wiki": "Night Witch", "type": "troop", "layer": "ground", "internal_name": "DarkWitch",
+    "stats": {"hitpoints": "Night Witch Hitpoints", "damage": "Night Witch Damage"},
+    "attack": {"targets": ["ground"]},
+    "mechanics": [{"kind": "periodic_spawn", "params": {"token": "bats", "count": 2, "interval_ms": 5000, "initial_delay_ms": 1000}},
+                  {"kind": "death_spawn", "params": {"token": "bats", "count": 1}}],
+    "extra": {"mass": 4, "collision_radius_tiles": 0.5, "source_notes": ["2 Bats every 5 s, first after 1 s, 1 on death (wiki); her Bats have the Bats card's stats (81 / 81 at L11)"]},
+    "assumed": []
+  },
+  "mega_minion": {
+    "wiki": "Mega Minion", "type": "troop", "layer": "air", "internal_name": "MegaMinion",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [],
+    "extra": {"mass": 6, "collision_radius_tiles": 0.6, "source_notes": ["mass, radius: RoyaleAPI MegaMinion"]},
+    "assumed": []
+  },
+  "lumberjack": {
+    "wiki": "Lumberjack", "type": "troop", "layer": "ground", "internal_name": "RageBarbarian",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Lumberjack Damage", "rage_damage": "Rage Damage", "rage_tower_damage": "Rage Crown Tower Damage"},
+    "attack": {"targets": ["ground"]},
+    "mechanics": [{"kind": "rage_on_death", "params": {"radius_tiles": 3.0, "duration_ms": 5500}}],
+    "extra": {"mass": 4, "collision_radius_tiles": 0.5, "source_notes": ["Rage: radius 3, 5.5 s, +30% (wiki)", "mass, radius: RoyaleAPI RageBarbarian"]},
+    "assumed": []
+  },
+  "royal_giant": {
+    "wiki": "Royal Giant", "type": "troop", "layer": "ground", "internal_name": "RoyalGiant",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["buildings"], "sight_tiles": 7.5},
+    "attr_override": {"attack.hit_speed_s": 1.7},
+    "mechanics": [{"kind": "building_targeting", "params": {}}, {"kind": "heavy_knockback_immune", "params": {}}],
+    "extra": {"mass": 18, "collision_radius_tiles": 0.75, "source_notes": ["2026-03-02 hit speed 1.8 -> 1.7 s (wiki history; the attribute table still says 1.8)", "mass, radius, sight: RoyaleAPI RoyalGiant"]},
+    "assumed": []
+  },
+  "monk": {
+    "wiki": "Monk", "type": "troop", "layer": "ground", "internal_name": "Monk",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "combo_damage": "Combo Damage"},
+    "attack": {"targets": ["ground"]},
+    "mechanics": [{"kind": "combo_hit", "params": {"every": 3, "damage_stat": "combo_damage", "knockback_tiles": 1.8}},
+                  {"kind": "champion_ability", "params": {"name": "pensive_protection", "elixir": 1, "uses": 1, "delay_ms": 700, "duration_ms": 4000, "dr": 65, "reflect": true}}],
+    "extra": {"mass": 6, "collision_radius_tiles": 0.5, "source_notes": ["2026-10-06 Ability Cast Time 0.93 -> 0.7 s", "2026-08-04 abilities single-use", "combo knockback 1.8 tiles: RoyaleAPI melee_pushback3"]},
+    "assumed": ["a reflected projectile hits its shooter at once"]
+  },
+  "fisherman": {
+    "wiki": "Fisherman", "type": "troop", "layer": "ground", "internal_name": "Fisherman",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["ground"], "sight_tiles": 7.5},
+    "mechanics": [{"kind": "hook", "params": {"min_tiles": 3.5, "max_tiles": 7.0, "windup_ms": 1300, "pull_speed_tiles_s": 14.166666666666666, "self_speed_tiles_s": 7.5}}],
+    "extra": {"mass": 10, "collision_radius_tiles": 0.5, "source_notes": ["2026-04-06 slowdown removed", "pull speeds: RoyaleAPI FishermanProjectile drag_back_speed 850 / drag_self_speed 450 (/ 60)"]},
+    "assumed": []
+  },
+  "phoenix": {
+    "wiki": "Phoenix", "type": "troop", "layer": "air", "internal_name": "Phoenix",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "death_damage": "Death Damage"},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [{"kind": "rebirth", "params": {"radius_tiles": 1.5, "knockback_tiles": 2.0, "tower_pct": 30, "egg": "phoenix_egg"}}],
+    "extra": {"mass": 2, "collision_radius_tiles": 0.5, "source_notes": ["death knockback 2 tiles, towers -70%: RoyaleAPI PhoenixFireball"]},
+    "assumed": []
+  },
+  "lava_hound": {
+    "wiki": "Lava Hound", "type": "troop", "layer": "air", "internal_name": "LavaHound",
+    "stats": {"hitpoints": "Lava Hound Hitpoints", "damage": "Lava Hound Damage"},
+    "stat_scale": {"damage": [71, 53]},
+    "attack": {"targets": ["buildings"]},
+    "attr_override": {"attack.hit_speed_s": 1.5},
+    "mechanics": [{"kind": "building_targeting", "params": {}}, {"kind": "heavy_knockback_immune", "params": {}},
+                  {"kind": "death_spawn", "params": {"token": "lava_pup", "count": 6}}],
+    "extra": {"mass": 5, "collision_radius_tiles": 0.75, "source_notes": ["2026-10-06 Damage 53 -> 71, Hit Speed 1.3 -> 1.5 s (L11)", "mass, radius: RoyaleAPI LavaHound"]},
+    "assumed": []
+  },
+  "balloon": {
+    "wiki": "Balloon", "type": "troop", "layer": "air", "internal_name": "Balloon",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "death_damage": "Death Damage"},
+    "attack": {"targets": ["buildings"], "sight_tiles": 7.7},
+    "mechanics": [{"kind": "building_targeting", "params": {}},
+                  {"kind": "death_bomb", "params": {"radius_tiles": 3.0, "delay_ms": 3000, "tower_pct": 100}}],
+    "extra": {"mass": 6, "collision_radius_tiles": 0.5, "source_notes": ["bomb explodes 3 s after death, radius 3 (wiki)", "mass, radius, sight: RoyaleAPI Balloon"]},
+    "assumed": []
+  },
+  "guards": {
+    "wiki": "Guards", "type": "troop", "layer": "ground", "internal_name": "SkeletonWarriors",
+    "stats": {"hitpoints": "Hitpoints", "shield_hitpoints": "Shield Hitpoints", "damage": "Damage"},
+    "attack": {"targets": ["ground"]},
+    "mechanics": [{"kind": "shield", "params": {}}],
+    "extra": {"mass": 1, "collision_radius_tiles": 0.5, "source_notes": ["mass, radius: RoyaleAPI SkeletonWarrior"]},
+    "assumed": []
+  },
+  "skeleton_dragons": {
+    "wiki": "Skeleton Dragons", "type": "troop", "layer": "air", "internal_name": "SkeletonDragons",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage"},
+    "stat_scale": {"damage": [151, 161]},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [],
+    "extra": {"mass": 4, "collision_radius_tiles": 0.9, "source_notes": ["2026-05-04 Damage 161 -> 151 (L11)", "2026-04-06 splash 1.5, hit speed 2 s (already in the wiki table)", "mass, radius: RoyaleAPI SkeletonDragon"]},
+    "assumed": []
+  },
+  "battle_ram": {
+    "wiki": "Battle Ram", "type": "troop", "layer": "ground", "internal_name": "BattleRam",
+    "stats": {"hitpoints": "Battle Ram Hitpoints", "damage": "Battle Ram Damage", "charge_damage": "Battle Ram Charge Damage"},
+    "attack": {"targets": ["buildings"], "sight_tiles": 6.5},
+    "attr_override": {"attack.hit_speed_s": 0.4, "attack.first_hit_s": 0.05},
+    "mechanics": [{"kind": "building_targeting", "params": {}},
+                  {"kind": "charge", "params": {"charge_tiles": 3.0, "speed_tiles_s": 2.0, "damage_stat": "charge_damage"}},
+                  {"kind": "break_on_hit", "params": {}},
+                  {"kind": "death_spawn", "params": {"token": "battle_ram_barbarian", "count": 2, "deploy_ms": 1000}}],
+    "extra": {"mass": 6, "collision_radius_tiles": 0.75, "source_notes": ["charges after 3 tiles at Very Fast (wiki text)", "2026-09-08 Sight Range 5.5 -> 6.5", "hit 0.4 s / first hit 0.05 s, Barbarians deploy 1 s: RoyaleAPI BattleRam"]},
+    "assumed": []
+  },
+  "electro_wizard": {
+    "wiki": "Electro Wizard", "type": "troop", "layer": "ground", "internal_name": "ElectroWizard",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "zap_damage": "Zap Damage"},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [{"kind": "spawn_zap", "params": {"radius_tiles": 3.0, "stun_ms": 500, "tower_pct": 0}},
+                  {"kind": "split_attack", "params": {"targets": 2, "stun_ms": 500}}],
+    "extra": {"mass": 5, "collision_radius_tiles": 0.5, "source_notes": ["2 zaps per attack, 0.5 s stun, spawn Zap radius 3 (wiki)", "spawn Zap does no Crown Tower damage: RoyaleAPI ElectroWizardZap crown_tower_damage_percent -100"]},
+    "assumed": []
+  },
+  "bandit": {
+    "wiki": "Bandit", "type": "troop", "layer": "ground", "internal_name": "Assassin",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "dash_damage": "Dash Damage"},
+    "attack": {"targets": ["ground"], "sight_tiles": 6.0},
+    "mechanics": [{"kind": "dash_attack", "params": {"min_tiles": 3.5, "max_tiles": 6.0, "windup_ms": 800, "dash_speed_tiles_s": 8.333333333333334, "damage_stat": "dash_damage"}}],
+    "extra": {"mass": 3, "collision_radius_tiles": 0.6, "source_notes": ["dash range 3.5-6, 0.8 s, immune while dashing (wiki)", "dash speed 500 / 60, mass, radius, sight: RoyaleAPI Assassin"]},
+    "assumed": []
+  },
+  "arrows": {
+    "wiki": "Arrows", "type": "spell", "internal_name": "Arrows",
+    "stats": {"damage": "Area Damage", "crown_tower_damage": "Crown Tower Damage"},
+    "stat_scale": {"crown_tower_damage": [25, 31]},
+    "spell": {"travel_speed_tiles_s": 18.333333333333332, "hits_air": true},
+    "mechanics": [{"kind": "volley_spell", "params": {"waves": 3, "wave_ms": 200}}],
+    "extra": {"source_notes": ["3 volleys (wiki); damage per volley", "2026-06-01 Crown Tower Damage 93 -> 75 for the 3 volleys (L11)", "travel speed 1100 / 60: wiki / RoyaleAPI"]},
+    "assumed": ["volleys 0.2 s apart (a Supercell developer note gives 0.4 s for all three; no current figure found)"]
+  },
+  "giant_skeleton": {
+    "wiki": "Giant Skeleton", "type": "troop", "layer": "ground", "internal_name": "GiantSkeleton",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Damage", "death_damage": "Death Damage"},
+    "attack": {"targets": ["ground"], "sight_tiles": 5.0},
+    "mechanics": [{"kind": "heavy_knockback_immune", "params": {}},
+                  {"kind": "death_bomb", "params": {"radius_tiles": 3.0, "delay_ms": 3000, "tower_pct": 100, "knockback_tiles": 1.8}}],
+    "extra": {"mass": 18, "collision_radius_tiles": 0.75, "source_notes": ["2026-05-04 rework: no double Crown Tower damage, collision radius 0.75 (numbers already in the wiki table)", "bomb knockback 1.8: RoyaleAPI GiantSkeletonBomb"]},
+    "assumed": []
+  },
+  "heal_spirit": {
+    "wiki": "Heal Spirit", "type": "troop", "layer": "ground", "internal_name": "HealSpirit",
+    "stats": {"hitpoints": "Hitpoints", "damage": "Area Damage", "heal_per_pulse": "Healing Per Pulse"},
+    "attack": {"targets": ["ground", "air"]},
+    "mechanics": [{"kind": "heal_burst", "params": {"radius_tiles": 2.5, "pulses": 4, "pulse_ms": 250}}, {"kind": "suicide", "params": {}}],
+    "extra": {"mass": 1, "collision_radius_tiles": 0.4, "source_notes": ["4 heal pulses 0.25 s apart in radius 2.5 (wiki)", "mass, radius: RoyaleAPI HealSpirit"]},
+    "assumed": []
+  },
+  "tokens": {
+    "goblin_brawler": {
+      "wiki": "Goblin Cage", "table": 1, "type": "troop", "layer": "ground", "rarity": "rare", "elixir": 4,
+      "stats": {"hitpoints": "Goblin Brawler Hitpoints", "damage": "Goblin Brawler Damage"},
+      "stat_scale": {"hitpoints": [1121, 1080]},
+      "attack": {"targets": ["ground"]}, "mechanics": [],
+      "extra": {"name": "Goblin Brawler", "mass": 2, "collision_radius_tiles": 0.5, "source_notes": ["2026-09-08 Brawler Hitpoints 1080 -> 1121 (L11)"]},
+      "assumed": []
+    },
+    "drill_goblin": {
+      "wiki": "Goblin Drill", "table": 1, "type": "troop", "layer": "ground", "rarity": "epic", "elixir": 4,
+      "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+      "stat_scale": {"damage": [125, 120]},
+      "attack": {"targets": ["ground"]}, "mechanics": [],
+      "extra": {"name": "Goblin", "mass": 2, "collision_radius_tiles": 0.5, "source_notes": ["2026-08-04 the drill's Goblins deal 4% more damage (120 -> 125 at L11)"]},
+      "assumed": []
+    },
+    "barrel_goblin": {
+      "wiki": "Goblin Barrel", "table": 1, "type": "troop", "layer": "ground", "rarity": "epic", "elixir": 3,
+      "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+      "stat_scale": {"damage": [125, 120]},
+      "attack": {"targets": ["ground"]}, "attr_override": {"attack.first_hit_s": 0.3, "count": 1}, "mechanics": [],
+      "extra": {"name": "Goblin", "mass": 2, "collision_radius_tiles": 0.5, "source_notes": ["2026-10-06 First Hit Speed 0.4 -> 0.3 s", "2026-08-04 Goblin Damage 120 -> 125 (L11)"]},
+      "assumed": []
+    },
+    "gang_spear_goblin": {
+      "wiki": "Goblin Gang", "table": 1, "type": "troop", "layer": "ground", "rarity": "common", "elixir": 3,
+      "stats": {"hitpoints": "Spear Goblin Hitpoints", "damage": "Spear Goblin Damage"},
+      "attack": {"targets": ["ground", "air"]}, "attr_override": {"count": 1}, "mechanics": [],
+      "extra": {"name": "Spear Goblin", "mass": 1, "collision_radius_tiles": 0.5},
+      "assumed": []
+    },
+    "golemite": {
+      "wiki": "Golem", "table": 1, "type": "troop", "layer": "ground", "rarity": "epic", "elixir": 8,
+      "stats": {"hitpoints": "Golemite Hitpoints", "damage": "Golemite Damage", "death_damage": "Golemite Death Damage"},
+      "attack": {"targets": ["buildings"], "sight_tiles": 7.0},
+      "attr_override": {"count": 1},
+      "mechanics": [{"kind": "building_targeting", "params": {}}, {"kind": "death_damage", "params": {"radius_tiles": 2.0, "knockback_tiles": 0.9}}],
+      "extra": {"name": "Golemite", "mass": 6, "collision_radius_tiles": 0.5, "source_notes": ["death knockback 0.9: RoyaleAPI Golemite"]},
+      "assumed": []
+    },
+    "lava_pup": {
+      "wiki": "Lava Hound", "table": 1, "type": "troop", "layer": "air", "rarity": "legendary", "elixir": 7,
+      "stats": {"hitpoints": "Lava Pup Hitpoints", "damage": "Lava Pup Damage"},
+      "attack": {"targets": ["ground", "air"]}, "attr_override": {"count": 1}, "mechanics": [],
+      "extra": {"name": "Lava Pup", "mass": 5, "collision_radius_tiles": 0.45},
+      "assumed": []
+    },
+    "battle_ram_barbarian": {
+      "wiki": "Battle Ram", "table": 2, "type": "troop", "layer": "ground", "rarity": "rare", "elixir": 4,
+      "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+      "attack": {"targets": ["ground"]}, "attr_override": {"attack.hit_speed_s": 1.4, "count": 1}, "mechanics": [],
+      "extra": {"name": "Barbarian", "mass": 4, "collision_radius_tiles": 0.5, "source_notes": ["2026-03-02 hit speed 1.3 -> 1.4 s (wiki history)"]},
+      "assumed": []
+    },
+    "phoenix_egg": {
+      "wiki": "Phoenix", "table": 0, "type": "troop", "layer": "ground", "rarity": "legendary", "elixir": 4,
+      "stats": {"hitpoints": "Phoenix Egg Hitpoints"},
+      "stat_scale": {"hitpoints": [132, 100]},
+      "attack": {"targets": []},
+      "attr_override": {"movement.speed_tiles_s": 0.0, "attack.range_tiles": 0.0, "attack.splash_radius_tiles": 0.0, "deploy_time_s": 0.0, "count": 1},
+      "mechanics": [{"kind": "hatch", "params": {"token": "phoenix_reborn", "delay_ms": 4300, "deploy_ms": 733}}],
+      "extra": {"name": "Phoenix Egg", "mass": 3, "collision_radius_tiles": 0.6, "source_notes": ["2026-03-02 Egg hitpoints +32%, hatches after 4.3 s (from 3.8 s) (wiki history)", "reborn Phoenix deploy 0.733 s: RoyaleAPI PhoenixNoRespawn"]},
+      "assumed": []
+    },
+    "phoenix_reborn": {
+      "wiki": "Phoenix", "table": 0, "type": "troop", "layer": "air", "rarity": "legendary", "elixir": 4,
+      "stats": {"hitpoints": "Hitpoints", "damage": "Damage"},
+      "attack": {"targets": ["ground", "air"]}, "attr_override": {"count": 1}, "mechanics": [],
+      "extra": {"name": "Phoenix (reborn)", "mass": 2, "collision_radius_tiles": 0.5, "source_notes": ["hatches with the original's hitpoints and damage, no death damage, no egg (wiki)"]},
+      "assumed": []
+    }
+  }
+}

@@ -103,7 +103,7 @@ def test_ghost_turns_invisible_when_idle_and_enemies_lose_it(db):
     knight = tank(m, 1, "mini_pekka", 9.5, 14.0)             # 4 tiles away: sees it, can't reach it
     run(m, 1000)
     assert S.INVISIBLE not in ghost.status and knight.target_uid == ghost.uid
-    run(m, 900)                                               # 1.8 s idle -> invisible
+    run(m, 1100)                                              # 2 s idle -> invisible (2026-03-02: 1.8 -> 2 s)
     assert S.INVISIBLE in ghost.status
     assert knight.target_uid != ghost.uid and m._acquire(knight) is not ghost
 
@@ -112,7 +112,7 @@ def test_area_damage_still_hits_an_invisible_ghost(db):
     m = new(db, a=DECK, b=DECK)
     ghost = tank(m, 0, "royal_ghost", 9.5, 10.0)
     pekka = tank(m, 0, "mini_pekka", 9.5, 11.0)              # visible, right next to the ghost
-    run(m, 1900)
+    run(m, 2100)
     assert S.INVISIBLE in ghost.status
     (fire,) = play(m, 1, "fire_spirit", 9.5, 13.0)           # attacks the visible pekka; its area covers the ghost
     run(m, 200)
@@ -124,7 +124,7 @@ def test_area_damage_still_hits_an_invisible_ghost(db):
 def test_ghost_shows_itself_when_it_engages(db):
     m = mk(db)
     ghost = tank(m, 0, "royal_ghost", 9.5, 10.0)
-    run(m, 1900)
+    run(m, 2100)
     assert S.INVISIBLE in ghost.status
     k = tank(m, 1, "mini_pekka", 9.5, 11.2)                  # steps right next to it
     run(m, 150)
@@ -183,7 +183,7 @@ def test_tornado_effect_is_deterministic_across_snapshot(db):
 # ------------------------------------------------------------------ data of the three cards
 @pytest.mark.parametrize("cid,expected", [
     ("barbarian_barrel", {"damage": 215}),
-    ("royal_ghost", {"hitpoints": 1210, "damage": 261}),
+    ("royal_ghost", {"hitpoints": 1152, "damage": 263}),     # 2026-10-06 balance notes
     ("tornado", {"damage": 84, "crown_tower_damage": 29}),
 ])
 def test_values_at_level_11(db, cid, expected):
@@ -194,7 +194,7 @@ def test_card_parameters_come_from_the_source_data(db):
     assert db.cards["tornado"]["spell"]["duration_ms"] == 1050 and db.cards["tornado"]["spell"]["hit_every_ms"] == 500
     assert db.cards["tornado"]["spell"]["radius_tiles"] == 5.5
     ghost = {m["kind"]: m["params"] for m in db.cards["royal_ghost"]["mechanics"]}
-    assert ghost["invisible_when_idle"]["delay_ms"] == 1800
+    assert ghost["invisible_when_idle"]["delay_ms"] == 2000      # 2026-03-02 balance notes
     barrel = {m["kind"]: m["params"] for m in db.cards["barbarian_barrel"]["mechanics"]}
     assert barrel["spawn_on_end"] == {"token": "barbarian", "deploy_ms": 500}
     assert db.cards["royal_ghost"]["game_id"] == 26000050 and db.cards["tornado"]["game_id"] == 28000012

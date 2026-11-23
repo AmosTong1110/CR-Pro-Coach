@@ -47,15 +47,15 @@ def test_the_plan_and_modern_cards_are_all_simulated(db):
 
 @pytest.mark.parametrize("cid,level,expected", [
     ("bats", 11, {"hitpoints": 81, "damage": 81}),
-    ("minion_giant", 11, {"hitpoints": 1817, "damage": 168}),
-    ("rune_giant", 11, {"hitpoints": 2662, "damage": 120, "bonus_damage": 220}),
-    ("rune_giant", 16, {"hitpoints": 4287, "damage": 193, "bonus_damage": 354}),
-    ("poison", 11, {"damage": 92, "building_damage": 92, "crown_tower_damage": 22}),
-    ("poison", 16, {"damage": 148, "building_damage": 148, "crown_tower_damage": 35}),
-    ("little_prince", 11, {"hitpoints": 698, "damage": 104, "rescue_damage": 256}),
-    ("little_prince", 16, {"hitpoints": 1124, "damage": 167, "rescue_damage": 412}),
-    ("guardienne", 11, {"hitpoints": 1600, "damage": 217}),
-    ("guardienne", 16, {"hitpoints": 2577, "damage": 349}),
+    ("minion_giant", 11, {"hitpoints": 1817, "damage": 153}),                 # 2026-10-19
+    ("rune_giant", 11, {"hitpoints": 2816, "damage": 153, "bonus_damage": 220}),   # 2026-06-01 / 08-04
+    ("rune_giant", 16, {"hitpoints": 4535, "damage": 246, "bonus_damage": 354}),
+    ("poison", 11, {"damage": 92, "building_damage": 92, "crown_tower_damage": 21}),   # 2026-06-01 184 -> 168 (8 pulses)
+    ("poison", 16, {"damage": 148, "building_damage": 148, "crown_tower_damage": 33}),
+    ("little_prince", 11, {"hitpoints": 698, "damage": 104, "rescue_damage": 320}),   # 2026-08-26 256 -> 320
+    ("little_prince", 16, {"hitpoints": 1124, "damage": 167, "rescue_damage": 515}),
+    ("guardienne", 11, {"hitpoints": 1600, "damage": 232}),                   # 2026-08-04 217 -> 232
+    ("guardienne", 16, {"hitpoints": 2577, "damage": 373}),
 ])
 def test_values(db, cid, level, expected):
     assert db.stats(cid, level).stats == expected
@@ -68,7 +68,8 @@ def test_all_wiki_base_pages_are_simulated_and_match(db):
     if not real.is_dir():
         pytest.skip("saved wiki pages not present")
     rows = verify_wiki(db, load_wiki_dir(real), levels=(11, 12, 13, 14, 15, 16))
-    assert [r for r in rows if r["status"] != "ok"] == []
+    # "newer": the card holds a newer official value (Supercell balance notes) than the wiki table, on purpose
+    assert [r for r in rows if r["status"] not in ("ok", "newer")] == []
 
 
 def test_the_8_meta_decks_that_need_only_these_cards_are_playable(db):
@@ -96,7 +97,7 @@ def test_minion_giant_flies_and_only_attacks_buildings_from_range(db):
     mg.speed = 0.0
     mg.x, mg.y = tw.x, tw.y - 4.0 - tw.radius - mg.radius + 0.1        # just inside range of the tower
     d = hits(tw, m, 4000)
-    assert d and {x for _, x in d} == {168} and troop.hp == BIG        # tower yes, the troop never
+    assert d and {x for _, x in d} == {153} and troop.hp == BIG        # tower yes, the troop never
     assert 1500 <= d[1][0] - d[0][0] <= 1900                           # one hit every 1.7 s
 
 
@@ -118,7 +119,7 @@ def test_rune_giant_enchants_the_two_nearest_allies_for_a_bonus_every_third_hit(
     assert db.stats("rune_giant", 11).stats["bonus_damage"] == 220
 
 
-def test_enchantment_outlives_the_rune_giant_by_five_seconds(db):
+def test_enchantment_outlives_the_rune_giant_by_half_a_second(db):          # 2026-10-19: 5 s -> 0.5 s
     m = mk(db)
     (rg,) = play(m, 0, "rune_giant", 9.5, 10.0)
     ally = play(m, 0, "knight", 9.5, 11.5)[0]
@@ -126,7 +127,7 @@ def test_enchantment_outlives_the_rune_giant_by_five_seconds(db):
     run(m, 100)
     assert "enchanted" in ally.mechanics
     rg.hp = 0
-    run(m, 4800)
+    run(m, 300)
     assert "enchanted" in ally.mechanics
     run(m, 400)
     assert "enchanted" not in ally.mechanics and "enchanted" not in ally.params
@@ -153,7 +154,7 @@ def test_poison_eight_pulses_slow_air_ground_and_towers(db):
     hp2 = tw2.hp
     play(m2, 0, "poison", tw2.x, tw2.y)
     run(m2, 8200)
-    assert hp2 - tw2.hp == 8 * 22
+    assert hp2 - tw2.hp == 8 * 21
 
 
 def test_slows_do_not_stack_the_strongest_wins(db):

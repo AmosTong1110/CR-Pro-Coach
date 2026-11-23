@@ -98,17 +98,17 @@ def test_replay_both_sides_learn_with_legal_labels(db, proxies, tmp_path):
 
 
 def test_proxy_side_is_not_a_learner_and_proxy_plays_still_happen(db, proxies, tmp_path):
-    opp = ["giant", "arrows", "musketeer", "knight", "skeletons", "zap", "minions", "cannon"]   # 6/8 simulated
+    opp = ["giant", "freeze", "musketeer", "knight", "skeletons", "zap", "minions", "cannon"]   # 7/8 simulated
     events = [_ev("opponent", 40, "giant", 9.5, 30.5), _ev("team", 80, "hog-rider", 14.5, 14.5),
-              _ev("opponent", 120, "arrows", 14.5, 10.5)]
+              _ev("opponent", 120, "freeze", 14.5, 10.5)]
     ok, w, st, d = _run(db, proxies, _payload(opp=opp, events=events), tmp_path)
     assert ok and st.learner_sides == 1
     assert set(d["side"].tolist()) == {0}
-    assert st.dropped_plays == 0                               # the proxied Giant / Arrows were played
+    assert st.dropped_plays == 0                               # the proxied Freeze was played
 
 
 def test_coverage_filter_and_illegal_tile_skip(db, proxies, tmp_path):
-    low = ["giant", "arrows", "pekka", "wizard", "golem", "zappies", "bowler", "skeletons"]   # 1/8
+    low = ["giant", "freeze", "pekka", "wizard", "executioner", "zappies", "bowler", "skeletons"]   # 3/8
     ok, *_ = _run(db, proxies, _payload(team=low, opp=low), tmp_path / "a")
     assert not ok
     # a troop "played" on the enemy side (impossible in the sim): no sample, but the card is relocated and played

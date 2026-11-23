@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Dict, Optional
 
 from backend_engine.simulator import geometry as G
+from backend_engine.simulator.entities import Projectile
 from backend_engine.simulator.mechanics import status as S
 from backend_engine.simulator.mechanics.base import Mechanic, SpellKind, register, register_spell
 from backend_engine.simulator.mechanics.core import AreaSpell
@@ -265,9 +266,31 @@ def _foes_of(m, side):
     return [e for e in sorted(m.units.values(), key=lambda e: e.uid) if e.side != side and e.hp > 0]
 
 
+class PensiveProtection:
+    """Monk, Pensive Protection (1 elixir): after a `delay_ms` cast (0.7 s since 2026-10-06) he takes `dr` percent
+    less damage for `duration_ms` and reflects projectiles: a projectile hit on him also hits its shooter (the
+    reflected shot's own flight is not simulated). He keeps fighting while it is active."""
+
+    @staticmethod
+    def start(m, u, p) -> None:
+        u.mstate["ab"].update(phase="protect", ms=0)
+
+    @staticmethod
+    def tick(m, u, p, dt: int) -> bool:
+        ab = u.mstate["ab"]
+        ab["ms"] += dt
+        delay, dur = int(p.get("delay_ms", 700)), int(p.get("duration_ms", 4000))
+        if ab["ms"] >= delay + dur:
+            ab.update(phase=None, dr=0, reflect=False)
+        elif ab["ms"] >= delay:
+            ab.update(dr=float(p.get("dr", 65)), reflect=bool(p.get("reflect", True)))
+        return False
+
+
 ABILITIES: Dict[str, type] = {"dash": Dash, "explosive_escape": Escape, "royal_rescue": Rescue,
                               "triumphant_taunt": Taunt, "breakfast_boost": BreakfastBoost, "snowstorm": Snowstorm,
-                              "trusty_turret": TrustyTurret, "whirl_power": WhirlPower}
+                              "trusty_turret": TrustyTurret, "whirl_power": WhirlPower,
+                              "pensive_protection": PensiveProtection}
 
 
 @register("champion_ability")
@@ -286,6 +309,10 @@ class ChampionAbility(Mechanic):
         ab = u.mstate.get("ab")
         if ab and ab["phase"] == "dash":
             return 0.0
+        if ab and ab.get("reflect") and isinstance(source, Projectile):     # Monk: the shot goes back
+            shooter = m.units.get(source.source_uid)
+            if shooter is not None and shooter.hp > 0:
+                m._deal(shooter, source.damage, u)
         if ab and ab.get("dr"):
             return amount * (1.0 - ab["dr"] / 100.0)
         return amount

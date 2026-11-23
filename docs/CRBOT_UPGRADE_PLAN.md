@@ -1,110 +1,13 @@
-# CRbot — 4-week upgrade plan
+# CRbot — design reference
 
-> **2026-11-17: Mode B (live screen capture / CV overlay) is sunset.** CRbot is a single mode: the local simulator + post-match AI coach. Mode B items below are historical and will not be built.
+Specs that the code follows. The plan (what to build next, in which order) is `ROADMAP.md`; the current state
+is `SESSION_HANDOFF.md`. Sections 0–3 (the original 4-week plan, the 2025 coverage table, the app-shell sketch,
+the week-by-week list) were removed on 2026-11-23: done or replaced by `ROADMAP.md` (see git history).
+Section numbers below are kept so older references still match.
 
-Status at start (2026-11-15): ~40% overall, 187 tests green. Infrastructure is mostly done;
-the remaining work is **card/mechanic coverage**, the **trained AI brain**, and **validation on real games**.
-
-## 0. Ground rules from the Counterpush analysis
-
-What we take: product patterns that are common practice (deterministic sim + rollout-based review,
-chess-style move grades, an accuracy score, phase-split timeline, variant flags on cards, archetype names).
-
-What we don't take: their code, art, UI look, endpoints or data. CRbot gets its own visual identity
-(see §2) and never calls their API. Several observations in the analysis are guesses from DevTools
-(for example "server-side inference" or what `?knows=cut,partial` means). They don't change our design:
-CRbot does its analysis **locally** and doesn't need a polling queue.
-
-## 1. The data fact that shapes the plan
-
-Coverage of real battles (HF replays, 1,592 battles / 3,184 decks, Dec 2025) by number of modelled cards,
-choosing cards greedily to complete the most decks:
-
-| cards | decks fully playable | battles with *both* decks playable |
-|---|---|---|
-| 9 (now) | 0% | 0 |
-| 30 | 11% | 13 |
-| 50 | 29% | 123 |
-| 60 | 43% | 278 |
-
-Consequences:
-* **Imitation learning (IL) can't depend on re-simulating real battles** at 30 cards (13 battles).
-  IL is trained on the **event streams** (who played what, where, when; elixir/cycle reconstructed by our
-  tracker), which works for all 1,592 battles (and the 65k-replay snapshot later).
-* **Self-play PPO** runs only inside the simulator, so it covers only modelled cards. Card coverage
-  directly limits how good and how varied the sparring AI can be.
-* Card batch 1 (data-driven, greedy order): skeletons, barbarian_barrel, fireball, the_log, electro_spirit,
-  royal_ghost, ice_spirit, knight, cannon, mini_pekka, tornado, ice_golem, musketeer, hog_rider,
-  mighty_miner, firecracker, earthquake, lightning, tesla, golden_knight, vines, dart_goblin, valkyrie,
-  skeleton_army, rocket, miner, royal_delivery, goblin_demolisher, fire_spirit, dark_prince.
-  This set makes Hog 2.6 (the most common deck, 218/3184) and several cycle decks fully playable.
-* **Modern (2026) Meta deck expansion**: Double Giant Miner-Poison (`rune_giant`, `minion_giant`, `little_prince` [champion],
-  `miner`, `poison`, `barbarian_barrel`, `bats`#evo, `skeletons`#evo). Adding `rune_giant`, `minion_giant`, `little_prince`
-  (+ `guardienne` token), `bats`, and `poison` gives CRbot immediate coverage of the top-tier 2026 beatdown/control archetype
-  alongside classic Hog 2.6.
-
-## 2. App shell: CRbot (own look)
-
-```
-┌────────────┬─────────────────────────────────────────────┐
-│ CRbot      │                                             │
-│            │   page content                              │
-│ ⚔ Fight    │   Fight      = arena + hand + timeline        │
-│ 📈 Analysis │   Analysis   = match list → review page      │
-│ 🃏 Decks    │   Decks      = recommended decks + builder    │
-│            │                                             │
-│            │                                             │
-│ 👤 Account  │   Account    = local profile & settings      │
-└────────────┴─────────────────────────────────────────────┘
-```
-
-* **Fight**: today's practice arena (persona, level 11/16, speed, undo/forward, elixir counter).
-* **Analysis**: list of saved matches (CRbot practice and drills), each with archetype names,
-  result, accuracy; opens the review page (graph, grades, ghosts, *Show me* playback, *Take over*).
-* **Recommended deck**: top decks from the meta prior (ranked by play rate in the data), filtered to cards
-  CRbot can simulate, plus "decks that beat X" once the value net exists; one click → Fight with that deck.
-* **Account** (bottom-left): local profile only: optional player tag (stays on this Mac), default level,
-  calibration, model paths, data freshness ("card stats as of …").
-* Visual identity: our own palette (charcoal + teal/violet accents), our own iconography; no Supercell art.
-* Match IDs: `YYYYMMDD-HHMMSS_<mode>_<hash8>` with mode ∈ {practice, recording, drill}; saved under
-  `matches/<id>/` as `meta.json`, `actions.json`, `review.json` (fast to reopen, no re-analysis).
-
-## 3. Week-by-week
-
-### Week 1: schema v4, mechanics framework, app shell
-1. **Card schema v4** (§4): canonical game `internal_name`, alias table (display, HF slug, detector class,
-   RoyaleAPI name), variants (`base`/`evo`/`hero`) inside the base card. Keep our snake_case ids as primary
-   keys, so all 187 tests stay green.
-2. **Mechanics framework** (§5): component registry plus hooks. Port the existing behaviour (rolling log,
-   spells, buildings, river jump) into components first, with tests proving identical state hashes.
-3. **App shell** with the four sections; Fight = current window; Analysis = match store + existing review.
-4. Golden-value tests per card (L11 and L16 numbers) once current stats are available.
-
-### Week 2: 30 cards + 2026 meta deck, deck links, archetypes, IL dataset
-1. Mechanics needed by batch 1 + modern meta expansion:
-   - Projectiles with travel time, splash, stun/reset, slow/freeze, knockback and pull (tornado), death spawn and death damage,
-     multi-unit spawns (skeleton army), burrow/tunnel (miner, mighty miner), invisibility (royal ghost), damage-over-time and
-     building multiplier (earthquake, vines root, poison lingering AoE + slow), charge and shield (dark prince), champion abilities
-     (golden knight dash, mighty miner lane swap, little prince attack ramp + Royal Rescue Guardienne charge knockback),
-     form change (goblin demolisher), recoil (firecracker), chain (electro spirit).
-   - Modern meta unit behaviors: flying ranged tank (minion_giant, range 4.0, knockback immune), ally enhancement aura
-     (rune_giant, every 3rd attack damage boost), flying melee swarm + lifesteal overheal (bats, evo bats), evo skeletons multiplying on hit.
-2. **Deck link import**: parse `clashroyale://copyDeck?deck=<ids>`, mapping numeric card ids to ours.
-3. **Archetype naming** (§7).
-4. **IL dataset builder**: replay events → (observation, next action) samples using our OppElixirTracker,
-   cycle tracker and deck guesser, so every sample sees only what a human could see.
-
-### Week 3: brains (IL → PPO), personas
-1. Train **IL policy + value** on Colab/Kaggle (§6), export ONNX, plug in as `NeuralBot` behind the same
-   `Agent` interface and the existing HumanDelayBuffer.
-2. **Self-play PPO**: league of checkpoints inside the simulator (30-card pool), CPU-parallel envs.
-3. **Personas** as one network with a persona embedding plus reward shaping (§6.4), not 4 networks.
-
-### Week 4: Coach v2, M1 performance, Mode B validation
-1. Replace the scripted-bot win model with the **value net**; grading tiers, accuracy, timing (§7).
-2. *Show me*: animate the recommended branch (fork + rollout already exist).
-3. Performance budget (§8): full review in ≤ 2 s locally.
-4. Mode B: run recorded matches, compare with RoyaleAPI replay timelines, start detector fine-tuning set.
+Ground rule (from the Counterpush analysis): take only common product patterns (deterministic sim +
+rollout-based review, chess-style grades, accuracy score, archetype names). Never their code, look,
+endpoints or data; CRbot analyses locally.
 
 ## 4. Card schema v4
 
@@ -166,7 +69,8 @@ REGISTRY = {"projectile": Projectile, "splash": Splash, "stun": Stun, "knockback
 * Data: all HF battles (event streams). Each play becomes a sample; "wait" samples are drawn between plays.
 * Model: small transformer over the unit set (≈2–4M params) with policy and value heads.
   Value target = final result. Colab T4 ≈ 1–2 h.
-* Output: `pretrained_weights/crbot_il_v1.onnx` (target < 20 MB).
+* Output: `pretrained_weights/crbot_il_v2/` (`.onnx` + `.npz` + `.json`, target < 20 MB). Current model and
+  metrics: `SESSION_HANDOFF.md`.
 
 ### 6.3 Self-play PPO
 * Init from IL. Simulator in subprocess workers (Kaggle/Colab CPUs; the sim runs ~13k ticks/s per core).
@@ -219,71 +123,54 @@ little_prince→LP…), e.g. "EvoRoyalHogs GobHut", "Hog 2.6", "Double Giant Min
 
 | part | target |
 |---|---|
-| policy/value net (ONNX, CoreML) | < 2 ms per call, < 100 MB RAM |
-| Mode B detector | 14 ms/frame (measured) |
+| policy/value net (ONNX) | < 2 ms per call, < 100 MB RAM (NeuralBot measures ~4–5 ms per decision) |
 | review: ~30 plays × ~30 candidates | value net with 2 s rollouts instead of 8 s, 4 worker processes → ≤ 2 s |
 | app total | < 1.2 GB RAM, no torch at runtime |
 
 ## 9. Risks / open questions
-1. **Current (Nov 2026) card stats**: no fresh machine-readable source yet. This blocks "verified" L16 numbers.
+1. **Current (Nov 2026) card stats**: no fresh machine-readable source; many values are still `assumed`.
 2. **Simulator fidelity**: the AI is only as good as the simulator matches the real game; per-card golden
-   tests against real values are required.
-3. **Heroes/Evos**: mechanics are new and under-documented; implement only the ones in the 30-card batch first.
-4. **Data licence**: HF replays MIT (personal research); SudhishNeel detector "other". Fine for personal
-   training, not for redistribution.
-5. **IL from event streams** has no unit-state history; the value head is weaker until self-play adds sim states.
+   tests against real values are required (and the replay-agreement benchmark, `ROADMAP.md` MS5).
+3. **Heroes/Evos**: mechanics are new and under-documented.
+4. **Data licence**: HF replays have no clear licence: personal research only, no redistribution.
+5. **IL from event streams** has no unit-state history; its value head is weak (Brier 0.237) until a value
+   model is trained on simulator states.
 
-## 10. Phased card expansion to 8 complete meta decks (added 2026-11-16)
+## 10. Phased card expansion to 8 complete meta decks
 
-Target decks = the 8 archetypes in `configs/meta_decks_top200.json` (season 2026 top-200). Their 8 decks use
-**51 distinct base cards**. Only Hog 2.6 is complete today.
+Target decks = the 8 archetypes in `configs/meta_decks_top200.json` (season 2026 top-200), 51 distinct base cards.
+Phase 1 (38 cards) finished 2026-11-16. **Phase 2 finished 2026-11-23: all 8 decks are playable (72 cards).**
+Specs: `tools/card_specs/batch4.json`; mechanics: `backend_engine/simulator/mechanics/batch4.py`; tests:
+`tests/test_batch4.py`. The `healing_spirit` id of the top-200 file is the game's `heal_spirit`.
 
-### Phase 1 (current batch, keeps AI training unblocked)
-* The plan's 30 cards + the 5 modern cards (`rune_giant`, `minion_giant`, `little_prince`, `bats`, `poison`) = 35,
-  plus `zap`, `archers`, `minions` (already simulated, extras) = 38 cards.
-* Wiki pages for all 35 are saved in `data/raw_sources/cards/` (30/30 + 5/5). Simulated now: **38 of 38 (Phase 1 complete, 2026-11-16)**: all 30 plan cards, the 5 modern cards and zap, archers, minions.
-* Meta decks completed: Hog 2.6 (now). With all 35 Phase 1 cards (done 2026-11-16): still only Hog 2.6 of the 8
-  (the other 7 each miss 2–7 Phase 2 cards). In the HF replay data: 36 of 932 decks (340 of 3,184 listings).
-  The 5 modern cards unlocked 3 more HF decks; Rune Giant Miner Control and Goblin Drill Poison are each 2 cards short of Rune Giant Miner Control
-  (`inferno_dragon`, `goblin_cage`) and of Goblin Drill Poison (`goblin_drill`, `magic_archer`).
+Mechanics as built (2026-11-23):
+1. **Building-only targeting** (existing): royal_giant, balloon, lava_hound, battle_ram, golem (+ golemites).
+2. **Death effects**: `death_bomb` (balloon, giant_skeleton: bomb 3 s later), `death_damage` + knockback (golem),
+   `death_spawn` (golem, lava_hound, battle_ram, goblin_cage, goblin_drill, night_witch).
+3. **Spawners**: `periodic_spawn` (goblin_drill, night_witch), `barrel_drop` spell (goblin_barrel), card
+   `companions` (goblin_gang's Spear Goblins).
+4. `ramp_damage` (inferno_dragon), `pierce_shot` (magic_archer), `hook` (fisherman, no slow since 2026-04-06).
+5. `charge` + `break_on_hit` (battle_ram), `dash_attack` (bandit).
+6. `shield` (guards), `heal_burst` + `heal_zone` (heal_spirit), `rage_on_death` + `rage_zone` (lumberjack, +30%),
+   `spawn_zap` + `split_attack` (electro_wizard), `emerge_damage` (goblin_drill).
+7. `rebirth` + `hatch` (phoenix), `combo_hit` + ability `pensive_protection` (monk), `volley_spell` (arrows).
 
-### Phase 2: 28 extra base cards → all 8 decks
-| deck | Phase 2 cards it needs |
-|---|---|
-| PEKKA Bridge Spam (Hero E-Wiz) | battle_ram, electro_wizard, bandit, arrows, lumberjack, giant_skeleton, healing_spirit |
-| Rune Giant Miner Control | inferno_dragon, goblin_cage |
-| Golem Beatdown Night Witch | golem, night_witch, baby_dragon, mega_minion (+ lumberjack) |
-| Royal Giant Monk Fisherman | royal_giant, monk, fisherman, phoenix |
-| Lavaloon Guards | lava_hound, balloon, guards, tombstone, skeleton_dragons (+ mega_minion) |
-| Classic Princess Logbait | goblin_barrel, princess, goblin_gang, inferno_tower |
-| Goblin Drill Poison Marcher | goblin_drill, magic_archer |
+### Evolutions and heroes
+Simulated: 7 of 14 evolutions (Knight, Firecracker, Skeletons, Zap, Valkyrie, Tesla, Mortar) and 5 heroes (Knight,
+Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie). Data only, cheapest first: bats (heal pulse), ice spirit, archers,
+then the ones that add a new entity (cannon barrage, dart goblin poison, royal ghost soldiers, skeleton army General
+Gerry); Barbarian Barrel / Dark Prince heroes (HANDOFF_ARCHIVE issue 18).
+* Pages still to save for Phase 2 evos: battle_ram, goblin_barrel, goblin_cage, goblin_drill, inferno_dragon,
+  lumberjack, princess, royal_giant. Hero pages: electro_wizard, balloon, magic_archer, mega_minion.
 
-Total after Phase 2: 38 + 28 = 66 simulated base cards (the 8 decks use 51; 12 Phase 1 cards are not in any of the
-8, but they complete other HF decks and are already researched). Id note: the top-200 file says `healing_spirit`,
-the HF data and the game say `heal_spirit`: add an alias before importing.
-
-New mechanics (grouped; each needs a unit test + golden scenario like Phase 1):
-1. **Building-only targeting**: royal_giant (range 5), giant_skeleton, balloon, lava_hound, battle_ram, golem.
-2. **Death effects**: golem (golemites + death damage), lava_hound (pups), giant_skeleton (bomb), balloon (bomb), tombstone and goblin_cage (spawn on destruction), night_witch (bats on death).
-3. **Spawners**: tombstone, goblin_cage, goblin_drill (burrow + spawn), night_witch (periodic bats), goblin_barrel (spell that drops units).
-4. **Ramp damage**: inferno_tower, inferno_dragon. **Piercing projectile**: magic_archer. **Pull**: fisherman.
-5. **Charge / dash**: battle_ram (charge, then barbarians), bandit (dash + brief invulnerability); Dark Prince from Phase 1 shares the charge code.
-6. **Shield / heal / rage**: guards (shield), healing_spirit (area heal), lumberjack (rage on death), electro_wizard (stun on spawn, two targets).
-7. **Rebirth**: phoenix (egg). **Champion ability**: monk (reflect). Little Prince and Golden Knight come from Phase 1.
-8. `arrows` = area spell, no new mechanic; `skeleton_dragons`, `baby_dragon`, `mega_minion`, `goblin_gang`, `princess` are projectile/splash (existing).
-
-### Evolutions and heroes (~20 variants)
-Which evo/hero each deck runs is not in our data, except Hero Electro Wizard (deck 1) and evo bats / evo skeletons.
-**Status 2026-11-16**: all 21 saved evo / hero pages are in the card data and verified (`sync_meta --variants`); simulated:
-Evo Knight and the heroes Knight, Mini P.E.K.K.A., Ice Golem, Musketeer, Valkyrie (`use_ability`). The other 13
-evolutions and the Barbarian Barrel / Dark Prince heroes are data with a planned mechanic (HANDOFF_ARCHIVE issue 18).
-* Pages still to save for Phase 2 (official list says these cards have an evo): baby_dragon, battle_ram, goblin_barrel,
-  goblin_cage, goblin_drill, inferno_dragon, lumberjack, princess, royal_giant. Hero pages: electro_wizard, balloon,
-  magic_archer, mega_minion, tombstone.
-* Next evolution mechanics, cheapest first: skeletons (multiply), bats (heal pulse), tesla (stun pulse), zap (double),
-  ice spirit, archers, then the ones that add a new entity (cannon barrage, firecracker sparks, dart goblin poison,
-  royal ghost soldiers, skeleton army General Gerry).
-
-### Stats source (new, 2026-11-16)
+### Stats source
 `sync_meta --html-dir data/raw_sources/cards` parses the saved Fandom pages (current numbers, L1–L16) and checks
-L11 / L16 against the DB (read-only); `--apply-wiki` stores the numbers as `level_overrides` (done for the 22 simulated cards, engine v4; see HANDOFF_ARCHIVE open issue 13).
+L11 / L16 against the DB (read-only); `--apply-wiki` stores the numbers as `level_overrides`.
+* Fetching pages: clashroyale.fandom.com refuses plain page requests (403) but its MediaWiki API works:
+  `api.php?action=parse&page=<Title>&prop=text|revid&format=json&formatversion=2`; save the `text` as
+  `<Title> _ Clash Royale Wiki _ Fandom.html` (Crown Tower pages go to `data/raw_sources/towers/`).
+* Wiki tables can lag the official balance notes (supercell.com blog). Newer official values go into a patch file
+  applied by `tools/apply_card_patches.py` (each line names its source); the card lists the stat in
+  `newer_than_wiki`, and `verify_wiki` reports it as `newer` instead of `DIFF`.
+* Fields the wiki does not list (mass, collision radius, sight, knockback, spawn delays): RoyaleAPI cr-api-data
+  `cards_stats.json` (decoded game files, 2023-10: reliable for mechanics, stale for numbers).

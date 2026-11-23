@@ -155,3 +155,36 @@ Homebrew's `python3` has no packages, so always use `.venv/bin/python`. Run the 
   before loading); `get_batch` casts obs back to float32. Verified locally on 12k real samples (labels identical,
   max obs error 8e-4). For ~1.3M samples consider `IL_EPOCHS=10` (T4 time not measured yet).
 * Shards now store `deck` (index into manifest `learner_decks`, sorted 8 card ids) per sample.
+
+## 6. Done 2026-11-21 (moved from SESSION_HANDOFF 2026-11-23)
+* **IL v2 shards** (`data/il_shards*/` git-ignored; v1 shards, the 400k set and the old PPO bundle deleted).
+  **`data/il_shards_full/` = the training set (done 14:59, checked)**: 1,551,234 samples (1:1 play/wait) from
+  18,570 battles, all 52 parts, modes Ranked/Ladder/Grand Challenge/Classic Challenge, 311 shards, 243 MB, 63 min.
+  Rejected: coverage 208,772, mode 24,896. **Hog 2.6 = deck id 2: 671,836 samples / 7,741 battles (43% of all).**
+  Colab RAM need ≈ 5.6 GB (float16 loader).
+* **crbot_il_v2 installed** in `pretrained_weights/crbot_il_v2/` (git-ignored, scanned). Val (epoch 16/20): slot top1
+  61.7% (baseline 35.4%), tile top3 49.3% (14.8%), gate acc 73.4%, value Brier 0.237 (weak). Gauntlet (432 matches,
+  2 workers; 3 get SIGKILLed on 8 GB) wrote `gate_threshold 0.5`, `decide_every_ms 250`; `.json.bak` = original meta.
+* Notebooks are name-aware (defaults unchanged). IL: `IL_NAME`, `IL_INIT` (.npz to start from), `IL_DECK` (8 card
+  ids: keep only learners with that deck), `IL_LR`. PPO: `PPO_NAME` (own checkpoint folder unless crbot_ppo_v2),
+  `PPO_INIT`, `PPO_DECKS`, `PPO_HOURS`. `pack_ppo_bundle.py --il-model <name>`.
+* `build_il_dataset.py --modes` (game-mode filter, rejected count `mode`; test in `tests/test_il_dataset.py`).
+* **Deck specialist + daily budget** in `brain/ppo_trainer.py`: `PPOConfig.learner_decks` (preset names, e.g.
+  `("Hog 2.6 Cycle",)`; only the learner's deck, opponents keep all presets), `time_budget_h` (clean stop with
+  checkpoint + export, next run resumes), `export_name` (e.g. `crbot_ppo_hog26` → NeuralBot loads it from
+  `pretrained_weights/<name>/`). Helper `meta.presets.select_presets` (tested in `tests/test_presets.py`).
+
+## 7. Card audit 2026-11-23
+* Sources: Clash Royale Wiki pages through the MediaWiki API (`data/raw_sources/cards`, `/towers`), Supercell balance
+  notes Jan-Oct 2026 (10 posts; no November post), RoyaleAPI cr-api-data `cards_stats.json` (2023-10) for mass /
+  radius / sight / knockback / spawn delays. Wiki tables lag the notes (e.g. Skeleton Dragons 161 vs 151; the wiki
+  history even has Dart Goblin's 2026-03-02 sight change backwards: official 7.5 -> 7).
+* Batch 4 = 25 cards + 9 tokens (`tools/card_specs/batch4.json`, `mechanics/batch4.py`, `tests/test_batch4.py`).
+* Audit patch (`tools/card_specs/audit_2026_11.json`, `tools/apply_card_patches.py`, 68 ops): the 9 hand-entered
+  cards (Baby Dragon, Giant, Goblins x4, Inferno Tower, Mortar, P.E.K.K.A., Tombstone 2 Skeletons / 3.5 s, Witch,
+  X-Bow) rebuilt from the wiki; balance-note values for ~25 more cards, Evolved Tesla / Valkyrie, Hero Knight;
+  Crown Tower L12-16 from the wiki. Rune Giant no longer enchants kamikaze troops. Engine v8, goldens re-recorded.
+* Not changed (no source): pocket depth after a Princess Tower falls (6 tiles), Skeletons' spawn spread (0.4 ->
+  0.5 tiles, 2026-10-19), Little Prince's 0.3 s hit-speed conservation, Firecracker projectile speed (notes give
+  no number; the wiki table matches ours). Arena 18 x 32, bridges 2 tiles wide in line with the Princess Towers,
+  King Tower 4 x 4 one tile from the back: all match `geometry.py`.

@@ -72,16 +72,23 @@ class Suicide(Mechanic):
 class DeathDamage(Mechanic):
     """Burst when the unit dies (Ice Golem). `damage` is filled in at spawn from the card's scaled `death_damage`.
 
-    params: radius_tiles, damage, optional `status` payload. Hits every enemy unit and building in range.
+    params: radius_tiles, damage, optional `status` payload, optional `knockback_tiles` (Golem, Golemites: troops that
+    survive are pushed away from the unit). Hits every enemy unit and building in range.
     """
 
     def on_death(self, m, u) -> None:
         p = u.params.get("death_damage", {})
         dmg, radius = float(p.get("damage", 0)), float(p.get("radius_tiles", 0))
+        kb = float(p.get("knockback_tiles", 0))
         for e in sorted(m.units.values(), key=lambda e: e.uid):
             if e.side != u.side and e.hp > 0 and G.dist(e.x, e.y, u.x, u.y) <= radius + e.radius:
                 m._deal(e, dmg, u)
                 apply_payload(m, e, p.get("status"))
+                if kb and e.hp > 0 and not e.is_structure:
+                    dx, dy = e.x - u.x, e.y - u.y
+                    if abs(dx) + abs(dy) < 1e-9:
+                        dx, dy = 0.0, float(G.forward(u.side))
+                    knockback(m, e, dx, dy, kb)
 
 
 @register("invisible_when_idle")

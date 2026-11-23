@@ -42,8 +42,9 @@ class ScriptedBot:
         for c in obs.get("abilities", ()):
             name, cost = info[c]["name"], int(info[c]["elixir"])
             reach = {"dash": 5.0, "royal_rescue": 4.0, "trusty_turret": 6.0, "triumphant_taunt": 7.5,
-                     "snowstorm": 4.0, "whirl_power": 2.5}.get(name, 2.0)
-            need = {"dash": 2, "triumphant_taunt": 2, "snowstorm": 2, "whirl_power": 2}.get(name, 1)
+                     "snowstorm": 4.0, "whirl_power": 2.5, "pensive_protection": 5.0}.get(name, 2.0)
+            need = {"dash": 2, "triumphant_taunt": 2, "snowstorm": 2, "whirl_power": 2,
+                    "pensive_protection": 2}.get(name, 1)
             for u in obs["units"]:
                 if u["side"] != self.side or u["card_id"] != c or u["deploying"]:
                     continue
@@ -56,6 +57,12 @@ class ScriptedBot:
 
     def _card(self, c: str) -> dict:
         return self.db.cards[c]
+
+    def _raider(self, c: str) -> bool:
+        """Cards that go straight onto the enemy towers: Goblin Barrel (a spell that drops units) and burrowing
+        buildings (Goblin Drill). They are win conditions, never defenders."""
+        kinds = {m["kind"] for m in self._card(c)["mechanics"]}
+        return "barrel_drop" in kinds or (self._card(c)["type"] == "building" and "burrow" in kinds)
 
     def decide(self, obs: dict, visible_events: Sequence[PublicDeployEvent], now_ms: int,
                buffer: Optional[HumanDelayBuffer] = None) -> List[ActionIntent]:
@@ -113,9 +120,15 @@ class ScriptedBot:
         # 寻找进攻核心卡牌 (只攻击建筑的攻城核心，如野猪骑士、攻城槌、巨人；远程自闭攻城武器如连弩、迫击炮；以及大皮卡)
         wincons = [c for c in affordable if self._card(c).get("attack", {}).get("targets") == ["buildings"]
                    or (self._card(c)["type"] == "building" and self._card(c).get("attack", {}).get("range_tiles", 0) >= 11.0)
-                   or c in ("pekka",)]
+                   or c in ("pekka",) or self._raider(c)]
 
         def _wincon_pos(cid: str, lx: float) -> Tuple[float, float]:
+            if self._raider(cid):                  # onto (barrel) / in front of (drill) that lane's enemy tower
+                lane = [t for t in towers if t["tower_role"] != "king" and G.lane_of(t["x"]) == G.lane_of(lx)]
+                tw = lane or [t for t in towers if t["tower_role"] == "king"]
+                if tw:
+                    mx, my = self._mine(tw[0]["x"], tw[0]["y"])
+                    return (mx, my) if self._card(cid)["type"] == "spell" else (mx, my - tw[0]["radius"] - 1.0)
             return (lx, G.RIVER_Y0 - 1.5) if self._card(cid)["type"] == "building" else (lx, G.RIVER_Y0 - 0.5)
 
         # 2b) 抓空挡突袭换路 (Punish / Lane Switch):
@@ -160,6 +173,8 @@ class ScriptedBot:
         swarm = sum(1 for u in threats if abs(u["x"] - threat["x"]) < 2.5 and abs(u["y"] - threat["y"]) < 2.5) >= 2
         scored = []
         for c in affordable:
+            if self._raider(c):
+                continue
             card = self._card(c)
             ctype, sp = card["type"], card.get("spell", {})
             targets = card.get("attack", {}).get("targets", [])
