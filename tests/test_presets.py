@@ -2,7 +2,7 @@
 import pytest
 
 from backend_engine.meta.presets import find_preset, load_presets, playable, select_presets
-from backend_engine.simulator.card_db import CardDB
+from backend_engine.simulator.card_db import CardDB, split_slot
 from backend_engine.simulator.match_runner import DEFAULT_DECK
 
 
@@ -16,7 +16,9 @@ def test_presets_validity():
     for p in ps:
         assert len(p.cards) == 8 and len(set(p.cards)) == 8, p.name
         assert all(c in db.cards for c in p.cards), p.name               # every card is simulated
-        assert all(e in p.cards and db.has_variant(e, "evo") for e in p.evo), p.name
+        for slot in p.evo:                                                # "card" = evolution, "card#hero" = hero
+            c, var = split_slot(slot)
+            assert c in p.cards and db.variant_simulated(c, var), (p.name, slot)
         assert p.style and p.tip, p.name
     assert len(playable(db.cards)) == n
     assert sum(p.ai_pushes for p in ps) >= 20                             # most give the AI a win condition
